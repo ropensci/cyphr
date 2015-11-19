@@ -198,7 +198,7 @@ data_request_access <- function(path_data, path=NULL, quiet=FALSE) {
   ## Consider taking same approach as whoami, but falling back on
   ## asking instead?
   if (!quiet) {
-    message("A request has been added.  Email somone with access to add you.")
+    message("A request has been added.  Email someone with access to add you.")
     message("\thash: ", bin2str(hash))
   }
   invisible(hash)

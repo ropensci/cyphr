@@ -26,9 +26,28 @@ test_that("command rewriting", {
   expect_equal(res$expr, quote(write.csv(x=x, file="other.csv")))
 
   expect_error(rewrite(quote(readRDS("myfile")), file_arg="foo"),
-               "Cannot inferr file argument")
+               "Cannot infer file argument")
   expect_error(rewrite(quote(unknown("myfile"))),
                "was not found")
   expect_error(rewrite(quote(plot("myfile"))),
                "not found in database")
+})
+
+test_that("filename default argument", {
+  ## Filename from default:
+  f <- function(x, filename="foo") {
+  }
+  res <- rewrite(quote(f(1)), "filename")
+  expect_equal(res$filename, "foo") # captured default arg
+  expect_equal(res$expr[["filename"]], res$tmp) # rewrote expression
+
+  res <- rewrite(quote(f(1, "bar")), "filename")
+  expect_equal(res$filename, "bar") # user-supplied arg
+})
+
+test_that("redefined base functions", {
+  f <- readRDS
+  res <- rewrite(quote(f("myfile.rds")))
+  expect_equal(res$filename, "myfile.rds")
+  expect_equal(res$expr$file, res$tmp)
 })

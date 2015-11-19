@@ -19,19 +19,44 @@ rewrite <- function(expr, file_arg=NULL, envir=parent.frame(),
   ## There might be a more general form in here where the filename is
   ## part of a dots argument and fn could be the pointer to the
   ## underlying function that will take the dots.
-  if (is.null(x$fn)) {
-    norm <- match.call(dat$defn, expr, expand.dots=TRUE)
-  } else {
-    norm <- match.call(x$fn, expr, expand.dots=TRUE)
-  }
+  defn <- if (is.null(x$fn)) dat$defn else x$fn
+  norm <- match.call(defn, expr, expand.dots=TRUE)
 
   ## NOTE: don't need to worry about > 1 match because match.call will
   ## do that for us.
   i <- match(x$arg, names(norm))
   if (is.na(i)) {
-    stop(sprintf("Cannot inferr file argument '%s' in '%s'",
-                 x$arg, paste(deparse(expr), collapse=" ")))
+    ## Second shot; could be a default argument to the function (this
+    ## doesn't happen in any of the built-in functions so far, but see
+    ## the tests).
+    ##
+    ## But then there are other issues throughout here; I often use a
+    ## pattern where the filename is NULL in the argument lists and
+    ## then filled in during the function body.
+    ##
+    ## Another option here could be to replace the 'filename' objects
+    ## with active binding functions that are dynamically bound back
+    ## to the environment here?  But that still requires some serious
+    ## faff (e.g. including trace).
+    ##
+    ## In that case we would not have to rewrite anything and just
+    ## determine what the argument is.
+    if (x$arg %in% names(formals(defn))) {
+      ## NOTE: this is the *wrong environment*; what we really need to
+      ## do is evaluate this function in the calling function but
+      ## that's hard to the point of being impossible.  But it does
+      ## mean that if there are side effects or lazy evaluation this
+      ## is not going to behave appropriately.
+      i <- length(norm) + 1L
+      norm[[i]] <- formals(defn)[[x$arg]]
+      names(norm)[[i]] <- x$arg
+    } else {
+      stop(sprintf("Cannot infer file argument '%s' in '%s'",
+                   x$arg, paste(deparse(expr), collapse=" ")))
+    }
   }
+  ## TODO: work out here what to do about non-filename arguments, I
+  ## think.
   orig <- eval(norm[[i]], envir)
   norm[[i]] <- filename
   list(filename=orig,
@@ -49,12 +74,24 @@ find_function <- function(name, envir) {
       stop("Invalid function call for name")
     }
   } else if (is.symbol(name)) {
-    ## TODO: replace with a recursive get from rrqueue.
     name <- as.character(name)
     defn <- get(as.character(name), envir=envir, mode="function")
     env <- environment(defn)
     if (isNamespace(env)) {
       ns <- getNamespaceName(env)
+      ok <- exists(name, env, inherits=FALSE) &&
+        identical(defn, getExportedValue(ns, name))
+      if (!ok) {
+        ## OK, this is ugly and should be memoised.  We need to scan
+        ## through all the functions in the given environment and
+        ## check to see which is the correct one.
+        for (i in names(env)) {
+          if (identical(defn, get0(i, env, inherits=FALSE))) {
+            name <- i
+            break
+          }
+        }
+      }
     } else {
       ns <- ""
     }

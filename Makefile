@@ -4,9 +4,6 @@ RSCRIPT = Rscript --no-init-file
 all: install
 
 test:
-	STORR_SKIP_DOWNLOADS=true make test_all
-
-test_all:
 	${RSCRIPT} -e 'library(methods); devtools::test()'
 
 roxygen:
@@ -19,18 +16,15 @@ install:
 build:
 	R CMD build .
 
-check:
-	STORR_SKIP_DOWNLOADS=true make check_all
-
-check_all: build
+check: build
 	_R_CHECK_CRAN_INCOMING_=FALSE R CMD check --as-cran --no-manual `ls -1tr ${PACKAGE}*gz | tail -n1`
 	@rm -f `ls -1tr ${PACKAGE}*gz | tail -n1`
 	@rm -rf ${PACKAGE}.Rcheck
 
-vignettes/storr.Rmd: vignettes/src/storr.R
+vignettes/data.Rmd: vignettes/src/data.R
 	${RSCRIPT} -e 'library(sowsear); sowsear("$<", output="$@")'
 
-vignettes: vignettes/storr.Rmd
+vignettes: vignettes/data.Rmd
 	${RSCRIPT} -e 'library(methods); devtools::build_vignettes()'
 
 # No real targets!

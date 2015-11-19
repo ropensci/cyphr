@@ -72,7 +72,7 @@ Each data set (which may be many files) will have a directory `.encryptr` within
 Someone has to start.  They run:
 
 ```r
-data_admin_setup(data_path)
+data_admin_init(data_path)
 ```
 
 where `data_path` is a path to somewhere within the data project.  The root of the project is fine, as all files will be created within a directory ".encryptr", within `data_path`.  This will also set up user keys if these do not exist yet.

@@ -7,3 +7,5 @@
 ^Makefile$
 ^ignore$
 ^encryptr_.*\.tar\.gz$
+^vignettes/src$
+^TODO\.md$

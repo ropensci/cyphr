@@ -12,6 +12,8 @@ Imports:
     rappdirs,
     sodium
 Suggests:
+    knitr,
     tcltk,
     testthat
 RoxygenNote: 5.0.0
+VignetteBuilder: knitr

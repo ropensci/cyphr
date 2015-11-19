@@ -15,7 +15,9 @@ config_authenticated(path_key, path_pub)
 \arguments{
 \item{path_key}{Path to, or contents of, the symmetric key
 (\code{config_symmetric}) or your personal private key
-(\code{config_public}, \code{config_authenticated}).}
+(\code{config_public}, \code{config_authenticated}).  For
+\code{config_public}, this may be \code{NULL} in which case only
+encryption can be carried out.}
 
 \item{path_pub}{Path to, or contents of, the public key; your
 personal public key (\code{config_public}) or the other party's

@@ -40,12 +40,9 @@ decrypt <- function(expr, config, file_arg=NULL, envir=parent.frame()) {
 encrypt_ <- function(expr, config, file_arg=NULL, envir=parent.frame()) {
   dat <- rewrite(expr, file_arg, envir)
   on.exit(file_remove_if_exists(dat$tmp))
-  ## TODO: move this encrypt_file into the on.exit clause so that the
-  ## result of eval is passed correctly back out.  Or we could use
-  ## withVisible.
-  res <- eval(dat$expr, envir)
+  res <- eval(call("withVisible", dat$expr), envir)
   encrypt_file(dat$tmp, dat$filename, config)
-  invisible(res)
+  if (res$visible) res$value else invisible(res$value)
 }
 
 ##' @export

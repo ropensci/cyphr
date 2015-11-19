@@ -35,3 +35,18 @@ test_that("nse 2", {
 
   expect_equal(decrypt(read.csv(filename), x), iris)
 })
+
+test_that("visibility", {
+  f <- function(x, filename=tempfile(), visible=FALSE) {
+    saveRDS(x, filename)
+    if (visible) filename else invisible(filename)
+  }
+
+  x <- config_symmetric(sodium::keygen())
+  expect_error(encrypt(f(iris), x), "Function f not found in database")
+  res <- withVisible(encrypt(f(iris), x, file_arg="filename"))
+  expect_false(res$visible)
+
+  res <- withVisible(encrypt(f(iris, visible=TRUE), x, file_arg="filename"))
+  expect_true(res$visible)
+})

@@ -9,3 +9,6 @@
 ^encryptr_.*\.tar\.gz$
 ^vignettes/src$
 ^TODO\.md$
+^update_web\.sh$
+^inst/staticdocs$
+^inst/web$

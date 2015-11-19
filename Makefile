@@ -21,6 +21,14 @@ check: build
 	@rm -f `ls -1tr ${PACKAGE}*gz | tail -n1`
 	@rm -rf ${PACKAGE}.Rcheck
 
+staticdocs:
+	@mkdir -p inst/staticdocs
+	Rscript -e "library(methods); staticdocs::build_site()"
+	rm -f vignettes/*.html
+	@rmdir inst/staticdocs
+website: staticdocs
+	./update_web.sh
+
 vignettes/data.Rmd: vignettes/src/data.R
 	${RSCRIPT} -e 'library(sowsear); sowsear("$<", output="$@")'
 

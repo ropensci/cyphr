@@ -5,3 +5,5 @@ inst/doc
 vignettes/src/data
 vignettes/data
 TODO.md
+inst/staticdocs
+inst/web

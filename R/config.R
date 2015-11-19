@@ -18,7 +18,9 @@
 ##'
 ##' @param path_key Path to, or contents of, the symmetric key
 ##'   (\code{config_symmetric}) or your personal private key
-##'   (\code{config_public}, \code{config_authenticated}).
+##'   (\code{config_public}, \code{config_authenticated}).  For
+##'   \code{config_public}, this may be \code{NULL} in which case only
+##'   encryption can be carried out.
 ##'
 ##' @param path_pub Path to, or contents of, the public key; your
 ##'   personal public key (\code{config_public}) or the other party's
@@ -36,11 +38,16 @@ config_symmetric <- function(path_key) {
 ##' @export
 ##' @rdname encryptr_config
 config_public <- function(path_key, path_pub) {
-  key <- config_get_key(path_key)
+  if (is.null(path_key)) {
+    decypt <- function(msg, ...) stop("decryption not supported")
+  } else {
+    key <- config_get_key(path_key)
+    decrypt <- function(msg, ...) sodium::simple_decrypt(msg, key)
+  }
   pub <- config_get_key(path_pub)
   config("public",
          function(msg, ...) sodium::simple_encrypt(msg, pub),
-         function(msg, ...) sodium::simple_decrypt(msg, key))
+         decrypt)
 }
 
 ##' @export

@@ -9,7 +9,9 @@ LazyData: true
 URL: htts://github.com/dide-tools/encryptr
 BugReports: htts://github.com/dide-tools/encryptr/issues
 Imports:
+    rappdirs,
     sodium
 Suggests:
+    tcltk,
     testthat
 RoxygenNote: 5.0.0

@@ -44,7 +44,7 @@ test_that("basic workflow", {
   tmp <- data_admin_list_keys(path_dat)
   expect_equal(length(tmp), 1L)
   expect_equal(tmp[[1]]$hash,
-               data_hash(data_filename_pub(path_us1)))
+               data_hash(filename_pub(path_us1)))
 
   x1 <- config_data(path_dat, path_us1, TRUE)
   expect_is(x1, "encryptr_config")
@@ -64,11 +64,11 @@ test_that("basic workflow", {
 
   ## Can load the file by hash in a bunch of ways:
   ## TODO: run this test in previous block.
-  tmp <- data_key_load(h2, data_path_request(path_dat))
-  expect_identical(data_key_load(bin2str(h2),
+  tmp <- data_pub_load(h2, data_path_request(path_dat))
+  expect_identical(data_pub_load(bin2str(h2),
                                  data_path_request(path_dat)),
                    tmp)
-  expect_identical(data_key_load(bin2str(h2, ""),
+  expect_identical(data_pub_load(bin2str(h2, ""),
                                  data_path_request(path_dat)),
                    tmp)
 
@@ -86,6 +86,6 @@ test_that("basic workflow", {
   tmp <- data_admin_list_keys(path_dat)
   expect_equal(length(tmp), 2L)
 
-  expect_true(bin2str(data_hash(data_filename_pub(path_us1))) %in% names(tmp))
-  expect_true(bin2str(data_hash(data_filename_pub(path_us2))) %in% names(tmp))
+  expect_true(bin2str(data_hash(filename_pub(path_us1))) %in% names(tmp))
+  expect_true(bin2str(data_hash(filename_pub(path_us2))) %in% names(tmp))
 })

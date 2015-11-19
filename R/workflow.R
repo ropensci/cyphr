@@ -1,3 +1,10 @@
+## NOTE: All functions here are arbitrarily prefixed with 'data'
+## because they're the 'data workflow' part of the package.  I may
+## move them elsewhere.
+##
+## It does make me wish there was some easy way (i.e., not local) of
+## having namespaces that are file specific...
+
 ##' Encrypted data administration; functions for setting up, adding
 ##' users, etc.
 ##'
@@ -63,13 +70,15 @@ data_admin_init <- function(path_data, path_user=NULL, quiet=FALSE) {
     ## But this bit is shared; we need to copy the files around a
     ## bunch.
     tmp <- data_request_access(path_data, path_user, quiet=TRUE)
-    dat <- data_key_load(bin2str(tmp), data_path_request(path_data))
+    ## NOTE: here we can't use data_admin_authorise because we can't
+    ## load the symmetric key from the files we're trying to write!
+    dat <- data_pub_load(tmp, data_path_request(path_data))
     key <- sodium::simple_encrypt(sym, dat$pub)
     data_authorise_write(path_data, key, dat, quiet)
   } else {
     ## TODO: this should do something different in the case where a
-    ## different user tries to run init.  The current message/error
-    ## situation might be ok though.
+    ## different user tries to run init before they are authenticated.
+    ## The current message/error situation might be ok though.
     if (!quiet) {
       message("Already set up")
     }
@@ -92,7 +101,7 @@ data_admin_authorise <- function(hash, path_data, path_user=NULL, quiet=FALSE) {
   ## TODO: allow prompting.
   data_check_path_data(path_data)
   path_user <- data_path_user(path_user)
-  dat <- data_key_load(hash, data_path_request(path_data))
+  dat <- data_pub_load(hash, data_path_request(path_data))
   key <- sodium::simple_encrypt(data_load_sym(path_data, path_user), dat$pub)
   data_authorise_write(path_data, key, dat, quiet)
 }
@@ -101,21 +110,14 @@ data_admin_authorise <- function(hash, path_data, path_user=NULL, quiet=FALSE) {
 ##' @rdname data_admin
 data_admin_list_requests <- function(path_data) {
   data_check_path_data(path_data)
-  data_keys_load(data_path_request(path_data))
+  data_pubs_load(data_path_request(path_data))
 }
 ##' @export
 ##' @rdname data_admin
 data_admin_list_keys <- function(path_data) {
   data_check_path_data(path_data)
-  data_keys_load(data_path_encryptr(path_data))
+  data_pubs_load(data_path_encryptr(path_data))
 }
-
-## NOTE: All functions here are arbitrarily prefixed with 'data'
-## because they're the 'data workflow' part of the package.  I may
-## move them elsewhere.
-##
-## It does make me wish there was some easy way (i.e., not local) of
-## having namespaces that are file specific...
 
 ##' User commands
 ##' @title User commands
@@ -134,28 +136,7 @@ data_admin_list_keys <- function(path_data) {
 ##' @export
 ##' @rdname data_user
 data_user_init <- function(password=FALSE, path=NULL, quiet=FALSE) {
-  path <- data_path_user(path)
-  path_pub <- data_filename_pub(path)
-  if (!file.exists(path_pub)) {
-    if (!quiet) {
-      message("Creating public key in ", path_pub)
-    }
-    dir.create(path, FALSE, TRUE)
-    path_key <- data_filename_key(path)
-    pair <- keypair(password)
-    writeBin(pair$key, path_key)
-    ## Not sure if this is always supported:
-    Sys.chmod(path_key, "600")
-
-    ## Collect metadata:
-    info <- Sys.info()
-    dat <- list(user=info[["user"]],
-                host=info[["nodename"]],
-                date=as.character(Sys.time()),
-                pub=bin2str(pair$pub))
-    write.dcf(dat, path_pub, width=500)
-  }
-  invisible(path_pub)
+  create_keypair(data_path_user(path), password, quiet, "id_encryptr")
 }
 
 ##' @export
@@ -175,10 +156,9 @@ data_request_access <- function(path_data, path=NULL, quiet=FALSE) {
   path_req <- data_path_request(path_data)
   dir.create(path_req, FALSE)
 
-  ## TODO: not 100% sure if I should be using sig_sign instead?
-  hash <- data_key_hash(path)
-  writeBin(read_binary(path_pub),
-           file.path(path_req, bin2str(hash, "")))
+  hash <- data_hash(path_pub)
+  file.copy(path_pub,
+            filename_pub(path_req, bin2str(hash, "")))
 
   ## The idea here is that they will email or whatever creating a
   ## second line of communication.  Probably this should provide a
@@ -216,17 +196,7 @@ config_data <- function(path_data, path=NULL, test=TRUE) {
 ##'
 ##' @export
 data_key_read <- function(path=NULL) {
-  if (is.null(path)) {
-    path <- data_filename_pub(data_path_user(path))
-  } else if (is_directory(path)) {
-    path <- data_filename_pub(path)
-  }
-  dat <- as.list(read.dcf(path)[1, ])
-  dat$pub <- sodium::hex2bin(dat$pub)
-  dat$hash <- data_hash(path)
-  dat$filename <- path
-  class(dat) <- "data_key"
-  dat
+  read_public_key(data_path_user(path))
 }
 
 ## Here, key is the key encrypted with the user's public key.
@@ -238,8 +208,8 @@ data_authorise_write <- function(path_data, key, dat, quiet=FALSE) {
   }
   path_enc <- data_path_encryptr(path_data)
   hash_str <- bin2str(dat$hash, "")
-  writeBin(key, data_filename_key(path_enc, hash_str))
-  file.copy(dat$filename, file.path(path_enc, hash_str))
+  writeBin(key, filename_key(path_enc, hash_str))
+  file.copy(dat$filename, filename_pub(path_enc, hash_str))
   file.remove(dat$filename)
   invisible(dat$hash)
 }
@@ -252,39 +222,26 @@ data_check_path_data <- function(path_data) {
   invisible(path_enc)
 }
 
-## User level:
-## * data_request_access
-## * data_key_read
-## * data_key_hash?
-
-## TODO: harmonise with data_key_read so that when called with no
-## arguments both have this behaviour and load the user key.
-data_key_hash <- function(path=NULL) {
-  path <- data_path_user(path)
-  filename <- data_filename_pub(path)
-  data_hash(filename)
-}
-
-data_key_load <- function(hash, path) {
+data_pub_load <- function(hash, path) {
   if (is.raw(hash)) {
-    hash <- bin2str(hash, "")
+    hash_str <- bin2str(hash, "")
   } else {
-    hash <- gsub(":", "", hash)
+    hash_str <- gsub(":", "", hash)
+    hash <- str2bin(hash_str)
   }
-  filename <- file.path(path, hash)
-  if (!identical(data_hash(filename), str2bin(hash))) {
-    stop("Hash disagrees for: ", hash)
+  filename <- filename_pub(path, hash_str)
+  if (!identical(data_hash(filename), hash)) {
+    stop("Hash disagrees for: ", hash_str)
   }
-  data_key_read(filename)
+  read_public_key(filename)
 }
 
-data_keys_load <- function(path) {
-  files <- dir(path, pattern="^[[:xdigit:]]{32}$")
-  nms <- vapply(files, function(x) bin2str(str2bin(x)), character(1),
-                USE.NAMES=FALSE)
-  structure(lapply(files, data_key_load, path),
-            names=nms,
-            class="data_keys")
+data_pubs_load <- function(path) {
+  files <- dir(path, pattern="^[[:xdigit:]]{32}\\.pub$")
+  dat <- lapply(sub(".pub$", "", files), data_pub_load, path)
+  names(dat) <- vapply(dat, function(x) bin2str(x$hash), character(1))
+  class(dat) <- "data_keys"
+  dat
 }
 
 data_hash <- function(x) {
@@ -297,24 +254,11 @@ data_hash <- function(x) {
 ##' @export
 print.data_keys <- function(x, ...) {
   if (length(x) == 0L) {
-    cat("(no requests)\n")
+    cat("(empty)\n")
   } else {
     cat(paste0(vapply(x, as.character, character(1)), "\n", collapse="\n"))
   }
   invisible(x)
-}
-
-##' @export
-print.data_key <- function(x, ...) {
-  cat(as.character(x), "\n", sep="")
-}
-##' @export
-as.character.data_key <- function(x, ...) {
-  v <- c("user", "host", "date", "pub")
-  x$pub <- bin2str(x$pub)
-  x$hash <- bin2str(x$hash)
-  sprintf("%s:\n%s", bin2str(x$hash),
-          paste(sprintf("  %4s: %s", v, unlist(x[v])), collapse="\n"))
 }
 
 ## Some directories:
@@ -336,12 +280,6 @@ data_path_request <- function(path_data) {
 }
 
 ## Some filename patterns:
-data_filename_key <- function(path, name="id_encryptr") {
-  paste0(file.path(path, name), ".key")
-}
-data_filename_pub <- function(path, name="id_encryptr") {
-  paste0(file.path(path, name), ".pub")
-}
 data_filename_test <- function(path_data) {
   file.path(data_path_encryptr(path_data), "test")
 }
@@ -350,13 +288,13 @@ data_load_sym <- function(path_data, path) {
   ## TODO: have data_check_path_data return the correct path (path_enc)
   path_enc <- data_check_path_data(path_data)
   path <- data_path_user(path)
-  hash <- data_key_hash(path)
-  path_data_key <- data_filename_key(path_enc, bin2str(hash, ""))
+  hash <- data_hash(filename_pub(path))
+  path_data_key <- filename_key(path_enc, bin2str(hash, ""))
   if (!file.exists(path_data_key)) {
     stop("Key file not found: ", path_data_key)
   }
   sodium::simple_decrypt(read_binary(path_data_key),
-                         load_private_key(data_filename_key(path)))
+                         read_private_key(path))
 }
 
 data_test_config <- function(x, path_data, test) {
@@ -366,20 +304,4 @@ data_test_config <- function(x, path_data, test) {
       stop("Decryption failed")
     }
   }
-}
-
-## Attempt to make a backup key.  This key will be stored in plain
-## sight but the passphrase will be prompted for.
-data_password_make_key <- function(filename, path_data, path=NULL) {
-  res <- sodium::data_encrypt(data_load_sym(path_data, path),
-                              get_password(TRUE))
-  writeBin(add_nonce(res), filename)
-  invisible(filename)
-}
-config_password <- function(filename, path_data, test=FALSE) {
-  x <- config_symmetric(
-    sodium::data_decrypt(split_nonce(read_binary(filename)),
-                         get_password(FALSE)))
-  data_test_config(x, path_data, test)
-  x
 }

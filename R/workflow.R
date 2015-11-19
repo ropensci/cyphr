@@ -75,7 +75,9 @@ data_admin_init <- function(path_data, path_user=NULL, quiet=FALSE) {
     }
   }
 
-  ## Verify that things are OK:
+  if (!quiet) {
+    message("Verifying")
+  }
   x <- config_data(path_data, path_user, TRUE)
   on.exit()
   invisible(TRUE)
@@ -89,7 +91,7 @@ data_admin_init <- function(path_data, path_user=NULL, quiet=FALSE) {
 data_admin_authorise <- function(hash, path_data, path_user=NULL, quiet=FALSE) {
   ## TODO: allow prompting.
   data_check_path_data(path_data)
-  path_user <- data_user_path(path_user)
+  path_user <- data_path_user(path_user)
   dat <- data_key_load(hash, data_path_request(path_data))
   key <- sodium::simple_encrypt(data_load_sym(path_data, path_user), dat$pub)
   data_authorise_write(path_data, key, dat, quiet)
@@ -115,20 +117,13 @@ data_admin_list_keys <- function(path_data) {
 ## It does make me wish there was some easy way (i.e., not local) of
 ## having namespaces that are file specific...
 
-## Where to look for user keys:
-##
-##   * if given a path we'll take that
-##   * if encryptr.path is set we'll take that
-##   * otherwise fall back on rappdirs to find us somewhere sensible
-data_user_path <- function(path) {
-  if (is.null(path)) {
-    getOption("encryptr.user.path", rappdirs::user_data_dir("encryptr"))
-  } else {
-    path
-  }
-}
 ##' User commands
 ##' @title User commands
+##'
+##' @param password What do we do about passwords?  Options are
+##'   \code{FALSE} for no password, \code{TRUE} for prompting for a
+##'   password, or a string value for a password (which will end up in
+##'   things like your history so be careful).
 ##'
 ##' @param path Path to the directory with your user key.  Usually
 ##'   this can be ommited.  Use the \code{encryptr.user.path} global
@@ -138,8 +133,8 @@ data_user_path <- function(path) {
 ##' @param quiet Suppress printing of informative messages.
 ##' @export
 ##' @rdname data_user
-data_user_init <- function(path=NULL, quiet=FALSE) {
-  path <- data_user_path(path)
+data_user_init <- function(password=FALSE, path=NULL, quiet=FALSE) {
+  path <- data_path_user(path)
   path_pub <- data_filename_pub(path)
   if (!file.exists(path_pub)) {
     if (!quiet) {
@@ -147,9 +142,8 @@ data_user_init <- function(path=NULL, quiet=FALSE) {
     }
     dir.create(path, FALSE, TRUE)
     path_key <- data_filename_key(path)
-    key <- sodium::keygen()
-    pub <- sodium::pubkey(key)
-    writeBin(key, path_key)
+    pair <- keypair(password)
+    writeBin(pair$key, path_key)
     ## Not sure if this is always supported:
     Sys.chmod(path_key, "600")
 
@@ -158,7 +152,7 @@ data_user_init <- function(path=NULL, quiet=FALSE) {
     dat <- list(user=info[["user"]],
                 host=info[["nodename"]],
                 date=as.character(Sys.time()),
-                pub=bin2str(pub))
+                pub=bin2str(pair$pub))
     write.dcf(dat, path_pub, width=500)
   }
   invisible(path_pub)
@@ -177,7 +171,7 @@ data_request_access <- function(path_data, path=NULL, quiet=FALSE) {
   ## indicate how this is being run and refuse to create keys if
   ## running noninteractively and implicitly.  Similarly, need to
   ## consider how things like passwords are going to be treated.
-  path_pub <- data_user_init(path)
+  path_pub <- data_user_init(path=path)
   path_req <- data_path_request(path_data)
   dir.create(path_req, FALSE)
 
@@ -223,7 +217,7 @@ config_data <- function(path_data, path=NULL, test=TRUE) {
 ##' @export
 data_key_read <- function(path=NULL) {
   if (is.null(path)) {
-    path <- data_filename_pub(data_user_path(path))
+    path <- data_filename_pub(data_path_user(path))
   } else if (is_directory(path)) {
     path <- data_filename_pub(path)
   }
@@ -266,7 +260,7 @@ data_check_path_data <- function(path_data) {
 ## TODO: harmonise with data_key_read so that when called with no
 ## arguments both have this behaviour and load the user key.
 data_key_hash <- function(path=NULL) {
-  path <- data_user_path(path)
+  path <- data_path_user(path)
   filename <- data_filename_pub(path)
   data_hash(filename)
 }
@@ -324,6 +318,16 @@ as.character.data_key <- function(x, ...) {
 }
 
 ## Some directories:
+data_path_user <- function(path) {
+  ##   * if given a path we'll take that
+  ##   * if encryptr.path is set we'll take that
+  ##   * otherwise fall back on rappdirs to find us somewhere sensible
+  if (is.null(path)) {
+    getOption("encryptr.user.path", rappdirs::user_data_dir("encryptr"))
+  } else {
+    path
+  }
+}
 data_path_encryptr <- function(path) {
   file.path(path, ".encryptr")
 }
@@ -345,14 +349,14 @@ data_filename_test <- function(path_data) {
 data_load_sym <- function(path_data, path) {
   ## TODO: have data_check_path_data return the correct path (path_enc)
   path_enc <- data_check_path_data(path_data)
-  path <- data_user_path(path)
+  path <- data_path_user(path)
   hash <- data_key_hash(path)
   path_data_key <- data_filename_key(path_enc, bin2str(hash, ""))
   if (!file.exists(path_data_key)) {
     stop("Key file not found: ", path_data_key)
   }
   sodium::simple_decrypt(read_binary(path_data_key),
-                         read_binary(data_filename_key(path)))
+                         load_private_key(data_filename_key(path)))
 }
 
 data_test_config <- function(x, path_data, test) {

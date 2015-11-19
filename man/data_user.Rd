@@ -6,13 +6,18 @@
 \alias{data_user_init}
 \title{User commands}
 \usage{
-data_user_init(path = NULL, quiet = FALSE)
+data_user_init(password = FALSE, path = NULL, quiet = FALSE)
 
 data_request_access(path_data, path = NULL, quiet = FALSE)
 
 config_data(path_data, path = NULL, test = TRUE)
 }
 \arguments{
+\item{password}{What do we do about passwords?  Options are
+\code{FALSE} for no password, \code{TRUE} for prompting for a
+password, or a string value for a password (which will end up in
+things like your history so be careful).}
+
 \item{path}{Path to the directory with your user key.  Usually
 this can be ommited.  Use the \code{encryptr.user.path} global
 option (i.e., via \code{options()}) to set this more

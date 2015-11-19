@@ -89,7 +89,7 @@ head(decrypt(readRDS(filename), cfg))
 ## to simulate two users in a single session for this vignette (see
 ## minimal example below).
 user2 <- tempfile()
-data_user_init(user2)
+data_user_init(path=user2)
 
 ## We're going to assume that the user can read and write to the data.
 ## This is the case for my use case where the data are stored on

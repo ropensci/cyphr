@@ -3,7 +3,7 @@ context("workflow")
 test_that("user configuration", {
   path <- tempfile()
 
-  expect_message(res <- data_user_init(path),
+  expect_message(res <- data_user_init(path=path),
                  "Creating public key")
   expect_true(file.exists(path))
   expect_true(file.exists(res))
@@ -17,7 +17,7 @@ test_that("user configuration", {
 
   ## Running a second time doesn't do anything:
   md5 <- tools::md5sum(res)
-  expect_identical(data_user_init(path), res)
+  expect_identical(data_user_init(path=path), res)
   expect_identical(tools::md5sum(res), md5)
 
   ## TODO: support key regeneration here.  But don't do that lightly.
@@ -29,8 +29,8 @@ test_that("basic workflow", {
   path_dat <- tempfile("data_")
   on.exit(unlink(c(path_us1, path_us2, path_dat), recursive=TRUE))
 
-  data_user_init(path_us1)
-  data_user_init(path_us2)
+  data_user_init(path=path_us1)
+  data_user_init(path=path_us2)
 
   ## The data path must exist first.
   expect_error(res <- data_admin_init(path_dat, path_us1),

@@ -44,10 +44,3 @@ split_nonce <- function(dat) {
   attr(x, "nonce") <- nonce
   x
 }
-
-## I believe that this will always work; we look up the size of the
-## file and read that many bytes from it.  No doubt there are
-## endian/platform specific issues though.
-read_binary <- function(filename) {
-  readBin(filename, raw(), file.size(filename))
-}

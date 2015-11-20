@@ -55,6 +55,8 @@ readRDS("myfile.rds") # unknown format
 
 The above commands work through computing on the language, rewriting the `readRDS` and `saveRDS` commands.  Commands for reading and writing tabular and plain text files (`read.csv`, `readLines`, etc) are also supported, and the way the rewriting is done is designed to be extensible.
 
+With (probably) some limitations, the argument to the wrapped functions can be connection objects.  In this case the *actual* command is written to a file and the contents of that file are encrypted and written to the connection.  When reading/writing multiple objects from/to a single connection though, this is likely to go very badly.
+
 ## Workflow support
 
 It's possible that this means there are two packages here, but I have a single use case so they're together for now at least.  The package contains support for a group of people are working on a sensitive data set.  The data will be storedwith some symmetric key `K`.  However, we never actually store the key directly, instead we'll store a copy that is encrypted with the user key.  Any user with access to the data can authorise another user to access the data.  This is described in more detail in the [vignette](dide-tools.github.io/encryptr/vignettes/data.html) (`vignette("data", package="encryptr")`).

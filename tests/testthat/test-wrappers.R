@@ -50,3 +50,18 @@ test_that("visibility", {
   res <- withVisible(encrypt(f(iris, visible=TRUE), x, file_arg="filename"))
   expect_true(res$visible)
 })
+
+test_that("non-file arguments", {
+  x <- config_symmetric(sodium::keygen())
+  f <- tempfile()
+  on.exit(file.remove(f))
+  con <- file(f, "wb")
+  ## Encryption works:
+  with_connection(con, encrypt(saveRDS(iris, con), x))
+
+  ## Validiate:
+  expect_identical(decrypt(readRDS(f), x), iris)
+
+  con2 <- file(f, "rb")
+  expect_identical(with_connection(con, decrypt(readRDS(con2), x)), iris)
+})

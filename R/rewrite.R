@@ -55,8 +55,6 @@ rewrite <- function(expr, file_arg=NULL, envir=parent.frame(),
                    x$arg, paste(deparse(expr), collapse=" ")))
     }
   }
-  ## TODO: work out here what to do about non-filename arguments, I
-  ## think.
   orig <- eval(norm[[i]], envir)
   norm[[i]] <- filename
   list(filename=orig,

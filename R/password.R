@@ -1,6 +1,7 @@
 ##' Create a pair of public and private keys, possibly with password
 ##' protection.  If you're trying to do the data workflow thing, use
-##' \code{\link{data_user_init}} instead, please.
+##' \code{\link{data_user_init}} instead, which wraps this but puts
+##' the key in the place the rest of the functions there will look.
 ##'
 ##' The functions \code{read_public_key} and \code{read_private_key}
 ##' will read the public and private key stored at \code{path}.  If

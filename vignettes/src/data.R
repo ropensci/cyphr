@@ -37,7 +37,8 @@ library(encryptr)
 ## We'll store data in the directory `data`; at present there is
 ## nothing there.
 data_dir <- "data"
-dir.create(data_dir, FALSE)
+dir.create(data_dir)
+dir(data_dir)
 
 ## **First**, create a set of keys.  These will be shared across all
 ## projects and stored away from the data.  This command is safe to
@@ -55,9 +56,7 @@ data_key_read()
 data_key_read()$hash
 
 ## You will need to run this command on each computer you want access
-## from.  Don't copy the key around.  Note that `data_user_init` will
-## be run automatically by subsequent commands (see the minimal
-## example below).
+## from.  Don't copy the key around.
 
 ## **Second**, create a key for the data and encrypt that key with
 ## your personal key.
@@ -85,7 +84,7 @@ head(decrypt(readRDS(filename), cfg))
 
 ## **Fourth**, have someone else join in.  To simulate another person
 ## here, I'm going to pass an argument `user2` though.  If run on an
-## actually dfifferent computer this would not be needed; this is just
+## actually different computer this would not be needed; this is just
 ## to simulate two users in a single session for this vignette (see
 ## minimal example below).
 user2 <- tempfile()
@@ -150,6 +149,7 @@ unlink(getOption("encryptr.user.path"), recursive=TRUE)
 dir.create(data_dir)
 
 ## Setup, on computer 1:
+data_user_init()
 data_admin_init(data_dir)
 
 ## Encrypt a file:
@@ -159,6 +159,7 @@ encrypt(saveRDS(iris, filename), config_data(data_dir))
 ##+ echo=FALSE
 oo <- options(encryptr.user.path=user2)
 ##+ echo=TRUE
+data_user_init()
 hash <- data_request_access(data_dir)
 ##+ echo=FALSE
 options(oo)

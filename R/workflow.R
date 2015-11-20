@@ -41,6 +41,7 @@ data_admin_init <- function(path_data, path_user=NULL, quiet=FALSE) {
     stop("path_data must exist and be a directory")
   }
   path_enc <- data_path_encryptr(path_data)
+  data_check_path_user(path_user)
   if (!data_check_path_data(path_data, fail=FALSE)) {
     if (!quiet) {
       message("Generating data key")
@@ -143,15 +144,16 @@ data_request_access <- function(path_data, path=NULL, quiet=FALSE) {
   ##
   ## TODO: If a request is already pending we should not do anything.
   data_check_path_data(path_data)
-  ## TODO: Consider whether running this is OK; perhaps a flag to
-  ## indicate how this is being run and refuse to create keys if
-  ## running noninteractively and implicitly.  Similarly, need to
-  ## consider how things like passwords are going to be treated.
-  path_pub <- data_user_init(path=path)
+  data_check_path_user(path)
+  path_pub <- filename_pub(data_path_user(path))
   path_req <- data_path_request(path_data)
   dir.create(path_req, FALSE)
 
   hash <- data_hash(path_pub)
+
+  ## OK, this is a nasty and unexpected surprise;
+  ##   file.copy(<directory_path>, <full_path_name>)
+  ## will create an empty executable file in the destination. Wat.
   file.copy(path_pub,
             filename_pub(path_req, bin2str(hash, "")))
 
@@ -213,6 +215,14 @@ data_check_path_data <- function(path_data, fail=TRUE) {
   ok <- file.exists(data_filename_test(path_data))
   if (fail && !ok) {
     stop("encryptr not set up for ", path_data)
+  }
+  invisible(ok)
+}
+
+data_check_path_user <- function(path_user, fail=TRUE) {
+  ok <- file.exists(filename_pub(data_path_user(path_user)))
+  if (fail && !ok) {
+    stop("user keys not set up for ", path_user)
   }
   invisible(ok)
 }

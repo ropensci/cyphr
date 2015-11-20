@@ -3,6 +3,10 @@ context("workflow")
 test_that("user configuration", {
   path <- tempfile()
 
+  expect_false(data_check_path_user(path, FALSE))
+  expect_error(data_check_path_user(path, TRUE),
+               "user keys not set up")
+
   expect_message(res <- data_user_init(path=path),
                  "Creating public key")
   expect_true(file.exists(path))

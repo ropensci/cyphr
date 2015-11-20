@@ -8,6 +8,7 @@ License: MIT + file LICENSE
 LazyData: true
 URL: htts://github.com/dide-tools/encryptr
 BugReports: htts://github.com/dide-tools/encryptr/issues
+Depends: R (>= 3.2.1)
 Imports:
     rappdirs,
     sodium

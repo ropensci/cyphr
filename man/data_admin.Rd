@@ -7,18 +7,20 @@
 \alias{data_admin_list_requests}
 \title{Encrypted data administration}
 \usage{
-data_admin_init(path_data, path_user = NULL, quiet = FALSE)
+data_admin_init(path_data = ".", path_user = NULL, quiet = FALSE)
 
-data_admin_authorise(hash, path_data, path_user = NULL, yes = FALSE,
+data_admin_authorise(hash, path_data = ".", path_user = NULL, yes = FALSE,
   quiet = FALSE)
 
-data_admin_list_requests(path_data)
+data_admin_list_requests(path_data = ".")
 
-data_admin_list_keys(path_data)
+data_admin_list_keys(path_data = ".")
 }
 \arguments{
 \item{path_data}{Path to the data set.  We will store a bunch of
-things in a hidden directory within this path.}
+things in a hidden directory within this path.  The default is
+to use the working directory of R, which should work well for
+things like RStudio projects.}
 
 \item{path_user}{Path to the directory with your user key.
 Usually this can be ommited.}

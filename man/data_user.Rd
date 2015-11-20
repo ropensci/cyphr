@@ -8,9 +8,9 @@
 \usage{
 data_user_init(password = FALSE, path = NULL, quiet = FALSE)
 
-data_request_access(path_data, path = NULL, quiet = FALSE)
+data_request_access(path_data = ".", path = NULL, quiet = FALSE)
 
-config_data(path_data, path = NULL, test = TRUE)
+config_data(path_data = ".", path = NULL, test = TRUE)
 }
 \arguments{
 \item{password}{What do we do about passwords?  Options are
@@ -25,7 +25,8 @@ conveniently.}
 
 \item{quiet}{Suppress printing of informative messages.}
 
-\item{path_data}{Path to the data}
+\item{path_data}{Path to the data.  The default is the current
+working directory.}
 
 \item{test}{Test that the encryption is working?  (Recommended)}
 }

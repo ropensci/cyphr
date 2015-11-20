@@ -28,7 +28,9 @@
 ##' @title Encrypted data administration
 ##'
 ##' @param path_data Path to the data set.  We will store a bunch of
-##'   things in a hidden directory within this path.
+##'   things in a hidden directory within this path.  The default is
+##'   to use the working directory of R, which should work well for
+##'   things like RStudio projects.
 ##'
 ##' @param path_user Path to the directory with your user key.
 ##'   Usually this can be ommited.
@@ -36,7 +38,7 @@
 ##' @param quiet Suppress printing of informative messages.
 ##' @export
 ##' @rdname data_admin
-data_admin_init <- function(path_data, path_user=NULL, quiet=FALSE) {
+data_admin_init <- function(path_data=".", path_user=NULL, quiet=FALSE) {
   if (!is_directory(path_data)) {
     stop("path_data must exist and be a directory")
   }
@@ -95,7 +97,7 @@ data_admin_init <- function(path_data, path_user=NULL, quiet=FALSE) {
 ##'   \code{data_admin_list_requests} to see hashes of pending requests.
 ##'
 ##' @param yes Skip the confirmation prompt?
-data_admin_authorise <- function(hash, path_data, path_user=NULL,
+data_admin_authorise <- function(hash, path_data=".", path_user=NULL,
                                  yes=FALSE, quiet=FALSE) {
   data_check_path_data(path_data)
   path_user <- data_path_user(path_user)
@@ -107,13 +109,13 @@ data_admin_authorise <- function(hash, path_data, path_user=NULL,
 
 ##' @export
 ##' @rdname data_admin
-data_admin_list_requests <- function(path_data) {
+data_admin_list_requests <- function(path_data=".") {
   data_check_path_data(path_data)
   data_pubs_load(data_path_request(path_data))
 }
 ##' @export
 ##' @rdname data_admin
-data_admin_list_keys <- function(path_data) {
+data_admin_list_keys <- function(path_data=".") {
   data_check_path_data(path_data)
   data_pubs_load(data_path_encryptr(path_data))
 }
@@ -139,9 +141,11 @@ data_user_init <- function(password=FALSE, path=NULL, quiet=FALSE) {
 }
 
 ##' @export
-##' @param path_data Path to the data
+##' @param path_data Path to the data.  The default is the current
+##'   working directory.
+##'
 ##' @rdname data_user
-data_request_access <- function(path_data, path=NULL, quiet=FALSE) {
+data_request_access <- function(path_data=".", path=NULL, quiet=FALSE) {
   ## TODO: If the admin part set an email address then we could
   ## automatically email the right person; that'd be cool.
   ##
@@ -181,7 +185,7 @@ data_request_access <- function(path_data, path=NULL, quiet=FALSE) {
 ##' @export
 ##' @param test Test that the encryption is working?  (Recommended)
 ##' @rdname data_user
-config_data <- function(path_data, path=NULL, test=TRUE) {
+config_data <- function(path_data=".", path=NULL, test=TRUE) {
   x <- config_symmetric(data_load_sym(path_data, path))
   data_test_config(x, path_data, test)
   x

@@ -89,3 +89,22 @@ test_that("basic workflow", {
   expect_true(bin2str(data_hash(filename_pub(path_us1))) %in% names(tmp))
   expect_true(bin2str(data_hash(filename_pub(path_us2))) %in% names(tmp))
 })
+
+test_that("out-of-order init", {
+  path_us1 <- tempfile("user1_") # user 1 who starts the process
+  path_us2 <- tempfile("user2_") # user 2 who is added to the project
+  path_dat <- tempfile("data_")
+  on.exit(unlink(c(path_us1, path_us2, path_dat), recursive=TRUE))
+
+  data_user_init(path=path_us1)
+  data_user_init(path=path_us2)
+  dir.create(path_dat)
+
+  expect_message(res <- data_admin_init(path_dat, path_us1),
+                 "Generating data key")
+  expect_true(res)
+  expect_error(data_admin_init(path_dat, path_us2),
+               "you may not have access")
+  expect_error(data_admin_init(path_dat, path_us2),
+               "data_request_access")
+})

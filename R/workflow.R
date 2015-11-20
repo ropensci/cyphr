@@ -41,9 +41,7 @@ data_admin_init <- function(path_data, path_user=NULL, quiet=FALSE) {
     stop("path_data must exist and be a directory")
   }
   path_enc <- data_path_encryptr(path_data)
-  path_test <- data_filename_test(path_data)
-
-  if (!file.exists(path_test)) {
+  if (!data_check_path_data(path_data, fail=FALSE)) {
     if (!quiet) {
       message("Generating data key")
     }
@@ -52,10 +50,10 @@ data_admin_init <- function(path_data, path_user=NULL, quiet=FALSE) {
     ## Now, the idea is to create a key for the data set:
     sym <- sodium::keygen()
 
-    ## TODO: If anything below fails, this file needs deleting.
-    ## Otherwise the various checks will get confused!  Alternatively,
-    ## test for the existance of the .encryptr directory rather than
-    ## the test file.
+    ## NOTE: If anything below fails, this file needs deleting, as
+    ## this is the file that we check to see if things are set up
+    ## correctly (data_check_path_data()).
+    path_test <- data_filename_test(path_data)
     encrypt(writeLines("encryptr", path_test),
             config_symmetric(sym))
     on.exit(file.remove(path_test))
@@ -76,9 +74,6 @@ data_admin_init <- function(path_data, path_user=NULL, quiet=FALSE) {
     key <- sodium::simple_encrypt(sym, dat$pub)
     data_authorise_write(path_data, key, dat, quiet)
   } else {
-    ## TODO: this should do something different in the case where a
-    ## different user tries to run init before they are authenticated.
-    ## The current message/error situation might be ok though.
     if (!quiet) {
       message("Already set up")
     }
@@ -214,12 +209,12 @@ data_authorise_write <- function(path_data, key, dat, quiet=FALSE) {
   invisible(dat$hash)
 }
 
-data_check_path_data <- function(path_data) {
-  path_enc <- data_path_encryptr(path_data)
-  if (!file.exists(path_enc)) {
+data_check_path_data <- function(path_data, fail=TRUE) {
+  ok <- file.exists(data_filename_test(path_data))
+  if (fail && !ok) {
     stop("encryptr not set up for ", path_data)
   }
-  invisible(path_enc)
+  invisible(ok)
 }
 
 data_pub_load <- function(hash, path) {
@@ -284,17 +279,31 @@ data_filename_test <- function(path_data) {
   file.path(data_path_encryptr(path_data), "test")
 }
 
-data_load_sym <- function(path_data, path) {
-  ## TODO: have data_check_path_data return the correct path (path_enc)
-  path_enc <- data_check_path_data(path_data)
-  path <- data_path_user(path)
-  hash <- data_hash(filename_pub(path))
+data_load_sym <- function(path_data, path_user) {
+  data_check_path_data(path_data)
+  path_enc <- data_path_encryptr(path_data)
+  path_user <- data_path_user(path_user)
+  hash <- data_hash(filename_pub(path_user))
   path_data_key <- filename_key(path_enc, bin2str(hash, ""))
   if (!file.exists(path_data_key)) {
-    stop("Key file not found: ", path_data_key)
+    data_access_error(path_data, path_user, path_data_key)
   }
   sodium::simple_decrypt(read_binary(path_data_key),
-                         read_private_key(path))
+                         read_private_key(path_user))
+}
+
+data_access_error <- function(path_data, path_user, path_data_key) {
+  if (identical(data_path_user(NULL), path_user)) {
+    cmd <- call("data_request_access", path_data)
+  } else {
+    cmd <- call("data_request_access", path_data, path_user)
+  }
+  cmd <- paste(deparse(cmd, getOption("width", 60L)), collapse="\n")
+  msg <- paste(c("Key file not found; you may not have access",
+                 sprintf("(looked in %s)", path_data_key),
+                 paste0("To request access, run:\n  ", cmd)),
+               collapse="\n")
+  stop(msg, call.=FALSE)
 }
 
 data_test_config <- function(x, path_data, test) {

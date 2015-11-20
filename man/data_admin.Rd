@@ -9,7 +9,8 @@
 \usage{
 data_admin_init(path_data, path_user = NULL, quiet = FALSE)
 
-data_admin_authorise(hash, path_data, path_user = NULL, quiet = FALSE)
+data_admin_authorise(hash, path_data, path_user = NULL, yes = FALSE,
+  quiet = FALSE)
 
 data_admin_list_requests(path_data)
 
@@ -26,6 +27,8 @@ Usually this can be ommited.}
 
 \item{hash}{The hash of a key to add.  Use
 \code{data_admin_list_requests} to see hashes of pending requests.}
+
+\item{yes}{Skip the confirmation prompt?}
 }
 \description{
 Encrypted data administration; functions for setting up, adding

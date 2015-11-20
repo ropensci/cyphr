@@ -73,7 +73,7 @@ data_admin_init <- function(path_data, path_user=NULL, quiet=FALSE) {
     ## load the symmetric key from the files we're trying to write!
     dat <- data_pub_load(tmp, data_path_request(path_data))
     key <- sodium::simple_encrypt(sym, dat$pub)
-    data_authorise_write(path_data, key, dat, quiet)
+    data_authorise_write(path_data, key, dat, TRUE, quiet)
   } else {
     if (!quiet) {
       message("Already set up")
@@ -93,13 +93,16 @@ data_admin_init <- function(path_data, path_user=NULL, quiet=FALSE) {
 ##'
 ##' @param hash The hash of a key to add.  Use
 ##'   \code{data_admin_list_requests} to see hashes of pending requests.
-data_admin_authorise <- function(hash, path_data, path_user=NULL, quiet=FALSE) {
-  ## TODO: allow prompting.
+##'
+##' @param yes Skip the confirmation prompt?
+data_admin_authorise <- function(hash, path_data, path_user=NULL,
+                                 yes=FALSE, quiet=FALSE) {
   data_check_path_data(path_data)
   path_user <- data_path_user(path_user)
+  ## TODO: Better error message if request not present.
   dat <- data_pub_load(hash, data_path_request(path_data))
   key <- sodium::simple_encrypt(data_load_sym(path_data, path_user), dat$pub)
-  data_authorise_write(path_data, key, dat, quiet)
+  data_authorise_write(path_data, key, dat, yes, quiet)
 }
 
 ##' @export
@@ -199,9 +202,12 @@ data_key_read <- function(path=NULL) {
 ## Here, key is the key encrypted with the user's public key.
 ## TODO: check destination path does not exist so we don't replace things.
 ## TODO: add support for y/n checking here (e.g., package:ask)
-data_authorise_write <- function(path_data, key, dat, quiet=FALSE) {
+data_authorise_write <- function(path_data, key, dat, yes=FALSE, quiet=FALSE) {
   if (!quiet) {
     message(paste0("Authorising ", as.character(dat)))
+  }
+  if (!(yes || prompt_confirm())) {
+    stop("Cancelled adding key")
   }
   path_enc <- data_path_encryptr(path_data)
   hash_str <- bin2str(dat$hash, "")

@@ -36,3 +36,23 @@ read_binary_loop <- function(con, n) {
 is_connection <- function(x) {
   inherits(x, "connection")
 }
+
+## Replace with ask once it's on CRAN, perhaps.
+prompt_confirm <- function(msg="continue?", valid=c(n=FALSE, y=TRUE),
+                           default=names(valid)[[1]]) {
+  valid_values <- names(valid)
+  msg <- sprintf("%s [%s]: ", msg,
+                 paste(c(toupper(default), setdiff(valid_values, default)),
+                       collapse="/"))
+  repeat {
+    x <- trimws(tolower(readline(prompt=msg)))
+    if (!nzchar(x)) {
+      x <- default
+    }
+    if (x %in% valid_values) {
+      return(valid[[x]])
+    } else {
+      cat("Invalid choice\n")
+    }
+  }
+}

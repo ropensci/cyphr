@@ -76,7 +76,7 @@ test_that("basic workflow", {
                                  data_path_request(path_dat)),
                    tmp)
 
-  data_admin_authorise(req[[1]]$hash, path_dat, path_us1)
+  data_admin_authorise(req[[1]]$hash, path_dat, path_us1, TRUE)
 
   x2 <- config_data(path_dat, path_us2, TRUE)
   expect_is(x2, "encryptr_config")

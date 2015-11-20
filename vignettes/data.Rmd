@@ -39,7 +39,8 @@ We'll store data in the directory `data`; at present there is
 nothing there.
 ``` {r }
 data_dir <- "data"
-dir.create(data_dir, FALSE)
+dir.create(data_dir)
+dir(data_dir)
 ```
 
 **First**, create a set of keys.  These will be shared across all
@@ -153,7 +154,7 @@ We can see the same hash here as above (``r names(req)[[1]]``)
 
 ...and then grant access to them with the `data_admin_authorise` function.
 ``` {r }
-data_admin_authorise(names(req)[[1]], data_dir)
+data_admin_authorise(names(req)[[1]], data_dir, yes=TRUE)
 ```
 
 which has cleared the request queue:
@@ -209,7 +210,7 @@ options(oo)
 
 Authorise, on computer 1:
 ``` {r }
-data_admin_authorise(hash, data_dir)
+data_admin_authorise(hash, data_dir, yes=TRUE)
 ```
 
 Read data, on computer 2:

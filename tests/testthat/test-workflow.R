@@ -61,6 +61,8 @@ test_that("basic workflow", {
 
   ## Then the second user requests access:
   h2 <- data_request_access(path_dat, path_us2)
+  expect_message(data_request_access(path_dat, path_us2),
+                 "Request is already pending")
 
   ## Now, we can read requests:
   req <- data_admin_list_requests(path_dat)

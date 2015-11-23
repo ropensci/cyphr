@@ -189,32 +189,27 @@ data_user_init <- function(password=FALSE, path=NULL, quiet=FALSE) {
 ##'
 ##' @rdname data_user
 data_request_access <- function(path_data=".", path=NULL, quiet=FALSE) {
-  ## TODO: If the admin part set an email address then we could
-  ## automatically email the right person; that'd be cool.
-  ##
-  ## TODO: If a request is already pending we should not do anything.
   data_check_path_data(path_data)
   data_check_path_user(path)
   path_pub <- filename_pub(data_path_user(path))
   path_req <- data_path_request(path_data)
   dir.create(path_req, FALSE)
-
   hash <- data_hash(path_pub)
 
   ## OK, this is a nasty and unexpected surprise;
   ##   file.copy(<directory_path>, <full_path_name>)
   ## will create an empty executable file in the destination. Wat.
   dest <- filename_pub(path_req, bin2str(hash, ""))
-  file.copy(path_pub, dest)
+  if (file.exists(dest)) {
+    message("Request is already pending")
+  } else {
+    file.copy(path_pub, dest)
+  }
 
   ## The idea here is that they will email or whatever creating a
   ## second line of communication.  Probably this should provide a
   ## hash of the request to the validity of the request can be
   ## checked.  But I'm not really anticipating attacks here.
-  ##
-  ## If full names or email addresses are added to the existing files
-  ## then it would be straightforward to read through and get a set of
-  ## people to contact (TODO).
   ##
   ## Consider taking same approach as whoami, but falling back on
   ## asking instead?
@@ -253,9 +248,10 @@ data_key_read <- function(path=NULL) {
   read_public_key(data_path_user(path))
 }
 
-## Here, key is the key encrypted with the user's public key.
-## TODO: check destination path does not exist so we don't replace things.
-## TODO: add support for y/n checking here (e.g., package:ask)
+## Here, key is the data key encrypted with the user's public key.
+##
+## NOTE: Because the logic around overwriting is hard, this will
+## overwrite without warning or notice.
 data_authorise_write <- function(path_data, key, dat, yes=FALSE, quiet=FALSE) {
   if (!quiet) {
     message(paste0("Authorising ", as.character(dat)))

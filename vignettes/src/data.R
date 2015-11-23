@@ -125,7 +125,7 @@ req
 ## We can see the same hash here as above (``r names(req)[[1]]``)
 
 ## ...and then grant access to them with the `data_admin_authorise` function.
-data_admin_authorise(names(req)[[1]], data_dir, yes=TRUE)
+data_admin_authorise(data_dir, yes=TRUE)
 
 ## which has cleared the request queue:
 data_admin_list_requests(data_dir)
@@ -165,7 +165,7 @@ hash <- data_request_access(data_dir)
 options(oo)
 
 ## Authorise, on computer 1:
-data_admin_authorise(hash, data_dir, yes=TRUE)
+data_admin_authorise(data_dir, yes=TRUE)
 
 ## Read data, on computer 2:
 ##+ echo=FALSE

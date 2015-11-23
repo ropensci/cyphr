@@ -9,8 +9,8 @@
 \usage{
 data_admin_init(path_data = ".", path_user = NULL, quiet = FALSE)
 
-data_admin_authorise(hash, path_data = ".", path_user = NULL, yes = FALSE,
-  quiet = FALSE)
+data_admin_authorise(path_data = ".", hash = NULL, path_user = NULL,
+  yes = FALSE, quiet = FALSE)
 
 data_admin_list_requests(path_data = ".")
 
@@ -27,10 +27,12 @@ Usually this can be ommited.}
 
 \item{quiet}{Suppress printing of informative messages.}
 
-\item{hash}{The hash of a key to add.  Use
-\code{data_admin_list_requests} to see hashes of pending requests.}
+\item{hash}{A vector of hashes to add.  If provided, each hash can
+be the binary or string representation of the hash to add.  Or
+omit to add each request.}
 
-\item{yes}{Skip the confirmation prompt?}
+\item{yes}{Skip the confirmation prompt?  If any request is
+declined then the function will throw an error on exit.}
 }
 \description{
 Encrypted data administration; functions for setting up, adding

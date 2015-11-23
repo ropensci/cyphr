@@ -93,18 +93,61 @@ data_admin_init <- function(path_data=".", path_user=NULL, quiet=FALSE) {
 ##' @export
 ##' @rdname data_admin
 ##'
-##' @param hash The hash of a key to add.  Use
-##'   \code{data_admin_list_requests} to see hashes of pending requests.
+##' @param hash A vector of hashes to add.  If provided, each hash can
+##'   be the binary or string representation of the hash to add.  Or
+##'   omit to add each request.
 ##'
-##' @param yes Skip the confirmation prompt?
-data_admin_authorise <- function(hash, path_data=".", path_user=NULL,
+##' @param yes Skip the confirmation prompt?  If any request is
+##'   declined then the function will throw an error on exit.
+data_admin_authorise <- function(path_data=".", hash=NULL, path_user=NULL,
                                  yes=FALSE, quiet=FALSE) {
   data_check_path_data(path_data)
   path_user <- data_path_user(path_user)
-  ## TODO: Better error message if request not present.
-  dat <- data_pub_load(hash, data_path_request(path_data))
-  key <- sodium::simple_encrypt(data_load_sym(path_data, path_user), dat$pub)
-  data_authorise_write(path_data, key, dat, yes, quiet)
+  sym <- data_load_sym(path_data, path_user)
+  path_req <- data_path_request(path_data)
+  if (is.null(hash)) {
+    req <- data_admin_list_requests(path_data)
+    if (!quiet) {
+      msg <- ngettext(length(req), "There is 1 request for access",
+                      sprintf("There are %d requests for access", length(req)))
+      message(msg)
+    }
+    hash <- names(req)
+  } else if (is.raw(hash)) {
+    hash <- list(hash)
+  }
+  ## TODO: deal better with the situation where we've been given a
+  ## vector of keys, but not sure if that is likely?
+  keys <- lapply(hash, data_pub_load, path_req)
+
+  nerr <- 0L
+  handle_cancel <- function(e) {
+    nerr <<- nerr + 1L
+    message(e$message)
+  }
+  for (k in keys) {
+    tryCatch({
+      data_authorise_write(path_data, sodium::simple_encrypt(sym, k$pub), k,
+                           yes, quiet)
+    }, cancel_addition=handle_cancel)
+  }
+  nok <- length(keys) - nerr
+  if (!quiet && nok > 0) {
+    message(ngettext(nok, "Added 1 key", sprintf("Added %d keys", nok)))
+    if (using_git()) {
+      users <- paste(vapply(keys, function(x) x$user, character(1)),
+                     collapse=", ")
+      path_enc <- sub("./", "", data_path_encryptr("."), fixed=TRUE)
+      msg <- c("If you are using git, you will need to commit and push:",
+               paste("    git add", path_enc),
+               sprintf('    git commit -m "Authorised %s"', users),
+               '    git push')
+      message(paste(msg, collapse="\n"))
+    }
+  }
+  if (nerr > 0L) {
+    stop(sprintf("Errors adding %d keys", nerr))
+  }
 }
 
 ##' @export
@@ -161,8 +204,8 @@ data_request_access <- function(path_data=".", path=NULL, quiet=FALSE) {
   ## OK, this is a nasty and unexpected surprise;
   ##   file.copy(<directory_path>, <full_path_name>)
   ## will create an empty executable file in the destination. Wat.
-  file.copy(path_pub,
-            filename_pub(path_req, bin2str(hash, "")))
+  dest <- filename_pub(path_req, bin2str(hash, ""))
+  file.copy(path_pub, dest)
 
   ## The idea here is that they will email or whatever creating a
   ## second line of communication.  Probably this should provide a
@@ -178,6 +221,13 @@ data_request_access <- function(path_data=".", path=NULL, quiet=FALSE) {
   if (!quiet) {
     message("A request has been added.  Email someone with access to add you.")
     message("\thash: ", bin2str(hash))
+    if (using_git()) {
+      msg <- c("If you are using git, you will need to commit and push first:",
+               paste("    git add", dest),
+               '    git commit -m "Please add me to the dataset"',
+               '    git push')
+      message(paste(msg, collapse="\n"))
+    }
   }
   invisible(hash)
 }
@@ -211,7 +261,10 @@ data_authorise_write <- function(path_data, key, dat, yes=FALSE, quiet=FALSE) {
     message(paste0("Authorising ", as.character(dat)))
   }
   if (!(yes || prompt_confirm())) {
-    stop("Cancelled adding key")
+    msg <- paste("Cancelled adding key ", bin2str((dat$hash)))
+    e <- structure(list(message=msg, call=NULL),
+                   class=c("cancel_addition", "error", "condition"))
+    stop(e)
   }
   path_enc <- data_path_encryptr(path_data)
   hash_str <- bin2str(dat$hash, "")

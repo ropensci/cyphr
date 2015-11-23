@@ -180,7 +180,13 @@ data_admin_list_keys <- function(path_data=".") {
 ##' @export
 ##' @rdname data_user
 data_user_init <- function(password=FALSE, path=NULL, quiet=FALSE) {
-  create_keypair(data_path_user(path), password, quiet, "id_encryptr")
+  path_pub <- filename_pub(data_path_user(path))
+  if (file.exists(path_pub)) {
+    message("Key already exists")
+    invisible(path_pub)
+  } else {
+    create_keypair(data_path_user(path), password, quiet, "id_encryptr")
+  }
 }
 
 ##' @export

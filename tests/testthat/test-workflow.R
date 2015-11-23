@@ -27,6 +27,19 @@ test_that("user configuration", {
   ## TODO: support key regeneration here.  But don't do that lightly.
 })
 
+test_that("data_user_init safe to rerun", {
+  path <- tempfile()
+  path_pub <- data_user_init(path=path)
+  path_key <- sub("pub$", "key", path_pub)
+  dat_pub <- read_binary(path_pub)
+  dat_key <- read_binary(path_key)
+
+  expect_message(tmp <- data_user_init(path=path), "already exists")
+  expect_identical(tmp, path_pub)
+  expect_identical(read_binary(path_pub), dat_pub)
+  expect_identical(read_binary(path_key), dat_key)
+})
+
 test_that("basic workflow", {
   path_us1 <- tempfile("user1_") # user 1 who starts the process
   path_us2 <- tempfile("user2_") # user 2 who is added to the project

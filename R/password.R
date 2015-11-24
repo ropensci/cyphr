@@ -8,6 +8,10 @@
 ##' the private key is password-protected then you will be prompted
 ##' for a password.
 ##'
+##' The \code{change_password} function will change the password of an
+##' existing key.  This works by encrypting the private key, so the
+##' actual key remains the same, only the password to lock it changes.
+##'
 ##' @title Create keypair
 ##'
 ##' @param path Path to the directory to store the key.
@@ -33,10 +37,7 @@ create_keypair <- function(path, password, quiet=FALSE, name="id_encryptr") {
     path_pub <- filename_pub(path, name)
 
     pair <- generate_keypair(password)
-
-    writeBin(pair$key, path_key)
-    ## TODO: Not sure if this is always supported, e.g. on Windows
-    Sys.chmod(path_key, "600")
+    write_private_key(pair$key, path)
 
     ## Collect metadata:
     info <- Sys.info()
@@ -51,15 +52,22 @@ create_keypair <- function(path, password, quiet=FALSE, name="id_encryptr") {
 
 ##' @export
 ##' @rdname create_keypair
-read_private_key <- function(path) {
-  dat <- read_binary(filename_key(path))
-  if (length(dat) == 32L) {
-    dat
-  } else {
-    pw <- sodium::scrypt(charToRaw(get_password(FALSE)))
-    tryCatch(sodium::data_decrypt(split_nonce(dat), pw),
-             error=function(e) stop("Invalid password", call.=FALSE))
+change_password <- function(path, password, quiet=FALSE) {
+  path <- data_path_user(path)
+  name <- "id_encryptr"
+  key <- .read_private_key(path, NULL, "Enter current passphrase")
+  pw <- create_password(password)
+  if (!is.null(pw)) {
+    key <- add_nonce(sodium::data_encrypt(key, pw))
   }
+  write_private_key(key, path)
+  invisible(TRUE)
+}
+
+##' @export
+##' @rdname create_keypair
+read_private_key <- function(path) {
+  .read_private_key(path, NULL, "Enter passphrase")
 }
 
 ##' @export
@@ -67,8 +75,11 @@ read_private_key <- function(path) {
 read_public_key <- function(path) {
   if (is_directory(path)) {
     filename <- filename_pub(path)
-  } else if (file.exists(path)) {
+  } else {
     filename <- path
+  }
+  if (!file.exists(filename)) {
+    stop("Public key not found at ", path)
   }
   dat <- as.list(read.dcf(filename)[1, ])
   dat$pub <- sodium::hex2bin(dat$pub)
@@ -95,20 +106,9 @@ as.character.key <- function(x, ...) {
 generate_keypair <- function(password) {
   key <- sodium::keygen()
   pub <- sodium::pubkey(key)
-
-  if (isTRUE(password)) {
-    pw <- get_password(TRUE)
-  } else if (is.character(password)) {
-    ## TODO: consider censoring history by one line here.
-    pw <- password
-  } else if (identical(password, FALSE)) {
-    pw <- NULL
-  } else {
-    stop("Invalid value for password")
-  }
-
+  pw <- create_password(password)
   if (!is.null(pw)) {
-    key <- add_nonce(sodium::data_encrypt(key, sodium::scrypt(charToRaw(pw))))
+    key <- add_nonce(sodium::data_encrypt(key, pw))
   }
   list(key=key, pub=pub)
 }
@@ -130,13 +130,12 @@ filename_pub <- function(path, name="id_encryptr") {
 ##
 ## Another option is to use shiny; that seems like a bit of a hassle
 ## but might work.
-password_tcltk <- function(prompt="Enter passphrase", title=prompt,
-                           min_length=0) {
+password_tcltk <- function(prompt="Enter passphrase") {
   loadNamespace("tcltk")
   ok <- FALSE
 
   wnd <- tcltk::tktoplevel()
-  tcltk::tktitle(wnd) <- title
+  tcltk::tktitle(wnd) <- prompt
   pass_var <- tcltk::tclVar("")
 
   submit <- function() {
@@ -166,20 +165,20 @@ password_tcltk <- function(prompt="Enter passphrase", title=prompt,
     stop("Did not recieve password")
   }
   pw <- tcltk::tclvalue(pass_var)
-  if (nchar(pw) < min_length) {
-    stop(sprintf("At least %d characters required", min_length))
-  }
   invisible(pw)
 }
 
-password_unix <- function(prompt="Enter passphrase", min_length=0) {
+password_unix <- function(prompt="Enter passphrase") {
   ## Emacs/ess can *almost* pull this off; the password bit gets
   ## triggered ok but afterwards it will entirely print.
   cat(paste0(prompt, ": "))
-  pw <- system('stty -echo && read ff && stty echo && echo $ff && ff=""',
-               intern=TRUE)
-  cat('\n')
-  invisible(pw)
+  stty <- Sys.which("stty")
+  ok <- system2(stty, "-echo")
+  if (ok != 0) {
+    stop("Error using stty")
+  }
+  on.exit({system2(stty, "echo"); cat("\n")})
+  invisible(readline())
 }
 
 ## Switch between text and graphical mode.  Detection based on Gabor's
@@ -189,15 +188,70 @@ is_terminal <- function() {
     isatty(stdout()) &&
     (.Platform$OS.type != "windows") &&
     (Sys.getenv("TERM") != "dumb") &&
-    (Sys.getenv("EMACS") == "")
+    (Sys.getenv("EMACS") == "") &&
+    (Sys.which("stty") != "")
 }
 
-get_password <- function(verify, min_length=0) {
+get_password <- function(verify, min_length=0, prompt="Enter passphrase") {
   password <- if (is_terminal()) password_unix else password_tcltk
-  pw <- password("Enter passphrase", min_length=min_length)
+  pw <- password(prompt)
+  if (nchar(pw) < min_length) {
+    stop(sprintf("At least %d characters required", min_length))
+  }
   if (verify && nchar(pw) > 0L &&
       !identical(password("Verify passphrase"), pw)) {
     stop("Passwords do not match")
   }
-  invisible(if (nchar(pw) > 0) pw else NULL)
+  invisible(if (nchar(pw) == 0) NULL else sodium::scrypt(charToRaw(pw)))
+}
+
+write_private_key <- function(key, path, name="id_encryptr") {
+  path_key <- filename_key(path, name)
+  writeBin(key, path_key)
+  ## TODO: Not sure if this is always supported, e.g. on Windows
+  Sys.chmod(path_key, "600")
+}
+
+## Expose a few options for internal use here:
+.read_private_key <- function(path, password, prompt) {
+  filename <- filename_key(path)
+  if (!file.exists(filename)) {
+    stop("Key not found at ", path)
+  }
+  dat <- read_binary(filename)
+  if (length(dat) == 32L) {
+    dat
+  } else {
+    if (is.null(password)) {
+      if (!interactive()) {
+        ## This is only for testing; could enforce that I guess.
+        password <- getOption("encryptr.password", NULL)
+        if (is.null(password)) {
+          stop("Password required but running in non-interactive mode")
+        }
+        password <- sodium::scrypt(charToRaw(password))
+      } else {
+        ## min_length of 1 OK because empty string passwords not allowed.
+        password <- get_password(FALSE, 1, prompt=prompt)
+      }
+    } else if (is.character(password)) {
+      password <- sodium::scrypt(charToRaw(password))
+    }
+    tryCatch(sodium::data_decrypt(split_nonce(dat), password),
+             error=function(e) stop("Invalid password", call.=FALSE))
+  }
+}
+
+create_password <- function(password) {
+  if (isTRUE(password)) {
+    pw <- get_password(TRUE, prompt="Enter new passphrase")
+  } else if (is.character(password)) {
+    ## TODO: consider censoring history by one line here.
+    pw <- sodium::scrypt(charToRaw(password))
+  } else if (identical(password, FALSE)) {
+    pw <- NULL
+  } else {
+    stop("Invalid value for password")
+  }
+  pw
 }

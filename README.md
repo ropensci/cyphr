@@ -59,7 +59,7 @@ With (probably) some limitations, the argument to the wrapped functions can be c
 
 ## Workflow support
 
-It's possible that this means there are two packages here, but I have a single use case so they're together for now at least.  The package contains support for a group of people are working on a sensitive data set.  The data will be storedwith some symmetric key `K`.  However, we never actually store the key directly, instead we'll store a copy that is encrypted with the user key.  Any user with access to the data can authorise another user to access the data.  This is described in more detail in the [vignette](dide-tools.github.io/encryptr/vignettes/data.html) (`vignette("data", package="encryptr")`).
+It's possible that this means there are two packages here, but I have a single use case so they're together for now at least.  The package contains support for a group of people are working on a sensitive data set.  The data will be stored with a symmetric key.  However, we never actually store the key directly, instead we'll store a copy that is encrypted with the user key.  Any user with access to the data can authorise another user to access the data.  This is described in more detail in the [vignette](http://dide-tools.github.io/encryptr/vignettes/data.html) (in R: `vignette("data", package="encryptr")`).
 
 ## Why not a connection object?
 

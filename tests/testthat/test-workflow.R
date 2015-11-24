@@ -127,3 +127,47 @@ test_that("out-of-order init", {
   expect_error(data_admin_init(path_dat, path_us2),
                "data_request_access")
 })
+
+test_that("change password", {
+  path <- tempfile()
+  path_pub <- data_user_init(path=path)
+  path_key <- sub("pub$", "key", path_pub)
+
+  dat_pub <- read_binary(path_pub)
+  dat_key <- read_binary(path_key)
+  expect_equal(length(dat_key), 32L)
+
+  ## No-op:
+  change_password(path, password=FALSE)
+  expect_identical(read_binary(path_pub), dat_pub)
+  expect_identical(read_binary(path_key), dat_key)
+
+  pw <- "secret"
+  change_password(path, password=pw)
+
+  dat2_pub <- read_binary(path_pub)
+  dat2_key <- read_binary(path_key)
+
+  ## No change to public key:
+  expect_identical(dat2_pub, dat_pub)
+  expect_true(!identical(dat2_key, dat_key))
+  expect_true(length(dat2_key) > 32)
+
+  expect_error(.read_private_key(path, ""), "Invalid password")
+  expect_identical(.read_private_key(path, pw), dat_key)
+
+  ## This requires being interactive now.
+  if (!interactive()) {
+    options(encryptr.password=pw)
+    change_password(path, password=FALSE)
+    expect_identical(read_binary(path_pub), dat_pub)
+    expect_identical(read_binary(path_key), dat_key)
+  }
+})
+
+test_that("read non-existant key", {
+  path <- tempfile()
+  expect_error(read_public_key(path), "Public key not found")
+  expect_error(read_private_key(path), "Key not found")
+  expect_error(change_password(path, password=FALSE), "Key not found")
+})

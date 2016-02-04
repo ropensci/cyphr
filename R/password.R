@@ -58,7 +58,7 @@ change_password <- function(path, password, quiet=FALSE) {
   key <- .read_private_key(path, NULL, "Enter current passphrase")
   pw <- create_password(password)
   if (!is.null(pw)) {
-    key <- add_nonce(sodium::data_encrypt(key, pw))
+    key <- pack_data(sodium::data_encrypt(key, pw))
   }
   write_private_key(key, path)
   invisible(TRUE)
@@ -108,7 +108,7 @@ generate_keypair <- function(password) {
   pub <- sodium::pubkey(key)
   pw <- create_password(password)
   if (!is.null(pw)) {
-    key <- add_nonce(sodium::data_encrypt(key, pw))
+    key <- pack_data(sodium::data_encrypt(key, pw))
   }
   list(key=key, pub=pub)
 }
@@ -237,7 +237,7 @@ write_private_key <- function(key, path, name="id_encryptr") {
     } else if (is.character(password)) {
       password <- sodium::scrypt(charToRaw(password))
     }
-    tryCatch(sodium::data_decrypt(split_nonce(dat), password),
+    tryCatch(sodium::data_decrypt(unpack_data(dat), password),
              error=function(e) stop("Invalid password", call.=FALSE))
   }
 }

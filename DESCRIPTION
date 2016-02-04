@@ -10,6 +10,7 @@ URL: htts://github.com/dide-tools/encryptr
 BugReports: htts://github.com/dide-tools/encryptr/issues
 Depends: R (>= 3.2.1)
 Imports:
+    openssl,
     rappdirs,
     sodium
 Suggests:

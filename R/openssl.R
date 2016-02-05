@@ -34,7 +34,6 @@ openssl__decrypt_envelope <- function(x, key) {
   openssl::decrypt_envelope(x$data, x$iv, x$session, key)
 }
 
-
 temporary_key <- function(path=tempfile(), new=FALSE) {
   ssh_keygen <- Sys.which("ssh-keygen")
   if (ssh_keygen == "") {
@@ -53,5 +52,5 @@ temporary_key <- function(path=tempfile(), new=FALSE) {
       stop("Error running ssh-keygen")
     }
   }
-  dest
+  dirname(dest)
 }

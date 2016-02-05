@@ -171,7 +171,10 @@ password_tcltk <- function(prompt="Enter passphrase") {
 password_unix <- function(prompt="Enter passphrase") {
   ## Emacs/ess can *almost* pull this off; the password bit gets
   ## triggered ok but afterwards it will entirely print.
-  cat(paste0(prompt, ": "))
+  if (!grepl(":\\s*", prompt)) {
+    paste0(prompt, ": ")
+  }
+  cat(prompt)
   stty <- Sys.which("stty")
   ok <- system2(stty, "-echo")
   if (ok != 0) {
@@ -203,6 +206,19 @@ get_password <- function(verify, min_length=0, prompt="Enter passphrase") {
     stop("Passwords do not match")
   }
   invisible(if (nchar(pw) == 0) NULL else sodium::scrypt(charToRaw(pw)))
+}
+
+get_password_str <- function(verify, min_length=0, prompt="Enter passphrase") {
+  password <- if (is_terminal()) password_unix else password_tcltk
+  pw <- password(prompt)
+  if (nchar(pw) < min_length) {
+    stop(sprintf("At least %d characters required", min_length))
+  }
+  if (verify && nchar(pw) > 0L &&
+      !identical(password("Verify passphrase"), pw)) {
+    stop("Passwords do not match")
+  }
+  pw
 }
 
 write_private_key <- function(key, path, name="id_encryptr") {

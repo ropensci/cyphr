@@ -3,14 +3,17 @@
 > Enryption Wrappers
 
 [![Linux Build Status](https://travis-ci.org/dide-tools/encryptr.svg?branch=master)](https://travis-ci.org/dide-tools/encryptr)
-
 [![Windows Build status](https://ci.appveyor.com/api/projects/status/github/dide-tools/encryptr?svg=true)](https://ci.appveyor.com/project/dide-tools/encryptr)
 
-Encryption wrappers, using low-level support from [`sodium`](https://github.com/jeroenooms/sodium).  This package is designed to be extremely easy to use, rather than the most secure thing (you're using R, remember).
+Encryption wrappers, using low-level support from [`sodium`](https://github.com/jeroenooms/sodium) and [`openssl`](https://github.com/jeroenooms/openssl).  This package is designed to be extremely easy to use, rather than the most secure thing (you're using R, remember).
 
-The use case is a group of researchers who are collaborating on a dataset that cannot be made public, for example containing sensitive data.  However, they have decided or need to store it in a setting that they are not 100% confident about the security of the data.  So encrypt the data at each read/write.
+It provides high level functions to:
 
-There will need to be some support for key handling, to match a couple of common workflows.
+* Encrypt and decrypt files (creating a new file) (`encrypt_file`, `decrypt_file`)
+* Encrypt and decrypt data as files are written (`encrypt_bin`, `decrypt_bin`)
+* Wrappers around R's file reading and writing functions that enable transparent encryption (support included for `readRDS`/`writeRDS`, `read.csv`/`write.csv`, etc).
+
+In addition, the package implements a workflow that uses a shared key to encrypt data and ssh keys to provide access to the shared key to a group of people.  The use case is a group of researchers who are collaborating on a dataset that cannot be made public, for example containing sensitive data.  However, they have decided or need to store it in a setting that they are not 100% confident about the security of the data.  So encrypt the data at each read/write.
 
 ## Objects to handle keys:
 

@@ -11,6 +11,7 @@
 
 ##+ echo=FALSE, results="hide"
 options(encryptr.user.path=tempfile())
+ssh_keygen(getOption("encryptr.user.path"), FALSE)
 unlink("data", recursive=TRUE)
 
 library(encryptr)
@@ -41,28 +42,18 @@ dir.create(data_dir)
 dir(data_dir)
 
 ## **First**, create a set of keys.  These will be shared across all
-## projects and stored away from the data.  This command is safe to
-## run repeatedly and will not overwrite any keys.
-data_user_init()
-
-## You won't need to directly read the key often, but you can do so
-## with the `data_key_read` function, which at least shows what is
-## stored there.  There's a bit of personal information to make it a
-## little easier to see who a key belongs to.
-data_key_read()
-
-## Your key has a "hash" associated with it that will appear in a few
-## places; to get it run:
-data_key_read()$hash
-
-## You will need to run this command on each computer you want access
-## from.  Don't copy the key around.
+## projects and stored away from the data.  Ideally one would do this
+## with `ssh-keygen` at the command line, following one of the many
+## guides available.  A utility function (which simply calls
+## `ssh-keygen` for you) is available. though.  You will need to
+## generate a key on each computer you want access from.  Don't copy
+## the key around.
 
 ## **Second**, create a key for the data and encrypt that key with
 ## your personal key.
 data_admin_init(data_dir)
 
-## Again, this command can be run multiple times safely.
+## This command can be run multiple times safely
 data_admin_init(data_dir)
 
 ## **Third**, you can add encrypted data to the directory (or to
@@ -88,7 +79,7 @@ head(decrypt(readRDS(filename), cfg))
 ## to simulate two users in a single session for this vignette (see
 ## minimal example below).
 user2 <- tempfile()
-data_user_init(path=user2)
+ssh_keygen(user2, FALSE)
 
 ## We're going to assume that the user can read and write to the data.
 ## This is the case for my use case where the data are stored on
@@ -99,20 +90,12 @@ data_user_init(path=user2)
 ##+ error=TRUE
 cfg2 <- config_data(data_dir, user2)
 
-## Write a hopeful key here and see we get denied access:
-##+ error=TRUE
-tmp <- file.path(data_dir, ".encryptr",
-                 paste0(paste0(data_key_read(user2)$hash, collapse=""), ".key"))
-writeBin(c(0, sodium::random(32)), tmp)
-cfg2 <- config_data(data_dir, user2)
-file.remove(tmp)
-
-## So that's positive; we have a data set that seems safe to the
-## lamest attack in the world.
-
 ## But `user2` is your collaborator and needs access.  What they need
 ## to do is run:
 data_request_access(data_dir, user2)
+
+## (ordinarily you would not need the `user2` bit here; that's just
+## there because this is all done in one R session).
 
 ## The user should the send an email to someone with access and quote
 ## the hash in the message above.

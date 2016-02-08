@@ -73,7 +73,7 @@ cant_decrypt <- function(msg, ...) {
   stop("decryption not supported")
 }
 
-load_key_rsa <- function(path_pub, path_key=NULL) {
+load_key_rsa <- function(path_pub=NULL, path_key=NULL) {
   ## Bunch of logic here that should deal with most of the way this
   ## could be used profitably.
   if (is.null(path_pub)) {
@@ -86,8 +86,12 @@ load_key_rsa <- function(path_pub, path_key=NULL) {
     if (!file.exists(path_pub)) {
       stop("Did not find public key at path ", path_pub)
     }
-    if (isTRUE(path_key)) {
+    if (is.null(path_key)) {
       path_key <- sub("([^/]+)\\.pub$", "\\1", path_pub)
+    } else if (identical(path_key, FALSE)) {
+      path_key <- NULL
+    } else if (!is.character(path_key)) {
+      stop("Invalid path_key")
     }
   } else {
     stop("path_pub must be a string")
@@ -97,13 +101,10 @@ load_key_rsa <- function(path_pub, path_key=NULL) {
   if (is.null(path_key)) {
     key <- NULL
   } else {
-    password <- function(prompt) {
-      get_password_str(FALSE, 0, prompt)
-    }
-    key <- openssl::read_key(path_key, password)
+    key <- openssl::read_key(path_key, openssl_password(path_key))
   }
 
-  ret <- list(pub=pub, key=key)
+  ret <- list(pub=pub, key=key, path_pub=path_pub)
   class(ret) <- c("rsa_pair", "key_pair")
   ret
 }

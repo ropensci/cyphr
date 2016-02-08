@@ -4,4 +4,8 @@ with_connection <- function(con, expr, envir=parent.frame()) {
   eval(expr, envir)
 }
 
+temporary_key <- function(path=tempfile()) {
+  ssh_keygen(path, FALSE)
+}
+
 OPENSSL_KEY <- temporary_key()

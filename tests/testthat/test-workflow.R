@@ -5,29 +5,13 @@ test_that("user configuration", {
 
   expect_false(data_check_path_user(path, FALSE))
   expect_error(data_check_path_user(path, TRUE),
-               "user keys not set up")
+               "Could not find user keys")
 
-  expect_message(res <- data_user_init(path=path),
-                 "Creating public key")
-  expect_true(file.exists(path))
-  expect_true(file.exists(res))
-
-  dat <- data_key_read(res)
-  expect_equal(dat$user, Sys.info()[["user"]])
-  expect_equal(dat$host, Sys.info()[["nodename"]])
-  expect_is(dat$date, "character")
-  expect_is(dat$pub, "raw")
-  expect_equal(length(dat$pub), 32L)
-
-  ## Running a second time doesn't do anything:
-  md5 <- tools::md5sum(res)
-  expect_identical(data_user_init(path=path), res)
-  expect_identical(tools::md5sum(res), md5)
-
-  ## TODO: support key regeneration here.  But don't do that lightly.
+  expect_is(data_check_path_user(OPENSSL_KEY), "rsa_pair")
 })
 
 test_that("data_user_init safe to rerun", {
+  skip("not used anymore")
   path <- tempfile()
   path_pub <- data_user_init(path=path)
   path_key <- sub("pub$", "key", path_pub)
@@ -46,8 +30,8 @@ test_that("basic workflow", {
   path_dat <- tempfile("data_")
   on.exit(unlink(c(path_us1, path_us2, path_dat), recursive=TRUE))
 
-  data_user_init(path=path_us1)
-  data_user_init(path=path_us2)
+  temporary_key(path_us1)
+  temporary_key(path_us2)
 
   ## The data path must exist first.
   expect_error(res <- data_admin_init(path_dat, path_us1),
@@ -60,11 +44,13 @@ test_that("basic workflow", {
 
   tmp <- data_admin_list_keys(path_dat)
   expect_equal(length(tmp), 1L)
-  expect_equal(tmp[[1]]$hash,
-               data_hash(filename_pub(path_us1)))
+  expect_equal(names(tmp)[[1]],
+               bin2str(data_hash(file.path(path_us1, "id_rsa.pub")), ""))
 
   x1 <- config_data(path_dat, path_us1, TRUE)
   expect_is(x1, "encryptr_config")
+  ## TODO: perhaps this should be sodium_symmetric
+  expect_equal(x1$type, "symmetric")
 
   expect_error(config_data(path_dat, path_us2, TRUE),
                "Key file not found")
@@ -79,11 +65,12 @@ test_that("basic workflow", {
 
   ## Now, we can read requests:
   req <- data_admin_list_requests(path_dat)
-  expect_equal(names(req), bin2str(h2))
+  expect_equal(names(req), bin2str(h2, ""))
 
   ## Can load the file by hash in a bunch of ways:
   ## TODO: run this test in previous block.
   tmp <- data_pub_load(h2, data_path_request(path_dat))
+  ## TODO: What is this test showing?
   expect_identical(data_pub_load(bin2str(h2),
                                  data_path_request(path_dat)),
                    tmp)
@@ -105,8 +92,10 @@ test_that("basic workflow", {
   tmp <- data_admin_list_keys(path_dat)
   expect_equal(length(tmp), 2L)
 
-  expect_true(bin2str(data_hash(filename_pub(path_us1))) %in% names(tmp))
-  expect_true(bin2str(data_hash(filename_pub(path_us2))) %in% names(tmp))
+  expect_true(bin2str(data_hash(file.path(path_us1, "id_rsa.pub")), "")
+              %in% names(tmp))
+  expect_true(bin2str(data_hash(file.path(path_us2, "id_rsa.pub")), "")
+              %in% names(tmp))
 })
 
 test_that("out-of-order init", {
@@ -115,54 +104,17 @@ test_that("out-of-order init", {
   path_dat <- tempfile("data_")
   on.exit(unlink(c(path_us1, path_us2, path_dat), recursive=TRUE))
 
-  data_user_init(path=path_us1)
-  data_user_init(path=path_us2)
+  temporary_key(path_us1)
+  temporary_key(path_us2)
   dir.create(path_dat)
 
   expect_message(res <- data_admin_init(path_dat, path_us1),
                  "Generating data key")
   expect_true(res)
-  expect_error(data_admin_init(path_dat, path_us2),
+  expect_error(data_admin_init(path_dat, path_us2, quiet=TRUE),
                "you may not have access")
-  expect_error(data_admin_init(path_dat, path_us2),
+  expect_error(data_admin_init(path_dat, path_us2, quiet=TRUE),
                "data_request_access")
-})
-
-test_that("change password", {
-  path <- tempfile()
-  path_pub <- data_user_init(path=path)
-  path_key <- sub("pub$", "key", path_pub)
-
-  dat_pub <- read_binary(path_pub)
-  dat_key <- read_binary(path_key)
-  expect_equal(length(dat_key), 32L)
-
-  ## No-op:
-  change_password(path, password=FALSE)
-  expect_identical(read_binary(path_pub), dat_pub)
-  expect_identical(read_binary(path_key), dat_key)
-
-  pw <- "secret"
-  change_password(path, password=pw)
-
-  dat2_pub <- read_binary(path_pub)
-  dat2_key <- read_binary(path_key)
-
-  ## No change to public key:
-  expect_identical(dat2_pub, dat_pub)
-  expect_true(!identical(dat2_key, dat_key))
-  expect_true(length(dat2_key) > 32)
-
-  expect_error(.read_private_key(path, ""), "Invalid password")
-  expect_identical(.read_private_key(path, pw), dat_key)
-
-  ## This requires being interactive now.
-  if (!interactive()) {
-    options(encryptr.password=pw)
-    change_password(path, password=FALSE)
-    expect_identical(read_binary(path_pub), dat_pub)
-    expect_identical(read_binary(path_key), dat_key)
-  }
 })
 
 test_that("read non-existant key", {

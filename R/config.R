@@ -77,3 +77,11 @@ config_get_key <- function(x) {
     read_binary(x)
   }
 }
+
+as_config <- function(x) {
+  if (inherits(x, "encryptr_config")) {
+    x
+  } else {
+    make_config(x)
+  }
+}

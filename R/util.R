@@ -57,8 +57,10 @@ prompt_confirm <- function(msg="continue?", valid=c(n=FALSE, y=TRUE),
   }
 }
 
-find_file_descend <- function(target, limit="/", error=TRUE) {
+find_file_descend <- function(target, start=".", limit="/", error=TRUE) {
   root <- normalizePath(limit, mustWork=TRUE)
+  start <- normalizePath(start, mustWork=TRUE)
+
   f <- function(path) {
     if (file.exists(file.path(path, target))) {
       return(path)
@@ -70,15 +72,15 @@ find_file_descend <- function(target, limit="/", error=TRUE) {
         return(NULL)
       }
     }
-    Recall(file.path("..", path))
+    Recall(file.path(path, ".."))
   }
-  ret <- f(".")
+  ret <- f(start)
   if (!(is.null(ret) && !error)) {
     ret <- normalizePath(ret, mustWork=TRUE)
   }
   ret
 }
 
-using_git <- function() {
-  !is.null(find_file_descend(".git", error=FALSE))
+using_git <- function(path) {
+  !is.null(find_file_descend(".git", path, error=FALSE))
 }

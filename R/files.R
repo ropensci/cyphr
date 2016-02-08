@@ -14,12 +14,14 @@
 ##'
 ##' @export
 encrypt_file <- function(src, dest, config) {
+  config <- as_config(config)
   res <- config$encrypt(read_binary(src))
   writeBin(pack_data(res), dest)
 }
 ##' @export
 ##' @rdname encrypt_file
 decrypt_file <- function(src, dest, config) {
+  config <- as_config(config)
   res <- unpack_data(read_binary(src))
   writeBin(config$decrypt(res), dest)
 }
@@ -33,7 +35,6 @@ decrypt_file <- function(src, dest, config) {
 ##   0       1 byte    n bytes  rest of file
 ##   <type> <id>      <session>  <encrypted thing>
 ##   1       16 bytes  256 bytes  rest of file
-
 FORMAT_SODIUM <- as.raw(0L)
 FORMAT_OPENSSL <- as.raw(1L)
 

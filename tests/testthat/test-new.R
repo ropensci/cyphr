@@ -43,8 +43,8 @@ test_that("sodium public", {
 })
 
 test_that("openssl", {
-  ## TODO: load_key_rsa(load_key_rsa()) -> if an rsa pair pass along
-  pair <- load_key_rsa(OPENSSL_KEY)
+  ## TODO: load_key_ssl(load_key_ssl()) -> if an rsa pair pass along
+  pair <- load_key_ssl(OPENSSL_KEY)
   expect_is(pair, "key_pair")
   expect_is(pair, "rsa_pair")
 

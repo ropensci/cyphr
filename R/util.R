@@ -84,3 +84,13 @@ find_file_descend <- function(target, start=".", limit="/", error=TRUE) {
 using_git <- function(path) {
   !is.null(find_file_descend(".git", path, error=FALSE))
 }
+
+Sys_getenv <- function(pos, fail=NULL) {
+  for (i in pos) {
+    x <- Sys.getenv(i, "")
+    if (nzchar(x)) {
+      return(x)
+    }
+  }
+  fail
+}

@@ -1,29 +1,5 @@
-## TODO: There's a ton of duplication here with key.R: load_key_rsa;
-## combine the two sets of functions.
-openssl_read <- function(path, both=TRUE) {
-  if (is.null(path)) {
-    path <- Sys.getenv("USER_KEY", "~/.ssh/id_rsa")
-  } else if (is_directory(path)) {
-    path <- file.path(path, "id_rsa")
-    if (!file.exists(path)) {
-      stop("Did not find id_rsa file at path ", path)
-    }
-  } else if (file.exists(path)) {
-    path <- sub("([^/]+)\\.pub$", "\\1", path)
-  } else {
-    stop("path does not exist: ", path)
-  }
-  if (both) {
-    key <- openssl::read_key(path, openssl_password(path))
-  } else {
-    key <- NULL
-  }
-  pub <- openssl::read_pubkey(paste0(path, ".pub"))
-  list(key=key, pub=pub, path=path)
-}
-
-config_openssl <- function(path) {
-  dat <- openssl_read(path)
+config_openssl <- function(path, private=TRUE) {
+  dat <- load_key_ssl(path, private)
   key <- dat$key
   pub <- dat$pub
   config(
@@ -91,4 +67,77 @@ ssh_keygen <- function(path=tempfile(), password=TRUE) {
   }
 
   invisible(path)
+}
+
+## Valid values for private are TRUE/FALSE only
+find_key_ssl <- function(path=NULL, private=TRUE) {
+  if (is.list(path)) {
+    if (private && is.null(path$key)) {
+      stop("This is a bug in the package")
+    }
+    return(path)
+  }
+  if (is.null(path)) {
+    ## Places to look:
+    path <- Sys_getenv(c("USER_KEY", "USER_PUBKEY"))
+    if (is.null(path) && file.exists("~/.ssh/id_rsa")) {
+      path <- "~/.ssh/id_rsa"
+    } else {
+      stop("Could not determine location of public key")
+    }
+  }
+  if (!is.character(path) || length(path) != 1L) {
+    stop("Invalid type for key")
+  }
+  if (!file.exists(path)) {
+    stop("Key does not exist at ", path)
+  }
+
+  if (is_directory(path)) {
+    dir <- path
+    ## TODO: Consider running through a series of possible keys here.
+    ## We might also support dsa or ecdsa keys.  In practice rsa
+    ## should work enough of the time.
+    pub <- file.path(path, "id_rsa.pub")
+    key <- file.path(path, "id_rsa")
+  } else {
+    if (grepl("\\.pub$", path)) {
+      pub <- path
+      key <- sub("\\.pub$", "", pub)
+      dir <- dirname(path)
+    } else {
+      key <- path
+      pub <- paste0(key, ".pub")
+      dir <- dirname(path)
+    }
+  }
+
+  if (!file.exists(pub)) {
+    stop("Public key not found at ", pub)
+  }
+  if (!file.exists(key)) {
+    if (private) {
+      stop("Private key not found at ", key)
+    } else {
+      key <- NULL
+    }
+  }
+
+  list(dir=normalizePath(dir),
+       pub=normalizePath(pub),
+       key=if (is.null(key)) NULL else normalizePath(key))
+}
+
+load_key_ssl <- function(path, private=TRUE) {
+  ## TODO: Consider:
+  ##
+  ##   if (inherits(path, "key_pair")) {
+  ##     return(path)
+  ##   }
+  dat <- find_key_ssl(path, private)
+  ret <- list(dir=dat$dir,
+              pub=openssl::read_pubkey(dat$pub),
+              key=if (private) openssl::read_key(dat$key) else NULL)
+  class(ret) <- c("rsa_pair", "key_pair")
+  ret
 }

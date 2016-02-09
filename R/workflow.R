@@ -274,13 +274,13 @@ data_check_path_data <- function(path_data, fail=TRUE) {
   invisible(ok)
 }
 
-data_check_path_user <- function(user, quiet) {
+data_check_path_user <- function(user, quiet=FALSE) {
   if (inherits(user, "rsa_pair")) {
     return(user)
   }
   user <- data_path_user(user)
   workflow_log(quiet, "Loading key from %s", user)
-  load_key_rsa(user, NULL)
+  load_key_ssl(user, TRUE)
 }
 
 data_pub_load <- function(hash, path) {
@@ -295,7 +295,7 @@ data_pub_load <- function(hash, path) {
     stop("Hash disagrees for: ", hash_str)
   }
 
-  load_key_rsa(filename, FALSE)
+  load_key_ssl(filename, FALSE)
 }
 
 data_pubs_load <- function(path) {
@@ -327,32 +327,12 @@ print.data_keys <- function(x, ...) {
 
 ## Some directories:
 data_path_user <- function(path) {
-  ##   * if given a path we'll take that
-  ##   * if encryptr.path is set we'll take that
-  ##   * otherwise fall back on the USER_KEY environment variable
-  ##   * otherwise fall back on ~/.ssh/id_rsa if it exists
-  ##   * otherwise fail
-  ##
-  ## TODO: Not really clear what to do if the file is not id_rsa here;
-  ## consider tweaking everything to work in terms of the path to the
-  ## private key rather than the directory?
-  ##
-  ## TODO: This overlaps the logic in openssl quite badly.
   if (is.null(path)) {
     path <- getOption("encryptr.user.path", NULL)
-    if (is.null(path)) {
-      path <- Sys.getenv("OPENSSL_PATH", "")
-      if (path == "") {
-        if (file.exists("~/.ssh/id_rsa")) {
-          path <- "~/.ssh"
-        } else {
-          stop("Could not determine user key path")
-        }
-      }
-    }
   }
-  path
+  find_key_ssl(path)$pub
 }
+
 data_path_encryptr <- function(path) {
   file.path(path, ".encryptr")
 }

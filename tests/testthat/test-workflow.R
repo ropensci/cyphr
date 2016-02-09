@@ -1,27 +1,19 @@
 context("workflow")
 
 test_that("user configuration", {
-  path <- tempfile()
-
-  expect_false(data_check_path_user(path, FALSE))
-  expect_error(data_check_path_user(path, TRUE),
-               "Could not find user keys")
-
+  expect_error(data_check_path_user(tempfile()),
+               "Key does not exist")
   expect_is(data_check_path_user(OPENSSL_KEY), "rsa_pair")
-})
 
-test_that("data_user_init safe to rerun", {
-  skip("not used anymore")
-  path <- tempfile()
-  path_pub <- data_user_init(path=path)
-  path_key <- sub("pub$", "key", path_pub)
-  dat_pub <- read_binary(path_pub)
-  dat_key <- read_binary(path_key)
+  path2 <- tempfile()
+  ssh_keygen(path2, FALSE)
+  path2 <- normalizePath(path2)
+  tmp <- data_check_path_user(path2, TRUE)
+  expect_identical(tmp$dir, path2)
 
-  expect_message(tmp <- data_user_init(path=path), "already exists")
-  expect_identical(tmp, path_pub)
-  expect_identical(read_binary(path_pub), dat_pub)
-  expect_identical(read_binary(path_key), dat_key)
+  oo <- options("encryptr.user.path"=path2)
+  on.exit(options(oo))
+  expect_equal(dirname(data_path_user(NULL)), path2)
 })
 
 test_that("basic workflow", {

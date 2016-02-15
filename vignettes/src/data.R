@@ -158,32 +158,73 @@ head(decrypt(readRDS(filename), config_data(data_dir)))
 ##+ echo=FALSE
 options(oo)
 
-## ## Details
+## ## Details & disclosure
 
-## Each user has a directory with a public and private key in it.  The
-## private key is just 32 bytes of binary data, and the public key is
-## a human-readable file with a little additional metadata to make it
-## easier for people to associate keys with people.
+## Encryption does not work through security through obscurity; it
+## works because we can rely on the underlying maths enough to be open
+## about how things are stored and where.
 
-## The data directory will have a hidden directory `.encryptr` in
-## it. This does not actually have to be stored with the data but it
-## makes sense to.  This directory will contain a set of encrypted
-## keys; these keys belong to different users and can be decrpted
-## using their private keys.
+## Most encryption libraries work require some degree of security in
+## the underlying software.  Because of the way R works this is very
+## difficult to guarantee; it is trivial to rewrite code in running
+## packages to skip past verification checks.  So this package is
+## _not_ designed to (or able to) avoid exploits in your running code;
+## an attacker could intercept your private keys, the private key to
+## the data, or skip the verification checks that are used to make
+## sure that the keys you load are what they say they are.  However,
+## the _data_ are safe; only people who have keys to the data will be
+## able to read it.
+
+## Encryptr uses two different encryption algorithms; it uses rsa
+## encryption via the `openssl` package for user keys, because there
+## is a common file format for these keys so it makes user
+## configuration easier.  It uses the modern sodium package (and
+## through that the libsodium library) for data encryption because it
+## is very fast and simple to work with.  This does leave two possible
+## points of weakness as a vulnerability in either of these libraries
+## could lead to an exploit that could allow decryption of your data.
+
+## Each user has a public/private key pair.  Typically this is in
+## `~/.ssh/id_rsa.pub` and `~/.ssh/id_rsa`, and if found these will be
+## used.  Alternatively the location of the keypair can be stored
+## elsewhere and pointed at with the `USER_KEY` or `USER_PUBKEY`
+## environment variables, or with the package option
+## `encryptr.user.path`.  The key may be password protected (and this
+## is recommended!) and the password will be requested without ever
+## echoing it to the terminal.
+
+## The data directory has a hidden directory `.encryptr` in it.  This
+## does not actually need to be stored with the data but it makes
+## sense to (there are workflows where data is stored remotely where
+## storing this directory might make sense).  This directory contains
+## a number of files; one for each person who has access to the data.
+## Each file is stored in RDS format and is a list with elements:
+##
+## * user: the reported user name of the person who created request for data
+## * host: the reported computer name
+## * date: the time the request was generated
+## * pub: the rsa public key of the user
+## * signature: the signature of the contents of "user", "host",
+##   "date", "pub".  This ensures that the data have not been changed
+##   since they were created.
+## * key: the data key, encrypted with the user key.  Without the
+##   private key, this cannot be used.  With the user's private key
+##   this can be used to generate the symmetric key to the data.
+##
+## (note that the verification relies on the package code not being
+## attacked, and given R's highly dynamic nature an attacker could
+## easily swap out the definition for the verification function with
+## something that always returns `TRUE`.)
+
+## This directory will contain a set of encrypted keys; these keys
+## belong to different users and can be decrpted using their private
+## keys.
 
 ## When an authorised user creates the `config_data` object, the package:
 ##
-## * reads their encrypted key from the data directory
-## * reads their private key from their user directory
-## * decrypts the data key to give a "symmetric" key which will be the
-##   same for all users (but is never directly stored anywhere).
-
-## Public keys are stored in the requests directory and the data
-## directory by their hash; a digest of all the data in the key.  This
-## should mean that verifying the key "out of band" (e.g., over email)
-## is easy.  But practically it should not matter much.  Signing the
-## keys would probably be a better idea.  In any case, this hash is
-## checked when the key is opened by the authorise or list commands.
+## * reads their private user key
+## * reads the encrypted data key from the data directory
+## * decrypts the data symmetric key, using the user's private key
 
 ## ## Limitations
 

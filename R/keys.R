@@ -1,4 +1,7 @@
 ## TODO: which functions here are the API bits?
+##
+##  Functions for loading keys seems sensible, but I'm not sure what
+##  the best thing to do here is.
 
 key_sodium_symmetric <- function(path_key) {
   load_key_sodium(path_key, "sodium_symmetric", 32L)
@@ -20,6 +23,12 @@ key_sodium_public <- function(path_pub, path_key=NULL) {
 ##' @export
 print.key_pair <- function(x, ...) {
   cat(sprintf("<%s key pair>\n", class(x)[[1L]]))
+  invisible(x)
+}
+
+##' @export
+print.key_sodium <- function(x, ...) {
+  cat(sprintf("<%s key>\n", class(x)[[1L]]))
   invisible(x)
 }
 
@@ -82,6 +91,6 @@ load_key_sodium <- function(x, type, len=32L) {
   if (length(x) != len) {
     stop("Unexpected length")
   }
-  class(x) <- c(type, "sodium_key")
+  class(x) <- c(type, "key_sodium")
   x
 }

@@ -47,6 +47,8 @@ test_that("openssl", {
   pair <- load_key_ssl(OPENSSL_KEY)
   expect_is(pair, "key_pair")
   expect_is(pair, "rsa_pair")
+  expect_is(pair$path, "list")
+  expect_equal(pair$path$dir, normalizePath(OPENSSL_KEY))
 
   x <- make_config(pair)
   expect_is(x, "encryptr_config")

@@ -129,15 +129,30 @@ find_key_ssl <- function(path=NULL, private=TRUE) {
 }
 
 load_key_ssl <- function(path, private=TRUE) {
-  ## TODO: Consider:
-  ##
-  ##   if (inherits(path, "key_pair")) {
-  ##     return(path)
-  ##   }
-  dat <- find_key_ssl(path, private)
-  ret <- list(dir=dat$dir,
-              pub=openssl::read_pubkey(dat$pub),
-              key=if (private) openssl::read_key(dat$key) else NULL)
-  class(ret) <- c("rsa_pair", "key_pair")
+  if (inherits(path, "key_pair")) {
+    ret <- path
+  } else if (inherits(path, "pubkey")) {
+    if (isTRUE(private)) {
+      stop("Cannot load private key")
+    } else if (identical(private, FALSE)) {
+      private <- NULL
+    } else if (!inherits(private, "key")) {
+      stop("Invalid input for private")
+    }
+    ret <- list(path=NULL,
+                pub=path,
+                key=private)
+    class(ret) <- c("rsa_pair", "key_pair")
+  } else {
+    dat <- find_key_ssl(path, private)
+    ret <- list(path=dat,
+                pub=openssl::read_pubkey(dat$pub),
+                key=if (private) openssl::read_key(dat$key) else NULL)
+    class(ret) <- c("rsa_pair", "key_pair")
+  }
   ret
+}
+
+key_hash <- function(k) {
+  openssl:::fingerprint(k)
 }

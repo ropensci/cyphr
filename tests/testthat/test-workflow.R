@@ -9,7 +9,7 @@ test_that("user configuration", {
   ssh_keygen(path2, FALSE)
   path2 <- normalizePath(path2)
   tmp <- data_check_path_user(path2, TRUE)
-  expect_identical(tmp$dir, path2)
+  expect_identical(tmp$path$dir, path2)
 
   oo <- options("encryptr.user.path"=path2)
   on.exit(options(oo))
@@ -28,16 +28,17 @@ test_that("basic workflow", {
   ## The data path must exist first.
   expect_error(res <- data_admin_init(path_dat, path_us1),
                "path_data must exist and be a directory")
-  dir.create(path_dat)
 
+  dir.create(path_dat)
   expect_message(res <- data_admin_init(path_dat, path_us1),
                  "Generating data key")
   expect_true(res)
 
   tmp <- data_admin_list_keys(path_dat)
   expect_equal(length(tmp), 1L)
-  expect_equal(names(tmp)[[1]],
-               bin2str(data_hash(file.path(path_us1, "id_rsa.pub")), ""))
+  expect_identical(tmp[[1]]$pub, load_key_ssl(path_us1, FALSE)$pub)
+  expect_identical(names(tmp),
+                   bin2str(key_hash(tmp[[1]]$pub), ""))
 
   x1 <- config_data(path_dat, path_us1, TRUE)
   expect_is(x1, "encryptr_config")
@@ -84,10 +85,16 @@ test_that("basic workflow", {
   tmp <- data_admin_list_keys(path_dat)
   expect_equal(length(tmp), 2L)
 
-  expect_true(bin2str(data_hash(file.path(path_us1, "id_rsa.pub")), "")
-              %in% names(tmp))
-  expect_true(bin2str(data_hash(file.path(path_us2, "id_rsa.pub")), "")
-              %in% names(tmp))
+
+  expect_true(bin2str(key_hash(tmp[[1]]$pub), "") %in% names(tmp))
+  expect_true(bin2str(key_hash(tmp[[2]]$pub), "") %in% names(tmp))
+
+  expect_true(bin2str(
+    key_hash(openssl::read_pubkey(file.path(path_us1, "id_rsa.pub"))), "")
+    %in% names(tmp))
+  expect_true(bin2str(
+    key_hash(openssl::read_pubkey(file.path(path_us2, "id_rsa.pub"))), "")
+    %in% names(tmp))
 })
 
 test_that("out-of-order init", {
@@ -107,11 +114,4 @@ test_that("out-of-order init", {
                "you may not have access")
   expect_error(data_admin_init(path_dat, path_us2, quiet=TRUE),
                "data_request_access")
-})
-
-test_that("read non-existant key", {
-  path <- tempfile()
-  expect_error(read_public_key(path), "Public key not found")
-  expect_error(read_private_key(path), "Key not found")
-  expect_error(change_password(path, password=FALSE), "Key not found")
 })

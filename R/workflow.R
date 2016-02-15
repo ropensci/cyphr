@@ -1,3 +1,11 @@
+## TODO: There is still too much shennanigans with loading the keys
+## (mostly because the private key will require a password and we
+## don't want to store that).
+##
+##   * data_check_path_user -> key
+
+## TODO: rename key_hash() -> hash_key() for consistency with hash_data()
+
 ## NOTE: All functions here are arbitrarily prefixed with 'data'
 ## because they're the 'data workflow' part of the package.  I may
 ## move them elsewhere.
@@ -72,8 +80,8 @@ data_admin_init <- function(path_data=".", path_user=NULL, quiet=FALSE) {
     ## But this bit is shared; we need to copy the files around a
     ## bunch.
     ##
-    ## TODO: We should pass in the key here:
     tmp <- data_request_access(path_data, key, quiet=TRUE)
+    on.exit(file.remove(data_path_request(path_data)))
     ## NOTE: here we can't use data_admin_authorise because we can't
     ## load the symmetric key from the files we're trying to write!
     dat <- data_pub_load(tmp, data_path_request(path_data))
@@ -83,9 +91,8 @@ data_admin_init <- function(path_data=".", path_user=NULL, quiet=FALSE) {
   }
 
   workflow_log(quiet, "Verifying")
-  ## TODO: pass in key as path+user.
   x <- config_data(path_data, key, TRUE)
-  on.exit()
+  on.exit() # disable possible file removals.
   invisible(TRUE)
 }
 
@@ -198,18 +205,28 @@ data_request_access <- function(path_data=".", path_user=NULL, quiet=FALSE) {
   } else {
     stop("Expected a path or a rsa_pair object")
   }
-  path_pub <- key$path_pub
+  path_pub <- key[["path"]][["pub"]]
   dir.create(path_req, FALSE)
-  hash <- data_hash(key$path_pub)
+
+  ## TODO: Here, we should construct a reasonable request.  Previously
+  ## I saved a little metadata with the key:
+  info <- Sys.info()
+  dat <- list(user=info[["user"]],
+              host=info[["nodename"]],
+              date=as.character(Sys.time()),
+              pub=key$pub)
+  hash <- key_hash(key$pub)
 
   ## OK, this is a nasty and unexpected surprise;
   ##   file.copy(<directory_path>, <full_path_name>)
   ## will create an empty executable file in the destination. Wat.
-  dest <- TMP_filename_key(path_req, bin2str(hash, ""), TRUE)
+  .GlobalEnv$cmp <- dat
+  dat$signature <- openssl::signature_create(TMP_key_prep(dat), key=key$key)
+  dest <- TMP_filename_key(path_req, bin2str(hash, ""), FALSE)
   if (file.exists(dest)) {
     message("Request is already pending")
   } else {
-    file.copy(key$path_pub, dest)
+    TMP_key_save(dat, dest)
   }
 
   ## The idea here is that they will email or whatever creating a
@@ -243,26 +260,25 @@ config_data <- function(path_data=".", path=NULL, test=TRUE, quiet=FALSE) {
 }
 
 ## Here, key is the data key encrypted with the user's public key.
+## Add that to the publicly readable data.
 ##
 ## NOTE: Because the logic around overwriting is hard, this will
 ## overwrite without warning or notice.
 data_authorise_write <- function(path_data, sym, dat, yes=FALSE, quiet=FALSE) {
-  if (!quiet) {
-    message(paste0("Authorising ", as_character(dat$pub), collapse="\n"))
-  }
+  workflow_log(quiet, "Authorising %s", as.character(dat))
   if (!(yes || prompt_confirm())) {
     msg <- paste("Cancelled adding key ", bin2str((dat$hash)))
     e <- structure(list(message=msg, call=NULL),
                    class=c("cancel_addition", "error", "condition"))
     stop(e)
   }
+  dat$key <- make_config(dat$pair)$encrypt(sym)
   path_enc <- data_path_encryptr(path_data)
-  hash_str <- bin2str(data_hash(dat$path_pub), "")
-  writeBin(pack_data(make_config(dat)$encrypt(sym)),
-           TMP_filename_key(path_enc, hash_str, FALSE))
-  file.copy(dat$path_pub,
-            TMP_filename_key(path_enc, hash_str), TRUE)
-  file.remove(dat$path_pub)
+  hash_str <- bin2str(key_hash(dat$pub), "")
+
+  TMP_key_save(dat, TMP_filename_key(path_enc, hash_str, FALSE))
+
+  file.remove(dat$filename)
   invisible()
 }
 
@@ -283,6 +299,8 @@ data_check_path_user <- function(user, quiet=FALSE) {
   load_key_ssl(user, TRUE)
 }
 
+## TODO: data_pub_load changes name I think, because this is more than
+## the public key now?
 data_pub_load <- function(hash, path) {
   if (is.raw(hash)) {
     hash_str <- bin2str(hash, "")
@@ -290,16 +308,27 @@ data_pub_load <- function(hash, path) {
     hash_str <- gsub(":", "", hash)
     hash <- str2bin(hash_str)
   }
-  filename <- TMP_filename_key(path, hash_str, TRUE)
-  if (!identical(data_hash(filename), hash)) {
-    stop("Hash disagrees for: ", hash_str)
+  filename <- TMP_filename_key(path, hash_str, FALSE)
+  dat <- readRDS(filename)
+
+  ## Two attempts at verifying the data provided as a key to detect
+  ## tampering.
+  if (!identical(as.raw(key_hash(dat$pub)), as.raw(hash))) {
+    stop("Public key hash disagrees for: ", hash_str)
   }
 
-  load_key_ssl(filename, FALSE)
+  tryCatch(
+    openssl::signature_verify(TMP_key_prep(dat), dat$signature, pubkey=dat$pub),
+    error=function(e) stop("Signature of data does not match for ", hash_str))
+
+  dat$pair <- load_key_ssl(dat$pub, FALSE)
+  dat$filename <- filename
+  class(dat) <- "data_key"
+  dat
 }
 
 data_pubs_load <- function(path) {
-  hash <- sub("\\.pub$", "", dir(path, pattern="^[[:xdigit:]]{32}\\.pub$"))
+  hash <- sub("\\.pub$", "", dir(path, pattern="^[[:xdigit:]]{32}$"))
   dat <- lapply(hash, data_pub_load, path)
   names(dat) <- hash
   class(dat) <- "data_keys"
@@ -311,6 +340,14 @@ data_hash <- function(x) {
     x <- read_binary(x)
   }
   sodium::hash(x, size=16L)
+}
+
+##' @export
+as.character.data_key <- function(x, ...) {
+  hash <- bin2str(key_hash(x$pub), ":")
+  x <- unlist(x[c("user", "host", "date")])
+  sprintf("%s\n%s", bin2str(hash),
+          paste(sprintf("  %4s: %s", names(x), unlist(x)), collapse="\n"))
 }
 
 ##' @export
@@ -349,16 +386,30 @@ data_load_sym <- function(path_data, path_user, quiet) {
   data_check_path_data(path_data)
   path_enc <- data_path_encryptr(path_data)
   key <- data_check_path_user(path_user, quiet)
-  hash <- data_hash(key$path_pub)
-  path_data_key <- TMP_filename_key(path_enc, bin2str(hash, ""), FALSE)
+  hash_str <- bin2str(key_hash(key$pub), "")
+  path_data_key <- TMP_filename_key(path_enc, hash_str, FALSE)
   if (!file.exists(path_data_key)) {
     data_access_error(path_data, path_user, path_data_key)
   }
-  sym <- make_config(key)$decrypt(unpack_data(read_binary(path_data_key)))
+  sym <- make_config(key)$decrypt(readRDS(path_data_key)$key)
   key_sodium_symmetric(sym)
 }
 
 data_access_error <- function(path_data, path_user, path_data_key) {
+  ## TODO: Try to guess the path used; this is really annoying because
+  ## sometimes we have a key and sometimes a path, but I do not
+  ## remember when we just get the public key (which causes an issue
+  ## here).
+  if (inherits(path_user, "key_pair")) {
+    if (is.null(path_user$path)) {
+      stop("FIXME")
+      browser()
+    }
+
+    path_user <- path_user$path$pub
+  }
+
+
   if (identical(data_path_user(NULL), path_user)) {
     cmd <- call("data_request_access", path_data)
   } else {
@@ -389,4 +440,12 @@ workflow_log <- function(quiet, ...) {
 
 TMP_filename_key <- function(path, base, public=TRUE) {
   file.path(path, paste0(base, if (public) ".pub" else ""))
+}
+
+TMP_key_prep <- function(x) {
+  serialize(unclass(x[c("user", "host", "date", "pub")]), NULL)
+}
+TMP_key_save <- function(x, filename) {
+  keep <- c("user", "host", "date", "pub", "signature", "key")
+  saveRDS(x[names(x) %in% keep], filename)
 }

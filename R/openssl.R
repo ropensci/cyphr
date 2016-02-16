@@ -153,6 +153,6 @@ load_key_ssl <- function(path, private=TRUE) {
   ret
 }
 
-key_hash <- function(k) {
-  openssl:::fingerprint(k)
+hash_key <- function(k) {
+  eval(call(":::", "openssl", "fingerprint"))(k)
 }

@@ -11,10 +11,8 @@
 
 ##+ echo=FALSE, results="hide"
 options(encryptr.user.path=tempfile())
-ssh_keygen(getOption("encryptr.user.path"), FALSE)
+encryptr::ssh_keygen(getOption("encryptr.user.path"), FALSE)
 unlink("data", recursive=TRUE)
-
-library(encryptr)
 
 ## The scenario:
 
@@ -47,23 +45,31 @@ dir(data_dir)
 ## guides available.  A utility function (which simply calls
 ## `ssh-keygen` for you) is available. though.  You will need to
 ## generate a key on each computer you want access from.  Don't copy
-## the key around.
+## the key around.  If you lose your user key you will lose access to
+## the data!
 
 ## **Second**, create a key for the data and encrypt that key with
-## your personal key.
-data_admin_init(data_dir)
+## your personal key.  Note that the data key is never stored directly
+## - it is always stored encrypted by a personal key.
+encryptr::data_admin_init(data_dir)
 
-## This command can be run multiple times safely
-data_admin_init(data_dir)
+## The data key is very important.  If it is deleted, then the data
+## cannot be decrypted.  So keep the directory `data_dir/.encryptr`
+## safe!  Ideally add it to your version control system so that it
+## cannot be lost.
+
+## This command can be run multiple times safely; if it detects it has
+## been rerun and the data key will not be regenerated.
+encryptr::data_admin_init(data_dir)
 
 ## **Third**, you can add encrypted data to the directory (or to
-## anywhere really).  When run, `config_data` will verify that it can
-## actually decryt things.
-cfg <- config_data(data_dir)
+## anywhere really).  When run, `encryptr::config_data` will verify that it can
+## actually decrypt things.
+cfg <- encryptr::config_data(data_dir)
 
 ## This object can be used with all the `encryptr` functions:
 filename <- file.path(data_dir, "iris.rds")
-encrypt(saveRDS(iris, filename), cfg)
+encryptr::encrypt(saveRDS(iris, filename), cfg)
 dir(data_dir)
 
 ## The file is encrypted:
@@ -71,55 +77,61 @@ dir(data_dir)
 readRDS(filename)
 
 ## But we can decrypt it:
-head(decrypt(readRDS(filename), cfg))
+head(encryptr::decrypt(readRDS(filename), cfg))
 
 ## **Fourth**, have someone else join in.  To simulate another person
-## here, I'm going to pass an argument `user2` though.  If run on an
-## actually different computer this would not be needed; this is just
-## to simulate two users in a single session for this vignette (see
-## minimal example below).
+## here, I'm going to pass an argument `user2` though to the
+## functions.  If run on an actually different computer this would not
+## be needed; this is just to simulate two users in a single session
+## for this vignette (see minimal example below).  Typically this user
+## would also not use the `encryptr::ssh_keygen` function but use the
+## `ssh-keygen` command from their shell (not from R).
 user2 <- tempfile()
-ssh_keygen(user2, FALSE)
+encryptr::ssh_keygen(user2, FALSE)
 
 ## We're going to assume that the user can read and write to the data.
 ## This is the case for my use case where the data are stored on
 ## dropbox and will be the case with github based distribution, though
 ## there would be a pull request step in here.
 
-## This user cannot read the data:
+## This user cannot read the data, though trying to will print a
+## message explinaing how you might request access:
 ##+ error=TRUE
-cfg2 <- config_data(data_dir, user2)
+cfg2 <- encryptr::config_data(data_dir, user2)
 
 ## But `user2` is your collaborator and needs access.  What they need
 ## to do is run:
-data_request_access(data_dir, user2)
+encryptr::data_request_access(data_dir, user2)
 
-## (ordinarily you would not need the `user2` bit here; that's just
-## there because this is all done in one R session).
+## (again, ordinarily you would not need the `user2` bit here)
 
 ## The user should the send an email to someone with access and quote
 ## the hash in the message above.
 
 ## **Fifth**, back on the first computer we can authorise the second
 ## user.  First, see who has requested access:
-req <- data_admin_list_requests(data_dir)
+req <- encryptr::data_admin_list_requests(data_dir)
 req
 
 ## We can see the same hash here as above (``r names(req)[[1]]``)
 
-## ...and then grant access to them with the `data_admin_authorise` function.
-data_admin_authorise(data_dir, yes=TRUE)
+## ...and then grant access to them with the
+## `encryptr::data_admin_authorise` function.
+encryptr::data_admin_authorise(data_dir, yes=TRUE)
 
-## which has cleared the request queue:
-data_admin_list_requests(data_dir)
+## If you do not specify `yes=TRUE` will prompt for confirmation at
+## each key added.
+
+## This has cleared the request queue:
+encryptr::data_admin_list_requests(data_dir)
 
 ## and added it to our set of keys:
-data_admin_list_keys(data_dir)
+encryptr::data_admin_list_keys(data_dir)
 
 ## **Finally**, as soon as the authorisation has happened, the user
 ## can encrypt and decrypt files:
-cfg2 <- config_data(data_dir, user2)
-head(decrypt(readRDS(filename), cfg2))
+cfg2 <- encryptr::config_data(data_dir, user2)
+head(encryptr::decrypt(readRDS(filename), cfg2))
 
 ## ## Minimal example
 
@@ -127,34 +139,30 @@ head(decrypt(readRDS(filename), cfg2))
 
 ##+ echo=FALSE, results="hide"
 unlink(data_dir, recursive=TRUE)
-unlink(user2, recursive=TRUE)
-unlink(getOption("encryptr.user.path"), recursive=TRUE)
 dir.create(data_dir)
 
 ## Setup, on computer 1:
-data_user_init()
-data_admin_init(data_dir)
+encryptr::data_admin_init(data_dir)
 
 ## Encrypt a file:
-encrypt(saveRDS(iris, filename), config_data(data_dir))
+encryptr::encrypt(saveRDS(iris, filename), encryptr::config_data(data_dir))
 
 ## Request access, on computer 2:
 ##+ echo=FALSE
 oo <- options(encryptr.user.path=user2)
 ##+ echo=TRUE
-data_user_init()
-hash <- data_request_access(data_dir)
+hash <- encryptr::data_request_access(data_dir)
 ##+ echo=FALSE
 options(oo)
 
 ## Authorise, on computer 1:
-data_admin_authorise(data_dir, yes=TRUE)
+encryptr::data_admin_authorise(data_dir, yes=TRUE)
 
 ## Read data, on computer 2:
 ##+ echo=FALSE
 oo <- options(encryptr.user.path=user2)
 ##+ echo=TRUE
-head(decrypt(readRDS(filename), config_data(data_dir)))
+head(encryptr::decrypt(readRDS(filename), encryptr::config_data(data_dir)))
 ##+ echo=FALSE
 options(oo)
 
@@ -193,11 +201,20 @@ options(oo)
 ## is recommended!) and the password will be requested without ever
 ## echoing it to the terminal.
 
-## The data directory has a hidden directory `.encryptr` in it.  This
-## does not actually need to be stored with the data but it makes
-## sense to (there are workflows where data is stored remotely where
-## storing this directory might make sense).  This directory contains
-## a number of files; one for each person who has access to the data.
+## The data directory has a hidden directory `.encryptr` in it.
+dir("data", all.files=TRUE, no..=TRUE)
+
+## This does not actually need to be stored with the data but it
+## makes sense to (there are workflows where data is stored remotely
+## where storing this directory might make sense).  This directory
+## contains a number of files; one for each person who has access to
+## the data.
+dir(file.path("data/.encryptr"))
+names(encryptr::data_admin_list_keys("data"))
+
+## (the file `test` is a small file encrypted with the data key used
+## to verify everything is working OK).
+
 ## Each file is stored in RDS format and is a list with elements:
 ##
 ## * user: the reported user name of the person who created request for data
@@ -210,21 +227,35 @@ options(oo)
 ## * key: the data key, encrypted with the user key.  Without the
 ##   private key, this cannot be used.  With the user's private key
 ##   this can be used to generate the symmetric key to the data.
+
+h <- names(encryptr::data_admin_list_keys("data"))[[1]]
+readRDS(file.path("data/.encryptr", h))
+
+## (In the `key` element, the elements `iv`, `session` are created by
+## `openssl` as one-time data, and `data` is the encrypted data
+## itself; see the `openssl` package for more details.)
+
+## You can see that the hash of the public key is the same as name of
+## the stored file here (which is used to prevent collisions when
+## multiple people request access at the same time).
+h
+
+## When a request is posted it is an RDS file with all of the above
+## except for the `key` element, which is added during authorisation.
 ##
-## (note that the verification relies on the package code not being
+## (Note that the verification relies on the package code not being
 ## attacked, and given R's highly dynamic nature an attacker could
 ## easily swap out the definition for the verification function with
 ## something that always returns `TRUE`.)
-
-## This directory will contain a set of encrypted keys; these keys
-## belong to different users and can be decrpted using their private
-## keys.
-
-## When an authorised user creates the `config_data` object, the package:
 ##
-## * reads their private user key
-## * reads the encrypted data key from the data directory
-## * decrypts the data symmetric key, using the user's private key
+## When an authorised user creates the `config_data` object (which
+## allows decryption of the data) `secret` will:
+##
+## * read their private user key (probably from `~/.ssh/id_rsa`)
+## * read the encrypted data key from the data directory (the `$key`
+##   element from the list above).
+## * decrypt this data key using their user key to yield the the data
+##   symmetric key.
 
 ## ## Limitations
 

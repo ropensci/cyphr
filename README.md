@@ -76,3 +76,7 @@ There are still problems with the approach I've taken:
 
 * Appending does not work: we'd need to unencrypt the file first for that to be OK.  This is an issue for `write.table`, but not `writeLines`.
 * Non-file arguments are going to suck (though it's possible that something could be done to detect connections)
+
+## Why are wrappers needed?
+
+The low level functions in `sodium` and `openssl` work with raw data, for generality.  Few users encounter raw vectors in their typical use of R, so these require serialisation.  Most of the encryption involves a little extra random data (the "nonce" in `sodium` and similar additional pieces with `openssl`).  These need storing with the data, and then separating from the dadta when decryption happens.

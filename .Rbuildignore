@@ -13,3 +13,5 @@
 ^inst/staticdocs$
 ^inst/web$
 ^tests/testthat/data$
+^notes\.md$
+^tmp\.R$

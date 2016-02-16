@@ -14,6 +14,10 @@ test_that("user configuration", {
   oo <- options("encryptr.user.path"=path2)
   on.exit(options(oo))
   expect_equal(dirname(data_path_user(NULL)), path2)
+  expect_equal(dirname(data_path_user(OPENSSL_KEY)),
+               normalizePath(OPENSSL_KEY))
+  expect_error(data_path_user(tempfile()),
+               "Key does not exist")
 })
 
 test_that("basic workflow", {
@@ -38,7 +42,7 @@ test_that("basic workflow", {
   expect_equal(length(tmp), 1L)
   expect_identical(tmp[[1]]$pub, load_key_ssl(path_us1, FALSE)$pub)
   expect_identical(names(tmp),
-                   bin2str(key_hash(tmp[[1]]$pub), ""))
+                   bin2str(hash_key(tmp[[1]]$pub), ""))
 
   x1 <- config_data(path_dat, path_us1, TRUE)
   expect_is(x1, "encryptr_config")
@@ -85,15 +89,14 @@ test_that("basic workflow", {
   tmp <- data_admin_list_keys(path_dat)
   expect_equal(length(tmp), 2L)
 
-
-  expect_true(bin2str(key_hash(tmp[[1]]$pub), "") %in% names(tmp))
-  expect_true(bin2str(key_hash(tmp[[2]]$pub), "") %in% names(tmp))
+  expect_true(bin2str(hash_key(tmp[[1]]$pub), "") %in% names(tmp))
+  expect_true(bin2str(hash_key(tmp[[2]]$pub), "") %in% names(tmp))
 
   expect_true(bin2str(
-    key_hash(openssl::read_pubkey(file.path(path_us1, "id_rsa.pub"))), "")
+    hash_key(openssl::read_pubkey(file.path(path_us1, "id_rsa.pub"))), "")
     %in% names(tmp))
   expect_true(bin2str(
-    key_hash(openssl::read_pubkey(file.path(path_us2, "id_rsa.pub"))), "")
+    hash_key(openssl::read_pubkey(file.path(path_us2, "id_rsa.pub"))), "")
     %in% names(tmp))
 })
 
@@ -114,4 +117,42 @@ test_that("out-of-order init", {
                "you may not have access")
   expect_error(data_admin_init(path_dat, path_us2, quiet=TRUE),
                "data_request_access")
+})
+
+test_that("request access", {
+  path_us1 <- tempfile("user1_") # user 1 who starts the process
+  path_us2 <- tempfile("user2_") # user 2 who is added to the project
+  path_dat <- tempfile("data_")
+  on.exit(unlink(c(path_us1, path_us2, path_dat), recursive=TRUE))
+
+  temporary_key(path_us1)
+  temporary_key(path_us2)
+  dir.create(path_dat)
+
+  res <- data_admin_init(path_dat, path_us1)
+
+  oo <- options(encryptr.user.path=path_us2)
+  on.exit(options(oo))
+
+  hash <- data_request_access(path_dat)
+})
+
+test_that("authorise specific key", {
+  path_us1 <- tempfile("user1_") # user 1 who starts the process
+  path_us2 <- tempfile("user2_") # user 2 who is added to the project
+  path_us3 <- tempfile("user3_") # user 2 who is added to the project
+  path_dat <- tempfile("data_")
+  on.exit(unlink(c(path_us1, path_us2, path_us3, path_dat), recursive=TRUE))
+
+  temporary_key(path_us1)
+  temporary_key(path_us2)
+  temporary_key(path_us3)
+  dir.create(path_dat)
+
+  res <- data_admin_init(path_dat, path_us1)
+  hash2 <- data_request_access(path_dat, path_us2)
+  expect_true(data_admin_authorise(path_dat, hash2, path_us1, yes=TRUE))
+
+  hash3 <- data_request_access(path_dat, path_us2)
+  expect_true(data_admin_authorise(path_dat, hash3, bin2str(path_us2), yes=TRUE))
 })

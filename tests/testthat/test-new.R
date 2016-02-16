@@ -1,3 +1,5 @@
+context("more keys")
+
 ## All the different ways of getting things in:
 
 test_that("sodium symmetric", {

@@ -1,11 +1,3 @@
-## TODO: There is still too much shennanigans with loading the keys
-## (mostly because the private key will require a password and we
-## don't want to store that).
-##
-##   * data_check_path_user -> key
-
-## TODO: rename key_hash() -> hash_key() for consistency with hash_data()
-
 ## NOTE: All functions here are arbitrarily prefixed with 'data'
 ## because they're the 'data workflow' part of the package.  I may
 ## move them elsewhere.
@@ -13,9 +5,18 @@
 ## It does make me wish there was some easy way (i.e., not local) of
 ## having namespaces that are file specific...
 ##
-## TODO: The encryption here feels clumsy; I'd rather remove all of
-## the $encrypt and $decrypt calls, all uses of pack_data and
-## unpack_data in favour of more general encryption + IO functions.
+## The API functions are:
+##
+##   data_admin_init
+##   data_admin_authorise (I don't think this is tested with hash)
+##   data_admin_list_requests
+##   data_admin_list_keys
+##   data_request_access
+##   config_data
+##
+## with most of these being admin functions that will be used fairly
+## little; the config_data one is the only one people will need to use
+## very often.
 
 ##' Encrypted data administration; functions for setting up, adding
 ##' users, etc.
@@ -117,16 +118,19 @@ data_admin_authorise <- function(path_data=".", hash=NULL, path_user=NULL,
       quiet,
       ngettext(length(keys), "There is 1 request for access",
                sprintf("There are %d requests for access", length(keys))))
+  } else if (is.character(hash)) {
+    keys <- lapply(hash, data_pub_load, path_req)
+  } else if (is.raw(hash)) {
+    keys <- list(data_pub_load(hash, path_req))
   } else {
-    stop("Not yet implemented")
+    stop("Invalid type for 'hash'")
   }
 
   if (length(keys) == 0L) {
     workflow_log(quiet, "No keys to add")
+    return()
   }
 
-  ## This is the point where we'd be asked for a password.  Perhaps
-  ## don't run this if there are no requests?
   sym <- data_load_sym(path_data, path_user, quiet)
 
   nerr <- 0L
@@ -141,9 +145,7 @@ data_admin_authorise <- function(path_data=".", hash=NULL, path_user=NULL,
   nok <- length(keys) - nerr
   if (nok > 0) {
     workflow_log(quiet, "Added %d key%s", nok, ngettext(nok, "", "s"))
-    if (FALSE && using_git(path_data)) {
-      ## TODO: This needs fixing; but that depends on getting the
-      ## payload correct.
+    if (using_git(path_data)) {
       users <- paste(vapply(keys, function(x) x$user, character(1)),
                      collapse=", ")
       path_enc <- sub("./", "", data_path_encryptr("."), fixed=TRUE)
@@ -156,6 +158,10 @@ data_admin_authorise <- function(path_data=".", hash=NULL, path_user=NULL,
   }
   if (nerr > 0L) {
     stop(sprintf("Errors adding %d keys", nerr))
+  }
+
+  if (length(dir(path_req, all.files=TRUE, no..=TRUE)) == 0L) {
+    file.remove(path_req)
   }
 }
 
@@ -175,38 +181,21 @@ data_admin_list_keys <- function(path_data=".") {
 ##' User commands
 ##' @title User commands
 ##'
-##' @param password What do we do about passwords?  Options are
-##'   \code{FALSE} for no password, \code{TRUE} for prompting for a
-##'   password, or a string value for a password (which will end up in
-##'   things like your history so be careful).
-##'
-##' @param path Path to the directory with your user key.  Usually
-##'   this can be ommited.  Use the \code{encryptr.user.path} global
-##'   option (i.e., via \code{options()}) to set this more
-##'   conveniently.
-##'
-##' @param quiet Suppress printing of informative messages.
-##' @export
-##' @rdname data_user
-##'
-##' @export
 ##' @param path_data Path to the data.  The default is the current
 ##'   working directory.
 ##'
+##' @param path_user Path to the directory with your user key.
+##'   Usually this can be ommited.  Use the \code{encryptr.user.path}
+##'   global option (i.e., via \code{options()}) to set this more
+##'   conveniently.
+##'
+##' @param quiet Suppress printing of informative messages.
+##'
+##' @export
 ##' @rdname data_user
 data_request_access <- function(path_data=".", path_user=NULL, quiet=FALSE) {
+  key <- data_check_path_user(path_user, quiet)
   data_check_path_data(path_data)
-  path_req <- data_path_request(path_data)
-
-  if (is.character(path_user)) {
-    key <- data_check_path_user(path_user, quiet)
-  } else if (inherits(path_user, "rsa_pair")) {
-    key <- path_user
-  } else {
-    stop("Expected a path or a rsa_pair object")
-  }
-  path_pub <- key[["path"]][["pub"]]
-  dir.create(path_req, FALSE)
 
   ## TODO: Here, we should construct a reasonable request.  Previously
   ## I saved a little metadata with the key:
@@ -215,14 +204,16 @@ data_request_access <- function(path_data=".", path_user=NULL, quiet=FALSE) {
               host=info[["nodename"]],
               date=as.character(Sys.time()),
               pub=key$pub)
-  hash <- key_hash(key$pub)
+  hash <- hash_key(key$pub)
 
   ## OK, this is a nasty and unexpected surprise;
   ##   file.copy(<directory_path>, <full_path_name>)
   ## will create an empty executable file in the destination. Wat.
-  .GlobalEnv$cmp <- dat
   dat$signature <- openssl::signature_create(TMP_key_prep(dat), key=key$key)
-  dest <- TMP_filename_key(path_req, bin2str(hash, ""), FALSE)
+  path_req <- data_path_request(path_data)
+  dir.create(path_req, FALSE)
+
+  dest <- TMP_filename_key(path_req, bin2str(hash, ""))
   if (file.exists(dest)) {
     message("Request is already pending")
   } else {
@@ -236,16 +227,16 @@ data_request_access <- function(path_data=".", path_user=NULL, quiet=FALSE) {
   ##
   ## Consider taking same approach as whoami, but falling back on
   ## asking instead?
-  if (!quiet) {
-    message("A request has been added.  Email someone with access to add you.")
-    message("\thash: ", bin2str(hash, ":"))
-    if (using_git(path_data)) {
-      msg <- c("If you are using git, you will need to commit and push first:",
-               paste("    git add", dest),
-               '    git commit -m "Please add me to the dataset"',
-               '    git push')
-      message(paste(msg, collapse="\n"))
-    }
+  workflow_log(
+    quiet,
+    "A request has been added.  Email someone with access to add you.")
+  workflow_log(quiet, paste0("\thash: ", bin2str(hash, ":")))
+  if (using_git(path_data)) {
+    msg <- c("If you are using git, you will need to commit and push first:",
+             paste("    git add", dest),
+             '    git commit -m "Please add me to the dataset"',
+             '    git push')
+    workflow_log(quiet, paste(msg, collapse="\n"))
   }
   invisible(hash)
 }
@@ -253,8 +244,8 @@ data_request_access <- function(path_data=".", path_user=NULL, quiet=FALSE) {
 ##' @export
 ##' @param test Test that the encryption is working?  (Recommended)
 ##' @rdname data_user
-config_data <- function(path_data=".", path=NULL, test=TRUE, quiet=FALSE) {
-  x <- config_symmetric(data_load_sym(path_data, path, quiet))
+config_data <- function(path_data=".", path_user=NULL, test=TRUE, quiet=FALSE) {
+  x <- config_symmetric(data_load_sym(path_data, path_user, quiet))
   data_test_config(x, path_data, test)
   x
 }
@@ -274,9 +265,9 @@ data_authorise_write <- function(path_data, sym, dat, yes=FALSE, quiet=FALSE) {
   }
   dat$key <- make_config(dat$pair)$encrypt(sym)
   path_enc <- data_path_encryptr(path_data)
-  hash_str <- bin2str(key_hash(dat$pub), "")
+  hash_str <- bin2str(hash_key(dat$pub), "")
 
-  TMP_key_save(dat, TMP_filename_key(path_enc, hash_str, FALSE))
+  TMP_key_save(dat, TMP_filename_key(path_enc, hash_str))
 
   file.remove(dat$filename)
   invisible()
@@ -295,7 +286,7 @@ data_check_path_user <- function(user, quiet=FALSE) {
     return(user)
   }
   user <- data_path_user(user)
-  workflow_log(quiet, "Loading key from %s", user)
+  workflow_log(quiet, "Loading user key from %s", user)
   load_key_ssl(user, TRUE)
 }
 
@@ -308,12 +299,15 @@ data_pub_load <- function(hash, path) {
     hash_str <- gsub(":", "", hash)
     hash <- str2bin(hash_str)
   }
-  filename <- TMP_filename_key(path, hash_str, FALSE)
+  filename <- TMP_filename_key(path, hash_str)
+  if (!file.exists(filename)) {
+    stop(sprintf("No key %s found at path %s", hash, path), call.=FALSE)
+  }
   dat <- readRDS(filename)
 
   ## Two attempts at verifying the data provided as a key to detect
   ## tampering.
-  if (!identical(as.raw(key_hash(dat$pub)), as.raw(hash))) {
+  if (!identical(as.raw(hash_key(dat$pub)), as.raw(hash))) {
     stop("Public key hash disagrees for: ", hash_str)
   }
 
@@ -343,11 +337,12 @@ data_hash <- function(x) {
 }
 
 ##' @export
-as.character.data_key <- function(x, ...) {
-  hash <- bin2str(key_hash(x$pub), ":")
+as.character.data_key <- function(x, ..., indent="") {
+  hash <- bin2str(hash_key(x$pub), ":")
   x <- unlist(x[c("user", "host", "date")])
-  sprintf("%s\n%s", bin2str(hash),
-          paste(sprintf("  %4s: %s", names(x), unlist(x)), collapse="\n"))
+  sprintf("%s%s\n%s", indent, bin2str(hash),
+          paste(sprintf("%s  %4s: %s",
+                        indent, names(x), unlist(x)), collapse="\n"))
 }
 
 ##' @export
@@ -355,9 +350,9 @@ print.data_keys <- function(x, ...) {
   if (length(x) == 0L) {
     cat("(empty)\n")
   } else {
-    ## TODO: I don't like how the hash I use here is different to the
-    ## fingerprint hash used by Jeroen; I do need to swap that out.
-    cat(sprintf("%d keys\n", length(x)))
+    cat(sprintf("%d key%s:\n", length(x), ngettext(length(x), "", "s")))
+    cat(paste0(vapply(x, as.character, character(1), indent="  "),
+               "\n", collapse=""))
   }
   invisible(x)
 }
@@ -386,8 +381,8 @@ data_load_sym <- function(path_data, path_user, quiet) {
   data_check_path_data(path_data)
   path_enc <- data_path_encryptr(path_data)
   key <- data_check_path_user(path_user, quiet)
-  hash_str <- bin2str(key_hash(key$pub), "")
-  path_data_key <- TMP_filename_key(path_enc, hash_str, FALSE)
+  hash_str <- bin2str(hash_key(key$pub), "")
+  path_data_key <- TMP_filename_key(path_enc, hash_str)
   if (!file.exists(path_data_key)) {
     data_access_error(path_data, path_user, path_data_key)
   }
@@ -401,14 +396,9 @@ data_access_error <- function(path_data, path_user, path_data_key) {
   ## remember when we just get the public key (which causes an issue
   ## here).
   if (inherits(path_user, "key_pair")) {
-    if (is.null(path_user$path)) {
-      stop("FIXME")
-      browser()
-    }
-
+    stopifnot(!is.null(path_user$path))
     path_user <- path_user$path$pub
   }
-
 
   if (identical(data_path_user(NULL), path_user)) {
     cmd <- call("data_request_access", path_data)
@@ -438,10 +428,10 @@ workflow_log <- function(quiet, ...) {
   }
 }
 
-TMP_filename_key <- function(path, base, public=TRUE) {
-  file.path(path, paste0(base, if (public) ".pub" else ""))
+## This all gets rationalised a bit:
+TMP_filename_key <- function(path, base) {
+  file.path(path, base)
 }
-
 TMP_key_prep <- function(x) {
   serialize(unclass(x[c("user", "host", "date", "pub")]), NULL)
 }

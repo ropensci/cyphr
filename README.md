@@ -44,8 +44,8 @@ key
 ```
 
 ```
-##  [1] fd 6f 63 67 90 4d 8b b5 82 5e ad 5f 91 3a b6 37 3d c2 8f 01 1f 44 c9
-## [24] 3e 0e fc 4c 7b 5f 57 3e 8f
+##  [1] 0a cf 92 0a 72 9e eb 92 0f ff a2 f0 06 2c 4d 4f 66 e9 ad ff 2c bd f1
+## [24] a0 7a 0a 9b bc c2 da 35 f4
 ```
 
 With this key we can create the `encryptr_config` object:
@@ -147,6 +147,39 @@ readRDS("myfile.rds") # unknown format
 The above commands work through computing on the language, rewriting the `readRDS` and `saveRDS` commands.  Commands for reading and writing tabular and plain text files (`read.csv`, `readLines`, etc) are also supported, and the way the rewriting is done is designed to be extensible.
 
 With (probably) some limitations, the argument to the wrapped functions can be connection objects.  In this case the *actual* command is written to a file and the contents of that file are encrypted and written to the connection.  When reading/writing multiple objects from/to a single connection though, this is likely to go very badly.
+
+Because `encrypt` and `decrypt` compute on the language, standard evaluation forms `encrypt_` and `decrypt_` are provided that take a quoted expression as their first argument.
+
+### Supporting additional functions
+
+The functions supported so far are:
+
+* `readLines` / `writeLines`
+* `readRDS` / `writeRDS`
+* `read` / `save`
+* `read.table` / `write.table`
+* `read.csv` / `read.csv2` / `write.csv`
+* `read.delim` / `read.delim2`
+
+However, there are bound to be more functions that could be useful to add here (e.g., `readxl::read_excel`).  Either pass the name of the file argument to `encrypt` / `decrypt` as
+
+```r
+decrypt(readxl::read_excel("myfile.xlsx"), key, file_arg="path")
+```
+
+or *register* the function with the package using `rewrite_register`:
+
+```r
+encryptr::rewrite_register("readxl", "read_excel", "path")
+```
+
+Then you can use
+
+```r
+decrypt(readxl::read_excel("myfile.xlsx"), key)
+```
+
+to decrypt the file.
 
 ## Workflow support
 

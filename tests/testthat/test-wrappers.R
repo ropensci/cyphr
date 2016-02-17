@@ -37,17 +37,22 @@ test_that("nse 2", {
 })
 
 test_that("visibility", {
+  ## Also is a test for custom functions :-\
   f <- function(x, filename=tempfile(), visible=FALSE) {
     saveRDS(x, filename)
     if (visible) filename else invisible(filename)
   }
 
   x <- config_symmetric(sodium::keygen())
-  expect_error(encrypt(f(iris), x), "Function f not found in database")
+  expect_error(encrypt(f(iris), x), "Rewrite rule for f not found")
   res <- withVisible(encrypt(f(iris), x, file_arg="filename"))
   expect_false(res$visible)
 
-  res <- withVisible(encrypt(f(iris, visible=TRUE), x, file_arg="filename"))
+  rewrite_register("", "f", "filename")
+  res <- withVisible(encrypt(f(iris), x))
+  expect_false(res$visible)
+
+  res <- withVisible(encrypt(f(iris, visible=TRUE), x))
   expect_true(res$visible)
 })
 

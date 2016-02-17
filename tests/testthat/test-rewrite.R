@@ -30,7 +30,7 @@ test_that("command rewriting", {
   expect_error(rewrite(quote(unknown("myfile"))),
                "was not found")
   expect_error(rewrite(quote(plot("myfile"))),
-               "not found in database")
+               "Rewrite rule for graphics::plot not found", fixed=TRUE)
 })
 
 test_that("filename default argument", {

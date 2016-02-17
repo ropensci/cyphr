@@ -12,7 +12,7 @@ rewrite <- function(expr, file_arg=NULL, envir=parent.frame(),
   }
   dat <- find_function(expr[[1]], envir)
 
-  x <- db_lookup(dat$name, dat$ns, file_arg)
+  x <- db_lookup(dat$ns, dat$name, file_arg)
   ## There's a giant workaround here for write.csv & write.csv2 which
   ## pass all their arguments to write.table with a little rewriting.
   ##
@@ -93,13 +93,15 @@ find_function <- function(name, envir) {
     } else {
       ns <- ""
     }
-  } else { ## need to handle is.function here, still; it will be slower.
+  } else {
+    ## need to handle is.function here, still; it will be slower.
+    ## That might an issue with things like lapply, perhaps.
     stop("Confused.")
   }
   list(name=name, defn=defn, ns=ns)
 }
 
-## Need to create a little database of known filename arguments to
+## Need to create a little lookup table of known filename arguments to
 ## widely used functions.  Getting a full list here is going to be a
 ## little hard, but so long as this is extensible it doesn't much
 ## matter.
@@ -117,14 +119,10 @@ find_function <- function(name, envir) {
 ## with something that manually traverses the environments, which I
 ## implemented in rrqueue.
 ##
-## This should be implemented as a data.frame I think; that'd be heaps
-## easier to extend, especially if it compiles at load (csv -> dat or
-## store in sysdata).
-##
 ## making this extensible probably requires having additional elements
 ## that are added to this list when the db call is run; those could
 ## come from a registering process easily enough (e.g., during onLoad());
-##   add_to_db(package, name, arg)
+##   rewrite_register(package, name, arg)
 db <- function() {
   f <- function(name, arg, package, fn=NA_character_) {
     c(name=name, arg=arg, package=package, fn=fn)
@@ -137,9 +135,9 @@ db <- function() {
           f("read.table",  "file",     "utils"),
           f("write.table", "file",     "utils"),
           f("read.csv",    "file",     "utils"),
-          f("write.csv",   "file",     "utils", "utils::write.table"),
+          f("write.csv",   "file",     "utils", c("utils", "write.table")),
           f("read.csv2",   "file",     "utils"),
-          f("write.csv2",  "file",     "utils", "utils::write.table"),
+          f("write.csv2",  "file",     "utils", c("utils", "write.table")),
           f("read.delim",  "file",     "utils"),
           f("read.delim2", "file",     "utils"))
   ## NOTE: graphics devices will take work to get working because it's
@@ -156,28 +154,95 @@ db <- function() {
   as.data.frame(dat, stringsAsFactors=FALSE)
 }
 
-db_lookup <- function(name, package, arg) {
-  db <- db()
-  i <- which(db$package == package & db$name == name)
-  if (length(i) > 1L) {
-    ## Clean this on entry.
-    stop("Duplicate database entries, stopping")
-  } else if (length(i) == 1L) {
-    ret <- as.list(db[i, ])
-    if (is.na(ret$fn)) {
-      ret$fn <- NULL
-    } else {
-      tmp <- strsplit(ret$fn, "::", fixed=TRUE)[[1]]
-      ret$fn <- args(getExportedValue(tmp[[1]], tmp[[2]]))
+db <- new.env(parent=baseenv())
+
+db_lookup <- function(package, name, arg) {
+  key <- paste(package, name, sep="::")
+  if (exists(key, db)) {
+    ret <- db[[key]]
+    if (!is.null(ret$fn)) {
+      ret$fn <- args(getExportedValue(ret$fn[[1]], ret$fn[[2]]))
     }
     if (!is.null(arg)) {
       ret$arg <- arg
     }
-    ret
   } else if (is.null(arg)) {
-    nm <- if (package == "") name else paste0(package, "::", name)
-    stop(sprintf("Function %s not found in database", nm))
+    stop(sprintf("Rewrite rule for %s not found",
+                 if (package == "") name else key))
   } else {
-    list(arg=arg)
+    ret <- list(arg=arg)
+  }
+  ret
+}
+
+##' Add information about argument rewriting so that they can be used
+##' with \code{\link{encrypt}} and \code{\link{decrypt}}.
+##'
+##' If your package uses encryptr, it might be useful to add this as
+##' an onLoad hook.
+##' @title Register functions to work with encrypt/decrypt
+##' @param package The name of the package with the function to
+##'   support (as a scalar character).  If your function has no
+##'   package (e.g., a function you are working on outside of a
+##'   package, use "" as the name).
+##' @param name The name of the function to support.
+##' @param arg The name of the argument in the target function that
+##'   refers to the file that should be encrypted or decrypted.  This
+##'   is the value you would pass through to \code{file_arg} in
+##'   \code{\link{encrypt}}.
+##' @param fn Optional (and should be rare) argument used to work
+##'   around functions that pass all their arguments through to a
+##'   second function as dots.  This is how \code{read.csv} works.  If
+##'   needed this function is a length-2 character vector in the form
+##'   "package", "name" with the actual function that is used.  But
+##'   this should be very rare!
+##' @export
+##' @examples
+##' # The saveRDS function is already supported.  But if we wanted to
+##' # support it we could look at the arguments for the function:
+##' args(saveRDS)
+##' # The 'file' argument is the one that refers to the filename, so
+##' # we'd write:
+##' rewrite_register("base", "saveRDS", "file")
+##' # It's non-API but you can see what is supported in the package by
+##' # looking at
+##' ls(encryptr:::db)
+rewrite_register <- function(package, name, arg, fn=NULL) {
+  check <- function(x, len=1L, nm=deparse(substitute(x))) {
+    if (!(is.character(x) && length(x) == len && !any(is.na(x)))) {
+      if (len == 1L) {
+        stop(sprintf("%s must be a non-NA scalar character", nm))
+      } else {
+        stop(sprintf("%s must be a character of length %d", nm, len))
+      }
+    }
+  }
+  check(name)
+  check(arg)
+  check(package)
+  if (!is.null(fn)) {
+    check(fn, 2L)
+  }
+  key <- paste(package, name, sep="::")
+  dat <- list(name=name, package=package, arg=arg, fn=fn)
+  if (exists(key) && isTRUE(identical(dat, db[[key]]))) {
+    stop(sprintf("An entry already exists for %s and contents differ", key))
+  } else {
+    assign(key, dat, envir=db)
   }
 }
+
+rewrite_register("base",  "readLines",   "con")
+rewrite_register("base",  "writeLines",  "con")
+rewrite_register("base",  "readRDS",     "file")
+rewrite_register("base",  "saveRDS",     "file")
+rewrite_register("base",  "save",        "file")
+rewrite_register("base",  "load",        "file")
+rewrite_register("utils", "read.table",  "file")
+rewrite_register("utils", "write.table", "file")
+rewrite_register("utils", "read.csv",    "file")
+rewrite_register("utils", "write.csv",   "file", c("utils", "write.table"))
+rewrite_register("utils", "read.csv2",   "file")
+rewrite_register("utils", "write.csv2",  "file", c("utils", "write.table"))
+rewrite_register("utils", "read.delim",  "file")
+rewrite_register("utils", "read.delim2", "file")

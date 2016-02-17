@@ -145,9 +145,10 @@ load_key_ssl <- function(path, private=TRUE) {
     class(ret) <- c("rsa_pair", "key_pair")
   } else {
     dat <- find_key_ssl(path, private)
+    pw <- openssl_password(dat$key)
     ret <- list(path=dat,
                 pub=openssl::read_pubkey(dat$pub),
-                key=if (private) openssl::read_key(dat$key) else NULL)
+                key=if (private) openssl::read_key(dat$key, pw) else NULL)
     class(ret) <- c("rsa_pair", "key_pair")
   }
   ret

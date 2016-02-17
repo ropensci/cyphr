@@ -1,4 +1,4 @@
-config_openssl <- function(path, private=TRUE) {
+config_openssl <- function(path=NULL, private=TRUE) {
   dat <- load_key_ssl(path, private)
   key <- dat$key
   pub <- dat$pub

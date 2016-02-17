@@ -99,11 +99,6 @@ find_function <- function(name, envir) {
   list(name=name, defn=defn, ns=ns)
 }
 
-find_file_arg <- function(dat, expr, file_arg) {
-
-
-}
-
 ## Need to create a little database of known filename arguments to
 ## widely used functions.  Getting a full list here is going to be a
 ## little hard, but so long as this is extensible it doesn't much

@@ -37,28 +37,20 @@ Decide on a style of encryption and create a `encryptr_config` object
 
 To generate keys, you really should read the underling documentation in the `sodium` or `openssl` packages!  The `sodium` keys do not have a file format: they are simply random data.  So a secret symmetric key in `sodium` might be:
 
-
-```r
+```{r}
 key <- sodium::keygen()
 key
 ```
 
-```
-##  [1] fd 6f 63 67 90 4d 8b b5 82 5e ad 5f 91 3a b6 37 3d c2 8f 01 1f 44 c9
-## [24] 3e 0e fc 4c 7b 5f 57 3e 8f
-```
-
 With this key we can create the `encryptr_config` object:
 
-
-```r
+```{r}
 cfg <- encryptr::config_symmetric(key)
 ```
 
 If the key was saved to file that would work too:
 
-
-```r
+```{r}
 path <- tempfile()
 writeBin(key, path)
 cfg <- encryptr::config_symmetric(path)
@@ -66,8 +58,7 @@ cfg <- encryptr::config_symmetric(path)
 
 If you load a password protected ssh key you will be prompted for your passphrase.  `encryptr` will ensure that this is not echoed onto the console.
 
-
-```r
+```{r, eval=FALSE}
 cfg <- config_openssl()
 ## Please enter private key passphrase:
 ```
@@ -76,36 +67,27 @@ cfg <- config_openssl()
 
 If you have files that already exist and you want to encrypt or decrypt, the functions `encrypt_file` and `decrypt_file` will do that (these are workhorse functions that are used internally throughout the package)
 
-
-```r
+```{r}
 saveRDS(iris, "myfile")
 encrypt_file("myfile", "myfile.encrypted", cfg)
 ```
 
 The file is encrypted now:
 
-
-```r
+```{r, error=TRUE}
 readRDS("myfile.encrypted")
-```
-
-```
-## Error in readRDS("myfile.encrypted"): unknown input format
 ```
 
 Decrypt the file and read it:
 
-
-```r
+```{r}
 decrypt_file("myfile.encrypted", "myfile.clear", cfg)
 identical(readRDS("myfile.clear"), iris)
 ```
 
+```{r, echo=FALSE, results="hide"}
+file.remove("myfile", "myfile.encrypted", "myfile.clear")
 ```
-## [1] TRUE
-```
-
-
 
 ## Wrappers around R's file functions
 
@@ -113,27 +95,20 @@ While encrypting files is nice, the aim of the package is
 
 To encrypt the output of a file producing command, wrap it in `encrypt`
 
-
-```r
+```{r}
 encrypt(saveRDS(iris, "myfile.rds"), cfg)
 ```
 
 To decrypt the a file to feed into a file consuming command, wrap it in `decrypt`:
 
-
-```r
+```{r}
 dat <- decrypt(readRDS("myfile.rds"), cfg)
 ```
 
 The roundtrip preserves the data:
 
-
-```r
+```{r}
 identical(dat, iris) # yay
-```
-
-```
-## [1] TRUE
 ```
 
 But without the key, it cannot be read:
@@ -142,7 +117,9 @@ But without the key, it cannot be read:
 readRDS("myfile.rds") # unknown format
 ```
 
-
+```{r, echo=FALSE, results="hide"}
+file.remove("myfile.rds")
+```
 
 The above commands work through computing on the language, rewriting the `readRDS` and `saveRDS` commands.  Commands for reading and writing tabular and plain text files (`read.csv`, `readLines`, etc) are also supported, and the way the rewriting is done is designed to be extensible.
 

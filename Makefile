@@ -35,5 +35,9 @@ vignettes/data.Rmd: vignettes/src/data.R
 vignettes: vignettes/data.Rmd
 	${RSCRIPT} -e 'library(methods); devtools::build_vignettes()'
 
-# No real targets!
-.PHONY: all test document install vignettes
+README.md: README.Rmd
+	Rscript -e 'library(methods); devtools::load_all(); knitr::knit("README.Rmd")'
+	sed -i.bak 's/[[:space:]]*$$//' $@
+	rm -f $@.bak
+
+.PHONY: all test document install vignettes check build staticdocs website

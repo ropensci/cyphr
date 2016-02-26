@@ -1,6 +1,6 @@
 Package: encryptr
 Title: Enryption Wrappers
-Version: 0.0.1
+Version: 0.0.2
 Author: Rich FitzJohn
 Maintainer: Rich FitzJohn <rich.fitzjohn@gmail.com>
 Description: Encryption wrappers, using low-level support from sodium and openssl.

@@ -94,3 +94,11 @@ Sys_getenv <- function(pos, fail=NULL) {
   }
   fail
 }
+
+file_remove_if_exists <- function(...) {
+  paths <- c(...)
+  ok <- file.exists(paths)
+  if (any(ok)) {
+    file.remove(paths[ok])
+  }
+}

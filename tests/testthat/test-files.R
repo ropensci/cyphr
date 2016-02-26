@@ -4,7 +4,7 @@ test_that("public", {
   key <- sodium::keygen()
   pub <- sodium::pubkey(key)
 
-  x <- config_public(key, pub)
+  x <- config_public(pub, key)
 
   path1 <- tempfile()
   path2 <- tempfile()
@@ -49,8 +49,8 @@ test_that("authenticated", {
   key2 <- sodium::keygen()
   pub2 <- sodium::pubkey(key2)
 
-  x1 <- config_authenticated(key1, pub2)
-  x2 <- config_authenticated(key2, pub1)
+  x1 <- config_authenticated(pub2, key1)
+  x2 <- config_authenticated(pub1, key2)
 
   path1 <- tempfile()
   path2 <- tempfile()

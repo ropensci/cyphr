@@ -3,11 +3,11 @@ context("more keys")
 ## All the different ways of getting things in:
 
 test_that("sodium symmetric", {
-  k <- key_sodium_symmetric(sodium::keygen())
+  k <- load_key_sodium_symmetric(sodium::keygen())
 
   path <- tempfile()
   writeBin(as.raw(k), path)
-  expect_identical(key_sodium_symmetric(path), k)
+  expect_identical(load_key_sodium_symmetric(path), k)
 
   x <- make_config(k)
 
@@ -16,11 +16,11 @@ test_that("sodium symmetric", {
   expect_identical(x$decrypt(secret), dat)
 })
 
-test_that("sodium public", {
+test_that("sodium pair", {
   k <- sodium::keygen()
   p <- sodium::pubkey(k)
 
-  pair <- key_sodium_public(p, k)
+  pair <- load_key_sodium_pair(p, k)
   expect_is(pair, "key_pair")
   expect_is(pair, "sodium_pair")
 
@@ -35,7 +35,7 @@ test_that("sodium public", {
   expect_identical(x$decrypt(secret), dat)
 
   ## and without a key loaded:
-  pair <- key_sodium_public(p, NULL)
+  pair <- load_key_sodium_pair(p, NULL)
   expect_is(pair, "key_pair")
   expect_is(pair, "sodium_pair")
 

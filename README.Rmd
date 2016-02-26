@@ -9,10 +9,10 @@ Encryption wrappers, using low-level support from [`sodium`](https://github.com/
 
 It provides high level functions to:
 
-* Encrypt and decrypt files (creating a new file) (`encrypt_file`, `decrypt_file`)
-* Wrappers (`encrypt` and `decrypt`) around R's file reading and writing functions that enable transparent encryption (support included for `readRDS`/`writeRDS`, `read.csv`/`write.csv`, etc).
+* Encrypt and decrypt strings (`encrypt_string` / `decrypt_string`), objects (`encrypt_object` / `decrypt_object`), raw data (`encrypt_data` / `decrypt_data`) and files (`encrypt_file` / `decrypt_file`)
+* User-friendly Wrappers (`encrypt` and `decrypt`) around R's file reading and writing functions that enable transparent encryption (support included for `readRDS`/`writeRDS`, `read.csv`/`write.csv`, etc).
 
-The package aims to make encrypting and decrypting data as easy as
+The package aims to make encrypting and decrypting as easy as
 
 ```r
 encrypt(save.csv(dat, "file.csv"), key)

@@ -42,7 +42,7 @@ test_that("basic workflow", {
   expect_equal(length(tmp), 1L)
   expect_identical(tmp[[1]]$pub, load_key_ssl(path_us1, FALSE)$pub)
   expect_identical(names(tmp),
-                   bin2str(hash_key(tmp[[1]]$pub), ""))
+                   bin2str(openssl_fingerprint(tmp[[1]]$pub), ""))
 
   x1 <- config_data(path_dat, path_us1, TRUE)
   expect_is(x1, "encryptr_config")
@@ -89,14 +89,16 @@ test_that("basic workflow", {
   tmp <- data_admin_list_keys(path_dat)
   expect_equal(length(tmp), 2L)
 
-  expect_true(bin2str(hash_key(tmp[[1]]$pub), "") %in% names(tmp))
-  expect_true(bin2str(hash_key(tmp[[2]]$pub), "") %in% names(tmp))
+  expect_true(bin2str(openssl_fingerprint(tmp[[1]]$pub), "") %in% names(tmp))
+  expect_true(bin2str(openssl_fingerprint(tmp[[2]]$pub), "") %in% names(tmp))
 
   expect_true(bin2str(
-    hash_key(openssl::read_pubkey(file.path(path_us1, "id_rsa.pub"))), "")
+    openssl_fingerprint(
+      openssl::read_pubkey(file.path(path_us1, "id_rsa.pub"))), "")
     %in% names(tmp))
   expect_true(bin2str(
-    hash_key(openssl::read_pubkey(file.path(path_us2, "id_rsa.pub"))), "")
+    openssl_fingerprint(
+      openssl::read_pubkey(file.path(path_us2, "id_rsa.pub"))), "")
     %in% names(tmp))
 })
 

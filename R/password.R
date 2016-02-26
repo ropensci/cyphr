@@ -1,3 +1,8 @@
+## NOTE: Drew Schmitt (wrathmatics) is working on a crossplatform
+## password-getter that works nicely with Rstudio etc.  Use that once
+## it's available (it's currently on github only but we could probably
+## get that via drat?)
+
 ## NOTE: this might be better with a toolkit package, but that seems
 ## unlikely fo a very heavy dependency tail (installing the gtk things
 ## is horrible).

@@ -1,3 +1,26 @@
+##' Load keys for use with \code{\link{encrypt}} /
+##' \code{\link{decrypt}}, using openssl encryption.  This is in
+##' contrast to the sodium supported keys in (e.g.,
+##' \code{\link{config_symmetric}} as here we assume that keys are
+##' specified as the path to files as there are standard formats for
+##' these.
+##' @title Load openssl keys
+##' @param path The path to the key.  If \code{NULL}, the environment
+##'   variables \code{USER_KEY} and \code{USER_PUBKEY} are checked,
+##'   and if they are empty then \code{~/.ssh/id_rsa} is used.  The
+##'   path can be either the full path to a public or private key, or
+##'   it can be the path to a directory containing the keypair (as
+##'   \code{id_rsa} and \code{id_rsa.pub}).
+##' @param private A logical scalar indicating if the private key
+##'   should be loaded.  Because keypairs are often password
+##'   protected, and because public keys are useful on their own,
+##'   often it will not be needed to unlock and load the private key.
+##' @export
+##' @examples
+##' \dontrun{
+##' cfg <- config_openssl(private=FALSE)
+##' cfg$encrypt(charToRaw("hello"))
+##' }
 config_openssl <- function(path=NULL, private=TRUE) {
   dat <- load_key_ssl(path, private)
   key <- dat$key
@@ -10,17 +33,6 @@ config_openssl <- function(path=NULL, private=TRUE) {
 
 openssl__decrypt_envelope <- function(x, key) {
   openssl::decrypt_envelope(x$data, x$iv, x$session, key)
-}
-
-openssl_password <- function(path_key) {
-  msg <- sprintf("Please enter password for private key %s", path_key)
-  function(.) {
-    get_password_str(FALSE, 0, msg)
-  }
-}
-
-as_character <- function(x) {
-  capture.output(print(x))
 }
 
 ##' Wrapper around ssh-keygen(1).
@@ -69,7 +81,9 @@ ssh_keygen <- function(path=tempfile(), password=TRUE) {
   invisible(path)
 }
 
-## Valid values for private are TRUE/FALSE only
+## Valid values for private are TRUE/FALSE only.
+##
+## TODO: Should support passing a path or binary data?
 find_key_ssl <- function(path=NULL, private=TRUE) {
   if (is.list(path)) {
     if (private && is.null(path$key)) {
@@ -145,7 +159,10 @@ load_key_ssl <- function(path, private=TRUE) {
     class(ret) <- c("rsa_pair", "key_pair")
   } else {
     dat <- find_key_ssl(path, private)
-    pw <- openssl_password(dat$key)
+    pw <- function(...) {
+      msg <- sprintf("Please enter password for private key %s", dat$key)
+      get_password_str(FALSE, 0, msg)
+    }
     ret <- list(path=dat,
                 pub=openssl::read_pubkey(dat$pub),
                 key=if (private) openssl::read_key(dat$key, pw) else NULL)
@@ -154,6 +171,6 @@ load_key_ssl <- function(path, private=TRUE) {
   ret
 }
 
-hash_key <- function(k) {
+openssl_fingerprint <- function(k) {
   as.list(k)$fingerprint
 }

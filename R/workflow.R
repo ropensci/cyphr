@@ -63,7 +63,7 @@ data_admin_init <- function(path_data=".", path_user=NULL, quiet=FALSE) {
     dir.create(path_enc, FALSE, TRUE)
 
     ## Now, the idea is to create a key for the data set:
-    sym <- key_sodium_symmetric(sodium::keygen())
+    sym <- load_key_sodium_symmetric(sodium::keygen())
 
     ## NOTE: If anything below fails, this file needs deleting, as
     ## this is the file that we check to see if things are set up
@@ -204,20 +204,20 @@ data_request_access <- function(path_data=".", path_user=NULL, quiet=FALSE) {
               host=info[["nodename"]],
               date=as.character(Sys.time()),
               pub=key$pub)
-  hash <- hash_key(key$pub)
+  hash <- openssl_fingerprint(key$pub)
 
   ## OK, this is a nasty and unexpected surprise;
   ##   file.copy(<directory_path>, <full_path_name>)
   ## will create an empty executable file in the destination. Wat.
-  dat$signature <- openssl::signature_create(TMP_key_prep(dat), key=key$key)
+  dat$signature <- openssl::signature_create(data_key_prep(dat), key=key$key)
   path_req <- data_path_request(path_data)
   dir.create(path_req, FALSE)
 
-  dest <- TMP_filename_key(path_req, bin2str(hash, ""))
+  dest <- file.path(path_req, bin2str(hash, ""))
   if (file.exists(dest)) {
     message("Request is already pending")
   } else {
-    TMP_key_save(dat, dest)
+    data_key_save(dat, dest)
   }
 
   ## The idea here is that they will email or whatever creating a
@@ -265,9 +265,9 @@ data_authorise_write <- function(path_data, sym, dat, yes=FALSE, quiet=FALSE) {
   }
   dat$key <- make_config(dat$pair)$encrypt(sym)
   path_enc <- data_path_encryptr(path_data)
-  hash_str <- bin2str(hash_key(dat$pub), "")
+  hash_str <- bin2str(openssl_fingerprint(dat$pub), "")
 
-  TMP_key_save(dat, TMP_filename_key(path_enc, hash_str))
+  data_key_save(dat, file.path(path_enc, hash_str))
 
   file.remove(dat$filename)
   invisible()
@@ -299,7 +299,7 @@ data_pub_load <- function(hash, path) {
     hash_str <- gsub(":", "", hash)
     hash <- str2bin(hash_str)
   }
-  filename <- TMP_filename_key(path, hash_str)
+  filename <- file.path(path, hash_str)
   if (!file.exists(filename)) {
     stop(sprintf("No key %s found at path %s", hash, path), call.=FALSE)
   }
@@ -307,12 +307,12 @@ data_pub_load <- function(hash, path) {
 
   ## Two attempts at verifying the data provided as a key to detect
   ## tampering.
-  if (!identical(as.raw(hash_key(dat$pub)), as.raw(hash))) {
+  if (!identical(as.raw(openssl_fingerprint(dat$pub)), as.raw(hash))) {
     stop("Public key hash disagrees for: ", hash_str)
   }
 
   tryCatch(
-    openssl::signature_verify(TMP_key_prep(dat), dat$signature, pubkey=dat$pub),
+    openssl::signature_verify(data_key_prep(dat), dat$signature, pubkey=dat$pub),
     error=function(e) stop("Signature of data does not match for ", hash_str))
 
   dat$pair <- load_key_ssl(dat$pub, FALSE)
@@ -338,7 +338,7 @@ data_hash <- function(x) {
 
 ##' @export
 as.character.data_key <- function(x, ..., indent="") {
-  hash <- bin2str(hash_key(x$pub), ":")
+  hash <- bin2str(openssl_fingerprint(x$pub), ":")
   x <- unlist(x[c("user", "host", "date")])
   sprintf("%s%s\n%s", indent, bin2str(hash),
           paste(sprintf("%s  %4s: %s",
@@ -381,13 +381,13 @@ data_load_sym <- function(path_data, path_user, quiet) {
   data_check_path_data(path_data)
   path_enc <- data_path_encryptr(path_data)
   key <- data_check_path_user(path_user, quiet)
-  hash_str <- bin2str(hash_key(key$pub), "")
-  path_data_key <- TMP_filename_key(path_enc, hash_str)
+  hash_str <- bin2str(openssl_fingerprint(key$pub), "")
+  path_data_key <- file.path(path_enc, hash_str)
   if (!file.exists(path_data_key)) {
     data_access_error(path_data, path_user, path_data_key)
   }
   sym <- make_config(key)$decrypt(readRDS(path_data_key)$key)
-  key_sodium_symmetric(sym)
+  load_key_sodium_symmetric(sym)
 }
 
 data_access_error <- function(path_data, path_user, path_data_key) {
@@ -428,14 +428,10 @@ workflow_log <- function(quiet, ...) {
   }
 }
 
-## This all gets rationalised a bit:
-TMP_filename_key <- function(path, base) {
-  file.path(path, base)
-}
-TMP_key_prep <- function(x) {
+data_key_prep <- function(x) {
   serialize(unclass(x[c("user", "host", "date", "pub")]), NULL)
 }
-TMP_key_save <- function(x, filename) {
+data_key_save <- function(x, filename) {
   keep <- c("user", "host", "date", "pub", "signature", "key")
   saveRDS(x[names(x) %in% keep], filename)
 }

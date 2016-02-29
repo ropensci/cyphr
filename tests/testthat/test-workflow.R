@@ -40,14 +40,14 @@ test_that("basic workflow", {
 
   tmp <- data_admin_list_keys(path_dat)
   expect_equal(length(tmp), 1L)
-  expect_identical(tmp[[1]]$pub, load_key_ssl(path_us1, FALSE)$pub)
+  expect_identical(tmp[[1]]$pub, load_key_openssl(path_us1, FALSE)$pub)
   expect_identical(names(tmp),
                    bin2str(openssl_fingerprint(tmp[[1]]$pub), ""))
 
   x1 <- config_data(path_dat, path_us1, TRUE)
   expect_is(x1, "encryptr_config")
   ## TODO: perhaps this should be sodium_symmetric
-  expect_equal(x1$type, "symmetric")
+  expect_equal(x1$type, "sodium_symmetric")
 
   expect_error(config_data(path_dat, path_us2, TRUE),
                "Key file not found")

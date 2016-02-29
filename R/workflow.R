@@ -245,7 +245,7 @@ data_request_access <- function(path_data=".", path_user=NULL, quiet=FALSE) {
 ##' @param test Test that the encryption is working?  (Recommended)
 ##' @rdname data_user
 config_data <- function(path_data=".", path_user=NULL, test=TRUE, quiet=FALSE) {
-  x <- config_symmetric(data_load_sym(path_data, path_user, quiet))
+  x <- config_sodium_symmetric(data_load_sym(path_data, path_user, quiet))
   data_test_config(x, path_data, test)
   x
 }
@@ -287,7 +287,7 @@ data_check_path_user <- function(user, quiet=FALSE) {
   }
   user <- data_path_user(user)
   workflow_log(quiet, "Loading user key from %s", user)
-  load_key_ssl(user, TRUE)
+  load_key_openssl(user, TRUE)
 }
 
 ## TODO: data_pub_load changes name I think, because this is more than
@@ -315,7 +315,7 @@ data_pub_load <- function(hash, path) {
     openssl::signature_verify(data_key_prep(dat), dat$signature, pubkey=dat$pub),
     error=function(e) stop("Signature of data does not match for ", hash_str))
 
-  dat$pair <- load_key_ssl(dat$pub, FALSE)
+  dat$pair <- load_key_openssl(dat$pub, FALSE)
   dat$filename <- filename
   class(dat) <- "data_key"
   dat
@@ -362,7 +362,7 @@ data_path_user <- function(path) {
   if (is.null(path)) {
     path <- getOption("encryptr.user.path", NULL)
   }
-  find_key_ssl(path)$pub
+  find_key_openssl(path)$pub
 }
 
 data_path_encryptr <- function(path) {

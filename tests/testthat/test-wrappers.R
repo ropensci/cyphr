@@ -2,14 +2,14 @@ context("wrappers")
 
 test_that("se", {
   on.exit(file_remove_if_exists("output.rds"))
-  x <- config_symmetric(sodium::keygen())
+  x <- config_sodium_symmetric(sodium::keygen())
   encrypt_(quote(saveRDS(iris, "output.rds")), x)
   expect_identical(decrypt_(quote(readRDS("output.rds")), x), iris)
   expect_error(readRDS("output.rds"), "unknown input format")
 })
 
 test_that("nse", {
-  x <- config_symmetric(sodium::keygen())
+  x <- config_sodium_symmetric(sodium::keygen())
   len <- length(dir(tempdir()))
 
   filename <- tempfile()
@@ -24,7 +24,7 @@ test_that("nse", {
 })
 
 test_that("nse 2", {
-  x <- config_symmetric(sodium::keygen())
+  x <- config_sodium_symmetric(sodium::keygen())
   filename <- tempfile()
   on.exit(file_remove_if_exists(filename))
 
@@ -43,7 +43,7 @@ test_that("visibility", {
     if (visible) filename else invisible(filename)
   }
 
-  x <- config_symmetric(sodium::keygen())
+  x <- config_sodium_symmetric(sodium::keygen())
   expect_error(encrypt(f(iris), x), "Rewrite rule for f not found")
   res <- withVisible(encrypt(f(iris), x, file_arg="filename"))
   expect_false(res$visible)
@@ -57,7 +57,7 @@ test_that("visibility", {
 })
 
 test_that("non-file arguments", {
-  x <- config_symmetric(sodium::keygen())
+  x <- config_sodium_symmetric(sodium::keygen())
   f <- tempfile()
   on.exit(file.remove(f))
   con <- file(f, "wb")

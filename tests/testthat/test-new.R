@@ -45,8 +45,7 @@ test_that("sodium pair", {
 })
 
 test_that("openssl", {
-  ## TODO: load_key_ssl(load_key_ssl()) -> if an rsa pair pass along
-  pair <- load_key_ssl(OPENSSL_KEY)
+  pair <- load_key_openssl(OPENSSL_KEY)
   expect_is(pair, "key_pair")
   expect_is(pair, "rsa_pair")
   expect_is(pair$path, "list")
@@ -66,4 +65,23 @@ test_that("openssl", {
   expect_identical(x2$decrypt(secret), dat)
   expect_error(x2$encrypt(sodium::random(1000)),
                "data too large for key size")
+})
+
+test_that("basics", {
+  ## TODO: Arrange to loop over all the basic key types here.
+  path <- tempfile()
+  ssh_keygen(path, FALSE)
+  cfg <- config_openssl(path)
+
+  str <- "secret"
+  secret <- encrypt_string(str, NULL, cfg)
+  expect_is(secret, "raw")
+  expect_equal(decrypt_string(secret, cfg), str)
+
+  cfg2 <- config_openssl(path, FALSE)
+  secret2 <- encrypt_string(str, NULL, cfg2)
+  expect_equal(decrypt_string(secret2, cfg), str)
+
+  expect_error(decrypt_string(secret2, cfg2),
+               "decryption not supported")
 })

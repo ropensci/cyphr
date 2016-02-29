@@ -16,15 +16,21 @@ load_key_sodium <- function(x, type) {
   x
 }
 
+## Then things that we will use internally:
+load_key_sodium_symmetric <- function(path_key) {
+  load_key_sodium(path_key, "sodium_symmetric")
+}
+load_key_sodium_public <- function(path_pub) {
+  load_key_sodium(path_pub, "sodium_public")
+}
+load_key_sodium_private <- function(path_key) {
+  load_key_sodium(path_key, "sodium_private")
+}
+
 ##' @export
 print.key_sodium <- function(x, ...) {
   cat(sprintf("<%s key>\n", class(x)[[1L]]))
   invisible(x)
-}
-
-## Then things that we will use internally:
-load_key_sodium_symmetric <- function(path_key) {
-  load_key_sodium(path_key, "sodium_symmetric")
 }
 
 ## This is never really used because I switched over to use rsa.

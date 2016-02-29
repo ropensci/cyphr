@@ -1,40 +1,3 @@
-##' Load keys for use with \code{\link{encrypt}} /
-##' \code{\link{decrypt}}, using openssl encryption.  This is in
-##' contrast to the sodium supported keys in (e.g.,
-##' \code{\link{config_symmetric}} as here we assume that keys are
-##' specified as the path to files as there are standard formats for
-##' these.
-##' @title Load openssl keys
-##' @param path The path to the key.  If \code{NULL}, the environment
-##'   variables \code{USER_KEY} and \code{USER_PUBKEY} are checked,
-##'   and if they are empty then \code{~/.ssh/id_rsa} is used.  The
-##'   path can be either the full path to a public or private key, or
-##'   it can be the path to a directory containing the keypair (as
-##'   \code{id_rsa} and \code{id_rsa.pub}).
-##' @param private A logical scalar indicating if the private key
-##'   should be loaded.  Because keypairs are often password
-##'   protected, and because public keys are useful on their own,
-##'   often it will not be needed to unlock and load the private key.
-##' @export
-##' @examples
-##' \dontrun{
-##' cfg <- config_openssl(private=FALSE)
-##' cfg$encrypt(charToRaw("hello"))
-##' }
-config_openssl <- function(path=NULL, private=TRUE) {
-  dat <- load_key_ssl(path, private)
-  key <- dat$key
-  pub <- dat$pub
-  config(
-    "openssl",
-    function(msg, ...) openssl::encrypt_envelope(msg, pub),
-    function(msg, ...) openssl__decrypt_envelope(msg, key))
-}
-
-openssl__decrypt_envelope <- function(x, key) {
-  openssl::decrypt_envelope(x$data, x$iv, x$session, key)
-}
-
 ##' Wrapper around ssh-keygen(1).
 ##'
 ##' @title Wrapper around ssh-keygen
@@ -52,7 +15,7 @@ ssh_keygen <- function(path=tempfile(), password=TRUE) {
   if (file.exists(path) && !is_directory(path)) {
     stop("path exists but is not a directory")
   }
-  if (file.exists(path)) {
+  if (file.exists(dest)) {
     stop(dest, " exists already -- not overwriting")
   }
   ssh_keygen <- Sys.which("ssh-keygen")
@@ -83,8 +46,9 @@ ssh_keygen <- function(path=tempfile(), password=TRUE) {
 
 ## Valid values for private are TRUE/FALSE only.
 ##
-## TODO: Should support passing a path or binary data?
-find_key_ssl <- function(path=NULL, private=TRUE) {
+## TODO: Should support passing a path or binary data?  Seems unlikely
+## to be useful though.
+find_key_openssl <- function(path=NULL, private=TRUE) {
   if (is.list(path)) {
     if (private && is.null(path$key)) {
       stop("This is a bug in the package")
@@ -142,13 +106,13 @@ find_key_ssl <- function(path=NULL, private=TRUE) {
        key=if (is.null(key)) NULL else normalizePath(key))
 }
 
-load_key_ssl <- function(path, private=TRUE) {
-  if (inherits(path, "key_pair")) {
+load_key_openssl <- function(path, private=TRUE) {
+  if (inherits(path, "rsa_pair")) {
     ret <- path
   } else if (inherits(path, "pubkey")) {
     if (isTRUE(private)) {
       stop("Cannot load private key")
-    } else if (identical(private, FALSE)) {
+    } else if (identical(private, FALSE) || is.null(private)) {
       private <- NULL
     } else if (!inherits(private, "key")) {
       stop("Invalid input for private")
@@ -158,7 +122,7 @@ load_key_ssl <- function(path, private=TRUE) {
                 key=private)
     class(ret) <- c("rsa_pair", "key_pair")
   } else {
-    dat <- find_key_ssl(path, private)
+    dat <- find_key_openssl(path, private)
     pw <- function(...) {
       msg <- sprintf("Please enter password for private key %s", dat$key)
       get_password_str(FALSE, 0, msg)

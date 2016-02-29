@@ -66,7 +66,7 @@ encrypt and decrypt arbitrary R objects (\code{encrypt_object},
 }
 \examples{
 key <- sodium::keygen()
-cfg <- config_symmetric(key)
+cfg <- config_sodium_symmetric(key)
 # Some super secret data we want to encrypt:
 x <- runif(10)
 # Convert the data into a raw vector:

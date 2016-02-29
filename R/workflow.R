@@ -263,7 +263,7 @@ data_authorise_write <- function(path_data, sym, dat, yes=FALSE, quiet=FALSE) {
                    class=c("cancel_addition", "error", "condition"))
     stop(e)
   }
-  dat$key <- make_config(dat$pair)$encrypt(sym)
+  dat$key <- encrypt_data(sym, NULL, dat$pair)
   path_enc <- data_path_encryptr(path_data)
   hash_str <- bin2str(openssl_fingerprint(dat$pub), "")
 
@@ -386,7 +386,7 @@ data_load_sym <- function(path_data, path_user, quiet) {
   if (!file.exists(path_data_key)) {
     data_access_error(path_data, path_user, path_data_key)
   }
-  sym <- make_config(key)$decrypt(readRDS(path_data_key)$key)
+  sym <- decrypt_data(readRDS(path_data_key)$key, NULL, key)
   load_key_sodium_symmetric(sym)
 }
 

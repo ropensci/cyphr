@@ -10,11 +10,11 @@ URL: htts://github.com/dide-tools/encryptr
 BugReports: htts://github.com/dide-tools/encryptr/issues
 Depends: R (>= 3.2.1)
 Imports:
+    getPass,
     openssl,
     sodium
 Suggests:
     knitr,
-    tcltk,
     testthat
 RoxygenNote: 5.0.1
 VignetteBuilder: knitr

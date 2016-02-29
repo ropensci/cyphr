@@ -102,3 +102,12 @@ file_remove_if_exists <- function(...) {
     file.remove(paths[ok])
   }
 }
+
+get_password_str <- function(verify, prompt) {
+  pw <- getPass::getPass(prompt, TRUE)
+  if (verify && nzchar(pw) &&
+      !identical(getPass::getPass("Verify passphrase"), pw)) {
+    stop("Passwords do not match", call.=FALSE)
+  }
+  pw
+}

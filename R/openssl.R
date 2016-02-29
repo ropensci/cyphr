@@ -25,7 +25,7 @@ ssh_keygen <- function(path=tempfile(), password=TRUE) {
   dir.create(path, FALSE, TRUE)
 
   if (isTRUE(password)) {
-    pw <- get_password_str(TRUE)
+    pw <- get_password_str(TRUE, "Enter passphrase: ")
   } else if (identical(password, FALSE)) {
     pw <- "''"
   } else if (is.character(password)) {
@@ -124,8 +124,8 @@ load_key_openssl <- function(path, private=TRUE) {
   } else {
     dat <- find_key_openssl(path, private)
     pw <- function(...) {
-      msg <- sprintf("Please enter password for private key %s", dat$key)
-      get_password_str(FALSE, 0, msg)
+      msg <- sprintf("Please enter password for private key %s: ", dat$key)
+      get_password_str(FALSE, msg)
     }
     ret <- list(path=dat,
                 pub=openssl::read_pubkey(dat$pub),

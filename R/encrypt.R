@@ -61,7 +61,7 @@ decrypt_ <- function(expr, config, file_arg=NULL, envir=parent.frame()) {
 ##   read.csv("myfile", stringsAsFactors=FALSE)
 ##   saveRDS(data, file="myfile")
 rewrite <- function(expr, file_arg=NULL, envir=parent.frame(),
-                    filename=tempfile()) {
+                    filename=NULL) {
   if (!is.call(expr)) {
     stop("Expected call")
   }
@@ -111,6 +111,9 @@ rewrite <- function(expr, file_arg=NULL, envir=parent.frame(),
     }
   }
   orig <- eval(norm[[i]], envir)
+  if (is.null(filename)) {
+    filename <- tempfile_keep_ext(orig)
+  }
   norm[[i]] <- filename
   list(filename=orig,
        tmp=filename,

@@ -111,3 +111,24 @@ get_password_str <- function(verify, prompt) {
   }
   pw
 }
+
+## Like tempfile but uses names that reflect the original name.
+## Optionally puts the file locally too.
+tempfile_keep_ext <- function(filename, local=FALSE) {
+  if (!is.character(filename)) {
+    tempfile()
+  } else {
+    dir <- if (local) dirname(filename) else tempdir()
+    re <- ".*(\\.[^.]+)$"
+    r <- regexpr("\\.([[:alnum:]]+)$", filename)
+    base <- basename(filename)
+    if (r > 0) {
+      ext <- substr(base, r, nchar(base))
+      base <- substr(base, 1, r - 1L)
+    } else {
+      base <- base
+      ext <- ""
+    }
+    tempfile(base, dir, ext)
+  }
+}

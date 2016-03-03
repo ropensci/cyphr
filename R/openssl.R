@@ -60,7 +60,7 @@ find_key_openssl <- function(path=NULL, private=TRUE) {
     path <- Sys_getenv(c("USER_KEY", "USER_PUBKEY"))
     if (is.null(path) && file.exists("~/.ssh/id_rsa")) {
       path <- "~/.ssh/id_rsa"
-    } else {
+    } else if (!is.character(path) && file.exists(path)) {
       stop("Could not determine location of public key")
     }
   }

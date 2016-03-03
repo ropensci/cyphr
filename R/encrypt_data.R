@@ -98,6 +98,13 @@ encrypt_file <- function(path, dest, config) {
 ##' @rdname encrypt_data
 decrypt_data <- function(data, dest, config) {
   config <- make_config(config)
+  if (is.character(data)) {
+    if (file.exists(data)) {
+      data <- read_binary(data)
+    } else {
+      stop("If given as a character string, data must be a file that exists")
+    }
+  }
   res <- config$decrypt(unpack_data(data))
   if (is.null(dest)) {
     res

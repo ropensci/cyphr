@@ -44,13 +44,9 @@ ssh_keygen <- function(path=tempfile(), password=TRUE) {
   invisible(path)
 }
 
-## Valid values for private are TRUE/FALSE only.
-##
-## TODO: Should support passing a path or binary data?  Seems unlikely
-## to be useful though.
 find_key_openssl <- function(path=NULL, private=TRUE) {
   if (is.list(path)) {
-    if (private && is.null(path$key)) {
+    if (isTRUE(private) && is.null(path$key)) {
       stop("This is a bug in the package")
     }
     return(path)
@@ -90,14 +86,18 @@ find_key_openssl <- function(path=NULL, private=TRUE) {
     }
   }
 
+  if (is.character(private)) {
+    key <- if (is_directory(private)) file.path(private, "id_rsa") else private
+  }
+
   if (!file.exists(pub)) {
     stop("Public key not found at ", pub)
   }
   if (!file.exists(key)) {
-    if (private) {
-      stop("Private key not found at ", key)
-    } else {
+    if (identical(as.vector(private, FALSE))) {
       key <- NULL
+    } else {
+      stop("Private key not found at ", key)
     }
   }
 

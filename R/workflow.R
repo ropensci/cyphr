@@ -362,7 +362,7 @@ data_path_user <- function(path) {
   if (is.null(path)) {
     path <- getOption("encryptr.user.path", NULL)
   }
-  find_key_openssl(path)$pub
+  find_key_openssl(path, FALSE)$pub
 }
 
 data_path_encryptr <- function(path) {

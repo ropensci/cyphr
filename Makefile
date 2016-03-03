@@ -31,8 +31,10 @@ website: staticdocs
 
 vignettes/data.Rmd: vignettes/src/data.R
 	${RSCRIPT} -e 'library(sowsear); sowsear("$<", output="$@")'
+vignettes/encryptr.Rmd: vignettes/src/encryptr.R
+	${RSCRIPT} -e 'library(sowsear); sowsear("$<", output="$@")'
 
-vignettes: vignettes/data.Rmd
+vignettes: vignettes/data.Rmd vignettes/encryptr.Rmd
 	${RSCRIPT} -e 'library(methods); devtools::build_vignettes()'
 
 README.md: README.Rmd

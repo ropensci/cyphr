@@ -7,15 +7,35 @@
 ssh_keygen(path = tempfile(), password = TRUE)
 }
 \arguments{
-\item{path}{A directory in which to create a keypair}
+\item{path}{A directory in which to create a keypair.  If the path
+does not exist it will be created.}
 
 \item{password}{The password for the key.  The default will prompt
 interactively (but without echoing the password).  Other valid
-options are \code{FALSE} (no password), a string or a function
-that will take a single argument "prompt" and return a string
-password (as with the openssl package).}
+options are \code{FALSE} (no password) or a string.}
+}
+\value{
+The \code{path}, invisibly.  This is useful in the case
+  where \code{path} is \code{\link{tempfile()}}.
 }
 \description{
-Wrapper around ssh-keygen(1).
+Wrapper around \code{ssh-keygen}(1).  In general this should not
+be used (generate keys yourself with \code{ssh-keygen} at the
+command line.  However this is useful for testing and
+demonstration so I have included it to make that easier.  Once a
+key has been generated it can be used with
+\code{\link{config_openssl}}.
+}
+\examples{
+\dontrun{
+# Generate a new key in a temporary directory:
+path <- ssh_keygen(password=FALSE)
+dir(path) # will contain id_rsa and id_rsa.pub
+
+# This key can now be used via config_openssl:
+cfg <- config_openssl(path)
+secret <- encrypt_string("hello", NULL, cfg)
+decrypt_string(secret, cfg)
+}
 }
 

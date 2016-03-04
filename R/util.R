@@ -132,3 +132,7 @@ tempfile_keep_ext <- function(filename, local=FALSE) {
     tempfile(base, dir, ext)
   }
 }
+
+isFALSE <- function(x) {
+  identical(as.vector(x), FALSE)
+}

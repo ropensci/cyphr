@@ -94,7 +94,7 @@ find_key_openssl <- function(path=NULL, private=TRUE) {
     stop("Public key not found at ", pub)
   }
   if (!file.exists(key)) {
-    if (identical(as.vector(private, FALSE))) {
+    if (isFALSE(private)) {
       key <- NULL
     } else {
       stop("Private key not found at ", key)
@@ -127,9 +127,10 @@ load_key_openssl <- function(path, private=TRUE) {
       msg <- sprintf("Please enter password for private key %s: ", dat$key)
       get_password_str(FALSE, msg)
     }
+    key <- if (isFALSE(private)) NULL else openssl::read_key(dat$key, pw)
     ret <- list(path=dat,
                 pub=openssl::read_pubkey(dat$pub),
-                key=if (private) openssl::read_key(dat$key, pw) else NULL)
+                key=key)
     class(ret) <- c("rsa_pair", "key_pair")
   }
   ret

@@ -75,11 +75,18 @@ cfg <- encryptr::config_sodium_symmetric(key)
 With this we can use the encryption functions in the package (see below)
 
 ## Asymmetric keys (`openssl`)
+
+With `openssl` you have a key pair and can do "public key
+encryption".  With that, anyone with a copy of your public key can
+send you a message that only you, with your private key, can
+decrypt.
+
+To load your key pair, including your private key, you could run:
 ``` {r }
 pair <- encryptr::config_openssl()
 ```
 
-These will look, in turn, at:
+which will look, in turn, at:
 
 * the argument `path` (`NULL` by default) to `config_openssl`
 * the environment variable (`USER_KEY` or `USER_PUBKEY`)
@@ -90,10 +97,49 @@ The path provided can be the directory containing `id_rsa.pub` and
 happen.  If your private key is password-protected (a *very* good
 idea) you will be prompted for your password.
 
+Someone wanting to send you a message would load your public key with:
+
+```r
+pair <- encryptr::config_openssl(path, private=FALSE)
+```
+
+which would load your public key from `path` and _not_ try to load
+a private key.
+
 ## Asymmetric keys (`sodium`)
 
 This is currently less useful practically because there is no
-standard format for storing keys (TODO: complete)
+standard format for storing the keys.  However, you can save them
+to a file with `writeBin` and `encryptr` will read them from there.
+Alternatively if you have the raw bytes of the keys (which is what
+`sodium` returns) pass those in.
+``` {r }
+key <- sodium::keygen()
+pub <- sodium::pubkey(key)
+key
+pub
+```
+
+With sodium key pairs there are two sorts of encryption one can do
+(see the sodium vignette for more details here).  First, and most
+similarly to the `openss` method, we can do public key encryption
+by using `encryptr::config_sodium_public`:
+``` {r }
+pair <- encryptr::config_sodium_public(pub, key)
+```
+
+Note that ordinarily you would use someone elses public key here!
+
+Second, you could do _authenticated_ public key encryption with
+``` {r }
+pair <- encryptr::config_sodium_authenticated(pub, key)
+```
+
+With this approach both the sender and recipient need the to know
+each others public keys.  With public key encryption _anyone_ can
+send a message to a recipient but with this approach only this pair
+of people can communicate.  See `?sodium::auth_encrypt` for more
+details.
 
 # Encrypting things
 
@@ -298,7 +344,61 @@ is not currently supported but will be available by passing the
 public and private keys explicitly to `config_openssl` in a future
 version.
 
-(TODO: complete)
+First generate two sets of keys:
+``` {r }
+key1 <- sodium::keygen()
+pub1 <- sodium::pubkey(key1)
+
+key2 <- sodium::keygen()
+pub2 <- sodium::pubkey(key2)
+```
+
+The first user will create an authenticated config object using
+_their_ private key and the _other users_ public key (and the
+second user will do the opposite).
+``` {r }
+cfg1 <- encryptr::config_sodium_authenticated(pub2, key1)
+cfg2 <- encryptr::config_sodium_authenticated(pub1, key2)
+```
+
+The first user can now encrypt a message:
+``` {r }
+x <- runif(10)
+secret <- encryptr::encrypt_object(x, NULL, cfg1)
+```
+
+and the second user can decrypt it:
+``` {r }
+identical(encryptr::decrypt_object(secret, cfg2), x)
+```
+
+Now, suppose there is a third, malicious, user:
+``` {r }
+key3 <- sodium::keygen()
+pub3 <- sodium::pubkey(key3)
+```
+
+as with public key encryption, they cannot decrypt the message
+because it was not encrypted with their public key:
+
+``` {r error=TRUE}
+encryptr::decrypt_object(secret,
+                         encryptr::config_sodium_authenticated(pub1, key3))
+```
+
+But unlike public key encryption they cannot send a fake message to
+the second user.  Because the second user is using the first user's
+public key, they expect a message _only_ from the first user:
+``` {r }
+cfg3 <- encryptr::config_sodium_authenticated(pub3, key1)
+x3 <- x + 1 # malicious message
+secret3 <- encryptr::encrypt_object(x3, NULL, cfg3)
+```
+
+When the second user tries to decrypt the message they get an error
+``` {r error=TRUE}
+encryptr::decrypt_object(secret3, cfg2)
+```
 
 ``` {r echo=FALSE, results="hide"}
 Sys.unsetenv("USER_KEY")

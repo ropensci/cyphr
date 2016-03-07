@@ -15,7 +15,7 @@ encryptr::ssh_keygen(getOption("encryptr.user.path"), FALSE)
 unlink("data", recursive=TRUE)
 ```
 
-The scenario:
+**The scenario:**
 
 A group of people are working on a sensitive data set that for
 practical reasons needs to be stored in a place that we're not 100%
@@ -42,14 +42,14 @@ dir.create(data_dir)
 dir(data_dir)
 ```
 
-**First**, create a set of keys.  These will be shared across all
-projects and stored away from the data.  Ideally one would do this
-with `ssh-keygen` at the command line, following one of the many
-guides available.  A utility function (which simply calls
-`ssh-keygen` for you) is available. though.  You will need to
-generate a key on each computer you want access from.  Don't copy
-the key around.  If you lose your user key you will lose access to
-the data!
+**First**, create a personal set of keys.  These will be shared
+across all projects and stored away from the data.  Ideally one
+would do this with `ssh-keygen` at the command line, following one
+of the many guides available.  A utility function (which simply
+calls `ssh-keygen` for you) is available in this package though.
+You will need to generate a key on each computer you want access
+from.  Don't copy the key around.  If you lose your user key you
+will lose access to the data!
 
 **Second**, create a key for the data and encrypt that key with
 your personal key.  Note that the data key is never stored directly
@@ -61,7 +61,9 @@ encryptr::data_admin_init(data_dir)
 The data key is very important.  If it is deleted, then the data
 cannot be decrypted.  So keep the directory `data_dir/.encryptr`
 safe!  Ideally add it to your version control system so that it
-cannot be lost.
+cannot be lost.  Of course, if you're working in a group, there are
+multiple copies of the data key (each encrypted with a different
+person's personal key) which reduces the chance of total loss.
 
 This command can be run multiple times safely; if it detects it has
 been rerun and the data key will not be regenerated.
@@ -70,25 +72,26 @@ encryptr::data_admin_init(data_dir)
 ```
 
 **Third**, you can add encrypted data to the directory (or to
-anywhere really).  When run, `encryptr::config_data` will verify that it can
-actually decrypt things.
+anywhere really).  When run, `encryptr::config_data` will verify
+that it can actually decrypt things.
 ``` {r }
 cfg <- encryptr::config_data(data_dir)
 ```
 
-This object can be used with all the `encryptr` functions:
+This object can be used with all the `encryptr` functions (see the
+"encryptr" vignette; `vignette("encryptr")`)
 ``` {r }
 filename <- file.path(data_dir, "iris.rds")
 encryptr::encrypt(saveRDS(iris, filename), cfg)
 dir(data_dir)
 ```
 
-The file is encrypted:
+The file is encrypted and so cannot be read with `readRDS`:
 ``` {r error=TRUE}
 readRDS(filename)
 ```
 
-But we can decrypt it:
+But we can decrypt and read it:
 ``` {r }
 head(encryptr::decrypt(readRDS(filename), cfg))
 ```
@@ -97,9 +100,10 @@ head(encryptr::decrypt(readRDS(filename), cfg))
 here, I'm going to pass an argument `user2` though to the
 functions.  If run on an actually different computer this would not
 be needed; this is just to simulate two users in a single session
-for this vignette (see minimal example below).  Typically this user
-would also not use the `encryptr::ssh_keygen` function but use the
-`ssh-keygen` command from their shell (not from R).
+for this vignette (see minimal example below where this is
+simulated).  Again, typically this user would also not use the
+`encryptr::ssh_keygen` function but use the `ssh-keygen` command
+from their shell.
 ``` {r }
 user2 <- tempfile()
 encryptr::ssh_keygen(user2, FALSE)
@@ -116,7 +120,7 @@ message explinaing how you might request access:
 cfg2 <- encryptr::config_data(data_dir, user2)
 ```
 
-But `user2` is your collaborator and needs access.  What they need
+But `user2` is your collaborator and needs access!  What they need
 to do is run:
 ``` {r }
 encryptr::data_request_access(data_dir, user2)

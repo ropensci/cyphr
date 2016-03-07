@@ -17,7 +17,7 @@ test_that("basic encryption works", {
 ## think.
 test_that("communication", {
   user2 <- tempfile()
-  encryptr::ssh_keygen(user2, FALSE)
+  ssh_keygen(user2, FALSE)
 
   cfg1 <- config_openssl(user2, OPENSSL_KEY)
   cfg2 <- config_openssl(OPENSSL_KEY, user2)
@@ -31,4 +31,36 @@ test_that("communication", {
   y <- runif(10)
   secret <- encrypt_object(y, NULL, cfg2)
   expect_identical(decrypt_object(secret, cfg1), y)
+})
+
+test_that("key locations", {
+  user1 <- tempfile()
+  user2 <- tempfile()
+  ssh_keygen(user1, FALSE)
+  ssh_keygen(user2, FALSE)
+
+  on.exit({
+    options(encryptr.user.path=NULL)
+    Sys.unsetenv("USER_KEY")
+    Sys.unsetenv("USER_PUBKEY")
+  })
+
+  res1 <- list(pub=file.path(normalizePath(user1), "id_rsa.pub"),
+               key=file.path(normalizePath(user1), "id_rsa"))
+  res2 <- list(pub=file.path(normalizePath(user2), "id_rsa.pub"),
+               key=file.path(normalizePath(user2), "id_rsa"))
+
+  options(encryptr.user.path=user1)
+  expect_equal(find_key_openssl(), res1)
+
+  expect_equal(find_key_openssl(private=FALSE),
+               c(res1["pub"], key=list(NULL)))
+  expect_equal(find_key_openssl(private=user2),
+               c(res1["pub"], res2["key"]))
+
+  options(encryptr.user.path=NULL)
+  Sys.setenv(USER_KEY=user1, USER_PUBKEY=user2)
+  expect_equal(find_key_openssl(private=TRUE), res2)
+  expect_equal(find_key_openssl(private=NULL),
+               c(res2["pub"], res1["key"]))
 })

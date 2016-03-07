@@ -51,6 +51,10 @@
 ##' @param quiet Suppress printing of informative messages.
 ##' @export
 ##' @rdname data_admin
+##' @seealso \code{\link{data_request_access}} for requesting access
+##'   to the data, and and \code{config_data} for using the data
+##'   itself.  But for a much more thorough overview, see the vignette
+##'   (\code{vignette("workflow", package="encryptr")}).
 data_admin_init <- function(path_data=".", path_user=NULL, quiet=FALSE) {
   key <- data_check_path_user(path_user, quiet)
 
@@ -197,8 +201,6 @@ data_request_access <- function(path_data=".", path_user=NULL, quiet=FALSE) {
   key <- data_check_path_user(path_user, quiet)
   data_check_path_data(path_data)
 
-  ## TODO: Here, we should construct a reasonable request.  Previously
-  ## I saved a little metadata with the key:
   info <- Sys.info()
   dat <- list(user=info[["user"]],
               host=info[["nodename"]],
@@ -285,13 +287,11 @@ data_check_path_user <- function(user, quiet=FALSE) {
   if (inherits(user, "rsa_pair")) {
     return(user)
   }
-  user <- data_path_user(user)
-  workflow_log(quiet, "Loading user key from %s", user)
-  load_key_openssl(user, TRUE)
+  pub <- find_key_openssl(user, FALSE)$pub
+  workflow_log(quiet, "Loading user key from %s", pub)
+  load_key_openssl(pub, TRUE)
 }
 
-## TODO: data_pub_load changes name I think, because this is more than
-## the public key now?
 data_pub_load <- function(hash, path) {
   if (is.raw(hash)) {
     hash_str <- bin2str(hash, "")
@@ -359,9 +359,6 @@ print.data_keys <- function(x, ...) {
 
 ## Some directories:
 data_path_user <- function(path) {
-  if (is.null(path)) {
-    path <- getOption("encryptr.user.path", NULL)
-  }
   find_key_openssl(path, FALSE)$pub
 }
 
@@ -391,10 +388,6 @@ data_load_sym <- function(path_data, path_user, quiet) {
 }
 
 data_access_error <- function(path_data, path_user, path_data_key) {
-  ## TODO: Try to guess the path used; this is really annoying because
-  ## sometimes we have a key and sometimes a path, but I do not
-  ## remember when we just get the public key (which causes an issue
-  ## here).
   cmd <- call("data_request_access", path_data)
   cmd <- paste(deparse(cmd, getOption("width", 60L)), collapse="\n")
   msg <- paste(c("Key file not found; you may not have access",

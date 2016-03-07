@@ -56,4 +56,10 @@ moved elsewhere for example).  Conversely, if the user has deleted
 or changed their key they will not be able to access the data
 despite the key being listed here.
 }
+\seealso{
+\code{\link{data_request_access}} for requesting access
+  to the data, and and \code{config_data} for using the data
+  itself.  But for a much more thorough overview, see the vignette
+  (\code{vignette("workflow", package="encryptr")}).
+}
 

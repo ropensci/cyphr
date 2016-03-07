@@ -16,7 +16,7 @@ options are \code{FALSE} (no password) or a string.}
 }
 \value{
 The \code{path}, invisibly.  This is useful in the case
-  where \code{path} is \code{\link{tempfile()}}.
+  where \code{path} is \code{\link{tempfile}()}.
 }
 \description{
 Wrapper around \code{ssh-keygen}(1).  In general this should not

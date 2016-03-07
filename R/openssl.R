@@ -12,7 +12,7 @@
 ##'   interactively (but without echoing the password).  Other valid
 ##'   options are \code{FALSE} (no password) or a string.
 ##' @return The \code{path}, invisibly.  This is useful in the case
-##'   where \code{path} is \code{\link{tempfile()}}.
+##'   where \code{path} is \code{\link{tempfile}()}.
 ##' @export
 ##' @examples
 ##' \dontrun{
@@ -83,7 +83,7 @@ find_key_openssl <- function(public=NULL, private=TRUE) {
     key <- NULL
   } else {
     ## This does not deal with the case of non-id_rsa keypairs
-    if (isTRUE(private) || is.null(private)) {
+    if (isTRUE(private)) {
       private <- dirname(pub)
     }
     key <- find_key_openssl1(private, FALSE)
@@ -97,7 +97,8 @@ find_key_openssl1 <- function(path, public) {
   }
   nm <- if (public) "public" else "private"
   if (is.null(path)) {
-    path <- Sys_getenv(if (public) "USER_PUBKEY" else "USER_KEY")
+    path <- getOption("encryptr.user.path",
+                      Sys_getenv(if (public) "USER_PUBKEY" else "USER_KEY"))
     if (is.null(path) && file.exists("~/.ssh/id_rsa")) {
       path <- if (public) "~/.ssh/id_rsa.pub" else "~/.ssh/id_rsa"
     } else if (!is.character(path) && file.exists(path)) {

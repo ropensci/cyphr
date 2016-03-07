@@ -1,11 +1,3 @@
-## This needs to support the three different interfaces in sodium:
-##   data_encrypt(data, key, nonce)
-##   simple_encrypt(data, pub)
-##   auth_encrypt(data, key, pub)
-## So probably what we want to pass around is a little object with
-## instructions on how to encrypt/decrpt with the method and the keys
-## explictly given.
-
 ##' Load sodium keys for use with \code{encrypt}/\code{decrypt}.
 ##'
 ##' Note that the interface here is quite different to that for
@@ -68,7 +60,7 @@ config_sodium_authenticated <- function(path_pub, path_key) {
 ##' public key encryption} (see \code{vignette("encryptr")} and the
 ##' \code{openssl} package documentation for more details).  As such
 ##' there are a couple of different ways of loading the keys.
-
+##'
 ##' The default will load your own public and private key which is
 ##' useful for decrypting message sent to you.  If you want to send
 ##' someone else a message you will need to load \emph{their} public
@@ -76,24 +68,37 @@ config_sodium_authenticated <- function(path_pub, path_key) {
 ##'
 ##' \preformatted{encryptr::config_openssl(path_pub, FALSE)}
 ##'
-##' The \code{FALSE} prevents loading a private key (as you do not have the private key associated with that
+##' The \code{FALSE} prevents loading a private key (as you do not
+##' have the private key associated with that public key.
 ##'
-##' This is in
-##' contrast to the sodium supported keys in (e.g.,
-##' \code{\link{config_sodium_symmetric}} as here we assume that keys
-##' are specified as the path to files as there are standard formats
-##' for these.
+##' This function is designed in a different way to the similar sodium
+##' functions (e.g., \code{\link{config_sodium_symmetric}}) as here we
+##' assume that keys are specified as the path to files as there are
+##' standard formats for these.  There are many different places that
+##' keys may be (especially when loading someone else's public keys)
+##' so the logic here is a little convoluted.
+##'
 ##' @title Load openssl keys
-##' @param path The path to the pulblic key.  If \code{NULL}, the environment
-##'   variables \code{USER_KEY} and \code{USER_PUBKEY} are checked,
-##'   and if they are empty then \code{~/.ssh/id_rsa} is used.  The
-##'   path can be either the full path to a public or private key, or
-##'   it can be the path to a directory containing the keypair (as
-##'   \code{id_rsa} and \code{id_rsa.pub}).
-##' @param private A logical scalar indicating if the private key
-##'   should be loaded.  Because keypairs are often password
-##'   protected, and because public keys are useful on their own,
-##'   often it will not be needed to unlock and load the private key.
+##'
+##' @param public The path to the pulblic key.  If \code{NULL}, we first
+##'   check the R option \code{encryptr.user.path} and if that is
+##'   unset check the environment variable \code{USER_PUBKEY}, and if
+##'   that is unset default to \code{~/.ssh/id_rsa.pub}.  If any of
+##'   these are directories, we look for a file \code{id_rsa.pub}
+##'   within that directory.  If the file does not exist it will raise
+##'   an error.
+##'
+##' @param private One of (1) A logical \code{FALSE} indicating that a
+##'   private ey should not be loaded, (2) A logical \code{TRUE}
+##'   indicating that the location of the private key should be
+##'   determined from the location of the public key, (3) \code{NULL}
+##'   to infer the location of the private key from the
+##'   \code{encryptr.user.path} R variable and \code{USER_KEY}
+##'   environment variable (in a similar way to \code{public} above).
+##'   Because keypairs are often password protected, and because
+##'   public keys are useful on their own, often it will not be needed
+##'   to unlock and load the private key.
+##'
 ##' @param envelope A logical scalar indicating if the "envelope"
 ##'   functions should be used.  If \code{TRUE}, then this is used for
 ##'   messaging (via \code{\link{encrypt_envelope}}).  This is what
@@ -101,6 +106,7 @@ config_sodium_authenticated <- function(path_pub, path_key) {
 ##'   public keys and non- private keys.  If \code{FALSE}, then
 ##'   \code{\link{rsa_encrypt}} is used.  This is less useful because
 ##'   it can only encrypt messages smaller than the size of the key.
+##'
 ##' @export
 ##' @examples
 ##' \dontrun{

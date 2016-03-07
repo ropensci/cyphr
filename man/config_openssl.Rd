@@ -4,16 +4,9 @@
 \alias{config_openssl}
 \title{Load openssl keys}
 \usage{
-config_openssl(path = NULL, private = TRUE, envelope = TRUE)
+config_openssl(public = NULL, private = TRUE, envelope = TRUE)
 }
 \arguments{
-\item{path}{The path to the key.  If \code{NULL}, the environment
-variables \code{USER_KEY} and \code{USER_PUBKEY} are checked,
-and if they are empty then \code{~/.ssh/id_rsa} is used.  The
-path can be either the full path to a public or private key, or
-it can be the path to a directory containing the keypair (as
-\code{id_rsa} and \code{id_rsa.pub}).}
-
 \item{private}{A logical scalar indicating if the private key
 should be loaded.  Because keypairs are often password
 protected, and because public keys are useful on their own,
@@ -23,13 +16,34 @@ often it will not be needed to unlock and load the private key.}
 functions should be used.  If \code{TRUE}, then this is used for
 messaging (via \code{\link{encrypt_envelope}}).  This is what
 you would use to communicate with a third party using shared
-public keys and non-shared private keys.  If \code{FALSE}, then
+public keys and non- private keys.  If \code{FALSE}, then
 \code{\link{rsa_encrypt}} is used.  This is less useful because
 it can only encrypt messages smaller than the size of the key.}
+
+\item{path}{The path to the pulblic key.  If \code{NULL}, the environment
+variables \code{USER_KEY} and \code{USER_PUBKEY} are checked,
+and if they are empty then \code{~/.ssh/id_rsa} is used.  The
+path can be either the full path to a public or private key, or
+it can be the path to a directory containing the keypair (as
+\code{id_rsa} and \code{id_rsa.pub}).}
 }
 \description{
-Load keys for use with \code{\link{encrypt}} /
-\code{\link{decrypt}}, using openssl encryption.  This is in
+Load an openssl key pair for use with \code{\link{encrypt}} /
+\code{\link{decrypt}}.  This is for use with \emph{asymmetric
+public key encryption} (see \code{vignette("encryptr")} and the
+\code{openssl} package documentation for more details).  As such
+there are a couple of different ways of loading the keys.
+The default will load your own public and private key which is
+useful for decrypting message sent to you.  If you want to send
+someone else a message you will need to load \emph{their} public
+key, in which case you would use
+}
+\details{
+\preformatted{encryptr::config_openssl(path_pub, FALSE)}
+
+The \code{FALSE} prevents loading a private key (as you do not have the private key associated with that
+
+This is in
 contrast to the sodium supported keys in (e.g.,
 \code{\link{config_sodium_symmetric}} as here we assume that keys
 are specified as the path to files as there are standard formats

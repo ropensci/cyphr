@@ -9,7 +9,8 @@ test_that("user configuration", {
   ssh_keygen(path2, FALSE)
   path2 <- normalizePath(path2)
   tmp <- data_check_path_user(path2, TRUE)
-  expect_identical(tmp$path$dir, path2)
+
+  expect_equal(tmp, load_key_openssl(path2))
 
   oo <- options("encryptr.user.path"=path2)
   on.exit(options(oo))

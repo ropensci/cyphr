@@ -63,14 +63,28 @@ config_sodium_authenticated <- function(path_pub, path_key) {
          function(msg, ...) sodium::auth_decrypt(msg, key, pub, ...))
 }
 
-##' Load keys for use with \code{\link{encrypt}} /
-##' \code{\link{decrypt}}, using openssl encryption.  This is in
+##' Load an openssl key pair for use with \code{\link{encrypt}} /
+##' \code{\link{decrypt}}.  This is for use with \emph{asymmetric
+##' public key encryption} (see \code{vignette("encryptr")} and the
+##' \code{openssl} package documentation for more details).  As such
+##' there are a couple of different ways of loading the keys.
+
+##' The default will load your own public and private key which is
+##' useful for decrypting message sent to you.  If you want to send
+##' someone else a message you will need to load \emph{their} public
+##' key, in which case you would use
+##'
+##' \preformatted{encryptr::config_openssl(path_pub, FALSE)}
+##'
+##' The \code{FALSE} prevents loading a private key (as you do not have the private key associated with that
+##'
+##' This is in
 ##' contrast to the sodium supported keys in (e.g.,
 ##' \code{\link{config_sodium_symmetric}} as here we assume that keys
 ##' are specified as the path to files as there are standard formats
 ##' for these.
 ##' @title Load openssl keys
-##' @param path The path to the key.  If \code{NULL}, the environment
+##' @param path The path to the pulblic key.  If \code{NULL}, the environment
 ##'   variables \code{USER_KEY} and \code{USER_PUBKEY} are checked,
 ##'   and if they are empty then \code{~/.ssh/id_rsa} is used.  The
 ##'   path can be either the full path to a public or private key, or
@@ -84,7 +98,7 @@ config_sodium_authenticated <- function(path_pub, path_key) {
 ##'   functions should be used.  If \code{TRUE}, then this is used for
 ##'   messaging (via \code{\link{encrypt_envelope}}).  This is what
 ##'   you would use to communicate with a third party using shared
-##'   public keys and non-shared private keys.  If \code{FALSE}, then
+##'   public keys and non- private keys.  If \code{FALSE}, then
 ##'   \code{\link{rsa_encrypt}} is used.  This is less useful because
 ##'   it can only encrypt messages smaller than the size of the key.
 ##' @export
@@ -94,13 +108,13 @@ config_sodium_authenticated <- function(path_pub, path_key) {
 ##' secret <- encrypt_string("hello", NULL, cfg)
 ##' decrypt_string(secret, cfg)
 ##' }
-config_openssl <- function(path=NULL, private=TRUE, envelope=TRUE) {
+config_openssl <- function(public=NULL, private=TRUE, envelope=TRUE) {
   openssl__decrypt_envelope <- function(x, key) {
     openssl::decrypt_envelope(x$data, x$iv, x$session, key)
   }
-  dat <- load_key_openssl(path, private)
-  pub <- dat$pub
-  key <- dat$key
+  pair <- load_key_openssl(public, private)
+  pub <- pair$pub
+  key <- pair$key
   if (envelope) {
     encrypt <- function(msg, ...) openssl::encrypt_envelope(msg, pub)
     decrypt <- function(msg, ...) openssl__decrypt_envelope(msg, key)
@@ -139,7 +153,7 @@ make_config.encryptr_config <- function(x, ...) {
 }
 
 make_config.rsa_pair <- function(x, envelope=TRUE, ...) {
-  config_openssl(x$pub, x$key, envelope)
+  config_openssl(x, envelope=envelope)
 }
 
 ## Need to switch between "authenticated"

@@ -395,16 +395,7 @@ data_access_error <- function(path_data, path_user, path_data_key) {
   ## sometimes we have a key and sometimes a path, but I do not
   ## remember when we just get the public key (which causes an issue
   ## here).
-  if (inherits(path_user, "key_pair")) {
-    stopifnot(!is.null(path_user$path))
-    path_user <- path_user$path$pub
-  }
-
-  if (identical(data_path_user(NULL), path_user)) {
-    cmd <- call("data_request_access", path_data)
-  } else {
-    cmd <- call("data_request_access", path_data, path_user)
-  }
+  cmd <- call("data_request_access", path_data)
   cmd <- paste(deparse(cmd, getOption("width", 60L)), collapse="\n")
   msg <- paste(c("Key file not found; you may not have access",
                  sprintf("(looked in %s)", path_data_key),

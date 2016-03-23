@@ -1,24 +1,48 @@
-# encryptr
-
-> Enryption Wrappers
 
 [![Linux Build Status](https://travis-ci.org/dide-tools/encryptr.svg?branch=master)](https://travis-ci.org/dide-tools/encryptr)
 [![Windows Build status](https://ci.appveyor.com/api/projects/status/github/dide-tools/encryptr?svg=true)](https://ci.appveyor.com/project/dide-tools/encryptr)
+
+
+# encryptr
+
+> Installing the package
+
+To install *encryptr* from github:
+
+```r
+devtools::install_github("richfitz/encryptr")
+```
+
+Note that [*libsodium*](https://download.libsodium.org/doc/) will be needed to compile the package. See [installation instructions](https://download.libsodium.org/doc/installation/index.html).
+
+To load the packge:
+
+```r
+library("encryptr")
+```
+
+> Enryption Wrappers
 
 Encryption wrappers, using low-level support from [`sodium`](https://github.com/jeroenooms/sodium) and [`openssl`](https://github.com/jeroenooms/openssl).  This package is designed to be extremely easy to use, rather than the most secure thing (you're using R, remember).
 
 It provides high level functions to:
 
-* Encrypt and decrypt files (creating a new file) (`encrypt_file`, `decrypt_file`)
-* Wrappers (`encrypt` and `decrypt`) around R's file reading and writing functions that enable transparent encryption (support included for `readRDS`/`writeRDS`, `read.csv`/`write.csv`, etc).
+* Encrypt and decrypt
+  	  * **strings**: `encrypt_string` / `decrypt_string`
+	  * **objects**: `encrypt_object` / `decrypt_object`
+	  * **raw data**: `encrypt_data` / `decrypt_data`
+	  * **files**: `encrypt_file` / `decrypt_file`
+* User-friendly wrappers (`encrypt` and `decrypt`) around R's file reading and writing functions that enable transparent encryption (support included for `readRDS`/`writeRDS`, `read.csv`/`write.csv`, etc).
 
-The package aims to make encrypting and decrypting data as easy as
+The package aims to make encrypting and decrypting as easy as
+
 
 ```r
 encrypt(save.csv(dat, "file.csv"), key)
 ```
 
 and
+
 
 ```r
 dat <- decrypt(read.csv("file.csv", stringsAsFactors=FALSE), key)
@@ -30,10 +54,10 @@ In addition, the package implements a workflow that allows a group to securely s
 
 Decide on a style of encryption and create a `encryptr_config` object
 
-* `config_symmetric`: [Symmetric encryption, using sodium](http://127.0.0.1:19184/library/sodium/doc/intro.html#secret-key-encryption) -- everyone shares the same key (which must be kept secret!) and can encrypt and decrpt data with it.  This is used as a building block but is inflexible because of the need to keep the key secret.
-* `config_public`: [Public key encryption](http://127.0.0.1:19184/library/sodium/doc/intro.html#public-key-encryption) -- this lets people encrypt messages using your public key that only you can read using your private key.
-* `config_authenticated`: [Public key authenticated encryption, using sodium](http://127.0.0.1:19184/library/sodium/doc/intro.html#public-key-authenticated-encryption) -- this is used for secure messaging and combines two people's public keys and uses a combination of public and private keys to communicate.
-* `config_openssl`: Public key authenticaed encryption, using [openssl](https://cran.r-project.org/web/packages/openssl) (see `?encrypt_envelope` in the the `openssl` package.
+* `config_sodium_symmetric`: [Symmetric encryption, using sodium](http://127.0.0.1:19184/library/sodium/doc/intro.html#secret-key-encryption) -- everyone shares the same key (which must be kept secret!) and can encrypt and decrpt data with it.  This is used as a building block but is inflexible because of the need to keep the key secret.
+* `config_sodium_public`: [Public key encryption](http://127.0.0.1:19184/library/sodium/doc/intro.html#public-key-encryption) -- this lets people encrypt messages using your public key that only you can read using your private key.
+* `config_sodium_authenticated`: [Public key authenticated encryption, using sodium](http://127.0.0.1:19184/library/sodium/doc/intro.html#public-key-authenticated-encryption) -- this is used for secure messaging and combines two people's public keys and uses a combination of public and private keys to communicate.
+* `config_sodium_openssl`: Public key authenticaed encryption, using [openssl](https://cran.r-project.org/web/packages/openssl) (see `?encrypt_envelope` in the the `openssl` package.
 
 To generate keys, you really should read the underling documentation in the `sodium` or `openssl` packages!  The `sodium` keys do not have a file format: they are simply random data.  So a secret symmetric key in `sodium` might be:
 
@@ -44,15 +68,28 @@ key
 ```
 
 ```
-##  [1] 0a cf 92 0a 72 9e eb 92 0f ff a2 f0 06 2c 4d 4f 66 e9 ad ff 2c bd f1
-## [24] a0 7a 0a 9b bc c2 da 35 f4
+##  [1] 64 c2 df a4 0f 5f 7d 88 bb 21 9a 96 82 32 01 6e 4b 8f 8a 0b 31 79 58
+## [24] 56 b4 82 4d 46 a6 6d a0 68
 ```
 
 With this key we can create the `encryptr_config` object:
 
 
 ```r
-cfg <- encryptr::config_symmetric(key)
+cfg <- encryptr::config_sodium_symmetric(key)
+class(cfg)
+```
+
+```
+## [1] "encryptr_config"
+```
+
+```r
+cfg
+```
+
+```
+## <encryptr: sodium_symmetric>
 ```
 
 If the key was saved to file that would work too:
@@ -61,7 +98,12 @@ If the key was saved to file that would work too:
 ```r
 path <- tempfile()
 writeBin(key, path)
-cfg <- encryptr::config_symmetric(path)
+cfg <- encryptr::config_sodium_symmetric(path)
+cfg
+```
+
+```
+## <encryptr: sodium_symmetric>
 ```
 
 If you load a password protected ssh key you will be prompted for your passphrase.  `encryptr` will ensure that this is not echoed onto the console.
@@ -69,6 +111,7 @@ If you load a password protected ssh key you will be prompted for your passphras
 
 ```r
 cfg <- config_openssl()
+cfg
 ## Please enter private key passphrase:
 ```
 
@@ -127,7 +170,6 @@ dat <- decrypt(readRDS("myfile.rds"), cfg)
 
 The roundtrip preserves the data:
 
-
 ```r
 identical(dat, iris) # yay
 ```
@@ -138,8 +180,12 @@ identical(dat, iris) # yay
 
 But without the key, it cannot be read:
 
-```{r, error=TRUE)
+```r
 readRDS("myfile.rds") # unknown format
+```
+
+```
+## Error in readRDS("myfile.rds"): unknown input format
 ```
 
 

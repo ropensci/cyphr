@@ -7,12 +7,12 @@
 
 > Installing the package
 
-To install *encryptr* from github:
+To install `encryptr` from github:
 ```{r, eval=FALSE}
 devtools::install_github("richfitz/encryptr")
 ```
 
-Note that [*libsodium*](https://download.libsodium.org/doc/) will be needed to compile the package. See [installation instructions](https://download.libsodium.org/doc/installation/index.html).
+Note that [`libsodium`](https://download.libsodium.org/doc/) will be needed to compile the package. See [installation instructions](https://download.libsodium.org/doc/installation/index.html).
 
 To load the packge:
 ```{r}

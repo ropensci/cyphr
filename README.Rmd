@@ -1,3 +1,11 @@
+```{r, setup, echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(
+  tidy = FALSE,
+  error = FALSE,
+  fig.width = 8,
+  fig.height = 8)
+```
+
 # cyphr
 
 [![Linux Build Status](https://travis-ci.org/richfitz/cyphr.svg?branch=master)](https://travis-ci.org/richfitz/cyphr)
@@ -13,11 +21,6 @@ devtools::install_github("richfitz/encryptr")
 ```
 
 Note that [`libsodium`](https://download.libsodium.org/doc/) will be needed to compile the package. See [installation instructions](https://download.libsodium.org/doc/installation/index.html).
-
-To load the packge:
-```{r}
-library("encryptr")
-```
 
 > Enryption Wrappers
 
@@ -35,13 +38,13 @@ It provides high level functions to:
 The package aims to make encrypting and decrypting as easy as
 
 ```{r, eval=FALSE}
-encrypt(save.csv(dat, "file.csv"), key)
+cyphr::encrypt(save.csv(dat, "file.csv"), key)
 ```
 
 and
 
 ```{r, eval=FALSE}
-dat <- decrypt(read.csv("file.csv", stringsAsFactors=FALSE), key)
+dat <- cyphr::decrypt(read.csv("file.csv", stringsAsFactors=FALSE), key)
 ```
 
 In addition, the package implements a workflow that allows a group to securely share data by encrypting it with a shared ("symmetric") key that is in turn encrypted with each users ssh keys.  The use case is a group of researchers who are collaborating on a dataset that cannot be made public, for example containing sensitive data.  However, they have decided or need to store it in a setting that they are not 100% confident about the security of the data.  So encrypt the data at each read/write.
@@ -65,7 +68,7 @@ key
 With this key we can create the `cyphr_config` object:
 
 ```{r}
-cfg <- encryptr::config_sodium_symmetric(key)
+cfg <- cyphr::config_sodium_symmetric(key)
 class(cfg)
 cfg
 ```
@@ -75,25 +78,25 @@ If the key was saved to file that would work too:
 ```{r}
 path <- tempfile()
 writeBin(key, path)
-cfg <- encryptr::config_sodium_symmetric(path)
+cfg <- cyphr::config_sodium_symmetric(path)
 cfg
 ```
 
 If you load a password protected ssh key you will be prompted for your passphrase.  `cyphr` will ensure that this is not echoed onto the console.
 
 ```{r, eval=FALSE}
-cfg <- config_openssl()
+cfg <- cyphr::config_openssl()
 cfg
 ## Please enter private key passphrase:
 ```
 
 ## Encrypt / decrypt a file
 
-If you have files that already exist and you want to encrypt or decrypt, the functions `encrypt_file` and `decrypt_file` will do that (these are workhorse functions that are used internally throughout the package)
+If you have files that already exist and you want to encrypt or decrypt, the functions `cyphr::encrypt_file` and `cyphr::decrypt_file` will do that (these are workhorse functions that are used internally throughout the package)
 
 ```{r}
 saveRDS(iris, "myfile")
-encrypt_file("myfile", "myfile.encrypted", cfg)
+cyphr::encrypt_file("myfile", "myfile.encrypted", cfg)
 ```
 
 The file is encrypted now:
@@ -105,7 +108,7 @@ readRDS("myfile.encrypted")
 Decrypt the file and read it:
 
 ```{r}
-decrypt_file("myfile.encrypted", "myfile.clear", cfg)
+cyphr::decrypt_file("myfile.encrypted", "myfile.clear", cfg)
 identical(readRDS("myfile.clear"), iris)
 ```
 
@@ -117,16 +120,16 @@ file.remove("myfile", "myfile.encrypted", "myfile.clear")
 
 While encrypting files is nice, the aim of the package is
 
-To encrypt the output of a file producing command, wrap it in `encrypt`
+To encrypt the output of a file producing command, wrap it in `cyphr::encrypt`
 
 ```{r}
-encrypt(saveRDS(iris, "myfile.rds"), cfg)
+cyphr::encrypt(saveRDS(iris, "myfile.rds"), cfg)
 ```
 
-To decrypt the a file to feed into a file consuming command, wrap it in `decrypt`:
+To decrypt the a file to feed into a file consuming command, wrap it in `cyphr::decrypt`:
 
 ```{r}
-dat <- decrypt(readRDS("myfile.rds"), cfg)
+dat <- cyphr::decrypt(readRDS("myfile.rds"), cfg)
 ```
 
 The roundtrip preserves the data:
@@ -147,7 +150,7 @@ The above commands work through computing on the language, rewriting the `readRD
 
 With (probably) some limitations, the argument to the wrapped functions can be connection objects.  In this case the *actual* command is written to a file and the contents of that file are encrypted and written to the connection.  When reading/writing multiple objects from/to a single connection though, this is likely to go very badly.
 
-Because `encrypt` and `decrypt` compute on the language, standard evaluation forms `encrypt_` and `decrypt_` are provided that take a quoted expression as their first argument.
+Because `cyphr::encrypt` and `cyphr::decrypt` compute on the language, standard evaluation forms `cyphr::encrypt_` and `cyphr::decrypt_` are provided that take a quoted expression as their first argument.
 
 ### Supporting additional functions
 
@@ -160,10 +163,10 @@ The functions supported so far are:
 * `read.csv` / `read.csv2` / `write.csv`
 * `read.delim` / `read.delim2`
 
-However, there are bound to be more functions that could be useful to add here (e.g., `readxl::read_excel`).  Either pass the name of the file argument to `encrypt` / `decrypt` as
+However, there are bound to be more functions that could be useful to add here (e.g., `readxl::read_excel`).  Either pass the name of the file argument to `cyphr::encrypt` / `cyphr::decrypt` as
 
 ```r
-decrypt(readxl::read_excel("myfile.xlsx"), key, file_arg="path")
+cyphr::decrypt(readxl::read_excel("myfile.xlsx"), key, file_arg="path")
 ```
 
 or *register* the function with the package using `rewrite_register`:
@@ -175,7 +178,7 @@ cyphr::rewrite_register("readxl", "read_excel", "path")
 Then you can use
 
 ```r
-decrypt(readxl::read_excel("myfile.xlsx"), key)
+cyphr::decrypt(readxl::read_excel("myfile.xlsx"), key)
 ```
 
 to decrypt the file.

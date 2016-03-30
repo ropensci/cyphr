@@ -1,3 +1,5 @@
+
+
 # cyphr
 
 [![Linux Build Status](https://travis-ci.org/richfitz/cyphr.svg?branch=master)](https://travis-ci.org/richfitz/cyphr)
@@ -14,16 +16,6 @@ devtools::install_github("richfitz/encryptr")
 ```
 
 Note that [`libsodium`](https://download.libsodium.org/doc/) will be needed to compile the package. See [installation instructions](https://download.libsodium.org/doc/installation/index.html).
-
-To load the packge:
-
-```r
-library("encryptr")
-```
-
-```
-## Error in library("encryptr"): there is no package called 'encryptr'
-```
 
 > Enryption Wrappers
 
@@ -42,14 +34,14 @@ The package aims to make encrypting and decrypting as easy as
 
 
 ```r
-encrypt(save.csv(dat, "file.csv"), key)
+cyphr::encrypt(save.csv(dat, "file.csv"), key)
 ```
 
 and
 
 
 ```r
-dat <- decrypt(read.csv("file.csv", stringsAsFactors=FALSE), key)
+dat <- cyphr::decrypt(read.csv("file.csv", stringsAsFactors=FALSE), key)
 ```
 
 In addition, the package implements a workflow that allows a group to securely share data by encrypting it with a shared ("symmetric") key that is in turn encrypted with each users ssh keys.  The use case is a group of researchers who are collaborating on a dataset that cannot be made public, for example containing sensitive data.  However, they have decided or need to store it in a setting that they are not 100% confident about the security of the data.  So encrypt the data at each read/write.
@@ -72,27 +64,20 @@ key
 ```
 
 ```
-##  [1] 7e dd d2 4a d2 41 5a 47 c2 53 75 45 f4 61 92 d7 26 1b 55 ad 3e a6 f2
-## [24] b6 27 c6 55 7f 5b 58 81 60
+##  [1] a7 a3 aa a7 74 ab d4 62 45 37 46 08 cb 3a ee 12 f9 11 37 b0 93 8b 87
+## [24] c3 93 25 9e 85 7b 73 90 a1
 ```
 
 With this key we can create the `cyphr_config` object:
 
 
 ```r
-cfg <- encryptr::config_sodium_symmetric(key)
-```
-
-```
-## Error in loadNamespace(name): there is no package called 'encryptr'
-```
-
-```r
+cfg <- cyphr::config_sodium_symmetric(key)
 class(cfg)
 ```
 
 ```
-## Error in eval(expr, envir, enclos): object 'cfg' not found
+## [1] "cyphr_config"
 ```
 
 ```r
@@ -100,7 +85,7 @@ cfg
 ```
 
 ```
-## Error in eval(expr, envir, enclos): object 'cfg' not found
+## <cyphr: sodium_symmetric>
 ```
 
 If the key was saved to file that would work too:
@@ -109,42 +94,31 @@ If the key was saved to file that would work too:
 ```r
 path <- tempfile()
 writeBin(key, path)
-cfg <- encryptr::config_sodium_symmetric(path)
-```
-
-```
-## Error in loadNamespace(name): there is no package called 'encryptr'
-```
-
-```r
+cfg <- cyphr::config_sodium_symmetric(path)
 cfg
 ```
 
 ```
-## Error in eval(expr, envir, enclos): object 'cfg' not found
+## <cyphr: sodium_symmetric>
 ```
 
 If you load a password protected ssh key you will be prompted for your passphrase.  `cyphr` will ensure that this is not echoed onto the console.
 
 
 ```r
-cfg <- config_openssl()
+cfg <- cyphr::config_openssl()
 cfg
 ## Please enter private key passphrase:
 ```
 
 ## Encrypt / decrypt a file
 
-If you have files that already exist and you want to encrypt or decrypt, the functions `encrypt_file` and `decrypt_file` will do that (these are workhorse functions that are used internally throughout the package)
+If you have files that already exist and you want to encrypt or decrypt, the functions `cyphr::encrypt_file` and `cyphr::decrypt_file` will do that (these are workhorse functions that are used internally throughout the package)
 
 
 ```r
 saveRDS(iris, "myfile")
-encrypt_file("myfile", "myfile.encrypted", cfg)
-```
-
-```
-## Error in make_config(config): object 'cfg' not found
+cyphr::encrypt_file("myfile", "myfile.encrypted", cfg)
 ```
 
 The file is encrypted now:
@@ -155,73 +129,39 @@ readRDS("myfile.encrypted")
 ```
 
 ```
-## Warning in gzfile(file, "rb"): cannot open compressed file
-## 'myfile.encrypted', probable reason 'No such file or directory'
-```
-
-```
-## Error in gzfile(file, "rb"): cannot open the connection
+## Error in readRDS("myfile.encrypted"): unknown input format
 ```
 
 Decrypt the file and read it:
 
 
 ```r
-decrypt_file("myfile.encrypted", "myfile.clear", cfg)
-```
-
-```
-## Error in make_config(config): object 'cfg' not found
-```
-
-```r
+cyphr::decrypt_file("myfile.encrypted", "myfile.clear", cfg)
 identical(readRDS("myfile.clear"), iris)
 ```
 
 ```
-## Warning in gzfile(file, "rb"): cannot open compressed file 'myfile.clear',
-## probable reason 'No such file or directory'
-```
-
-```
-## Error in gzfile(file, "rb"): cannot open the connection
+## [1] TRUE
 ```
 
 
-```
-## Warning in file.remove("myfile", "myfile.encrypted", "myfile.clear"):
-## cannot remove file 'myfile.encrypted', reason 'No such file or directory'
-```
-
-```
-## Warning in file.remove("myfile", "myfile.encrypted", "myfile.clear"):
-## cannot remove file 'myfile.clear', reason 'No such file or directory'
-```
 
 ## Wrappers around R's file functions
 
 While encrypting files is nice, the aim of the package is
 
-To encrypt the output of a file producing command, wrap it in `encrypt`
+To encrypt the output of a file producing command, wrap it in `cyphr::encrypt`
 
 
 ```r
-encrypt(saveRDS(iris, "myfile.rds"), cfg)
+cyphr::encrypt(saveRDS(iris, "myfile.rds"), cfg)
 ```
 
-```
-## Error in make_config(config): object 'cfg' not found
-```
-
-To decrypt the a file to feed into a file consuming command, wrap it in `decrypt`:
+To decrypt the a file to feed into a file consuming command, wrap it in `cyphr::decrypt`:
 
 
 ```r
-dat <- decrypt(readRDS("myfile.rds"), cfg)
-```
-
-```
-## Error in make_config(config): object 'cfg' not found
+dat <- cyphr::decrypt(readRDS("myfile.rds"), cfg)
 ```
 
 The roundtrip preserves the data:
@@ -231,7 +171,7 @@ identical(dat, iris) # yay
 ```
 
 ```
-## Error in identical(dat, iris): object 'dat' not found
+## [1] TRUE
 ```
 
 But without the key, it cannot be read:
@@ -241,25 +181,16 @@ readRDS("myfile.rds") # unknown format
 ```
 
 ```
-## Warning in gzfile(file, "rb"): cannot open compressed file 'myfile.rds',
-## probable reason 'No such file or directory'
-```
-
-```
-## Error in gzfile(file, "rb"): cannot open the connection
+## Error in readRDS("myfile.rds"): unknown input format
 ```
 
 
-```
-## Warning in file.remove("myfile.rds"): cannot remove file 'myfile.rds',
-## reason 'No such file or directory'
-```
 
 The above commands work through computing on the language, rewriting the `readRDS` and `saveRDS` commands.  Commands for reading and writing tabular and plain text files (`read.csv`, `readLines`, etc) are also supported, and the way the rewriting is done is designed to be extensible.
 
 With (probably) some limitations, the argument to the wrapped functions can be connection objects.  In this case the *actual* command is written to a file and the contents of that file are encrypted and written to the connection.  When reading/writing multiple objects from/to a single connection though, this is likely to go very badly.
 
-Because `encrypt` and `decrypt` compute on the language, standard evaluation forms `encrypt_` and `decrypt_` are provided that take a quoted expression as their first argument.
+Because `cyphr::encrypt` and `cyphr::decrypt` compute on the language, standard evaluation forms `cyphr::encrypt_` and `cyphr::decrypt_` are provided that take a quoted expression as their first argument.
 
 ### Supporting additional functions
 
@@ -272,10 +203,10 @@ The functions supported so far are:
 * `read.csv` / `read.csv2` / `write.csv`
 * `read.delim` / `read.delim2`
 
-However, there are bound to be more functions that could be useful to add here (e.g., `readxl::read_excel`).  Either pass the name of the file argument to `encrypt` / `decrypt` as
+However, there are bound to be more functions that could be useful to add here (e.g., `readxl::read_excel`).  Either pass the name of the file argument to `cyphr::encrypt` / `cyphr::decrypt` as
 
 ```r
-decrypt(readxl::read_excel("myfile.xlsx"), key, file_arg="path")
+cyphr::decrypt(readxl::read_excel("myfile.xlsx"), key, file_arg="path")
 ```
 
 or *register* the function with the package using `rewrite_register`:
@@ -287,7 +218,7 @@ cyphr::rewrite_register("readxl", "read_excel", "path")
 Then you can use
 
 ```r
-decrypt(readxl::read_excel("myfile.xlsx"), key)
+cyphr::decrypt(readxl::read_excel("myfile.xlsx"), key)
 ```
 
 to decrypt the file.

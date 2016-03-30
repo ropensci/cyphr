@@ -8,8 +8,10 @@ knitr::opts_chunk$set(
 
 # cyphr
 
+<!--
 [![Linux Build Status](https://travis-ci.org/richfitz/cyphr.svg?branch=master)](https://travis-ci.org/richfitz/cyphr)
-[![Windows Build status](https://ci.appveyor.com/api/projects/status/github/richfitz/cyphr?svg=true)](https://ci.appveyor.com/project/richfitz/cyphr)
+ [![Windows Build status](https://ci.appveyor.com/api/projects/status/github/richfitz/cyphr?svg=true)](https://ci.appveyor.com/project/richfitz/cyphr)
+-->
 
 # encryptr
 

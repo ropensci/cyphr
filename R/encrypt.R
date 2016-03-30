@@ -16,7 +16,7 @@
 ##'   would be caled for the side effect of creating or reading a
 ##'   file.
 ##'
-##' @param config A \code{encryptr_config} object describing the
+##' @param config A \code{cyphr_config} object describing the
 ##'   encryption approach to use.
 ##'
 ##' @param file_arg Optional hint indicating which argument to
@@ -236,7 +236,7 @@ db_lookup <- function(package, name, arg) {
 ##' Add information about argument rewriting so that they can be used
 ##' with \code{\link{encrypt}} and \code{\link{decrypt}}.
 ##'
-##' If your package uses encryptr, it might be useful to add this as
+##' If your package uses cyphr, it might be useful to add this as
 ##' an onLoad hook.
 ##' @title Register functions to work with encrypt/decrypt
 ##' @param package The name of the package with the function to
@@ -264,7 +264,7 @@ db_lookup <- function(package, name, arg) {
 ##' rewrite_register("base", "saveRDS", "file")
 ##' # It's non-API but you can see what is supported in the package by
 ##' # looking at
-##' ls(encryptr:::db)
+##' ls(cyphr:::db)
 rewrite_register <- function(package, name, arg, fn=NULL) {
   check <- function(x, len=1L, nm=deparse(substitute(x))) {
     if (!(is.character(x) && length(x) == len && !any(is.na(x)))) {

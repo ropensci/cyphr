@@ -12,7 +12,7 @@ test_that("user configuration", {
 
   expect_equal(tmp, load_key_openssl(path2))
 
-  oo <- options("encryptr.user.path"=path2)
+  oo <- options("cyphr.user.path"=path2)
   on.exit(options(oo))
   expect_equal(dirname(data_path_user(NULL)), path2)
   expect_equal(dirname(data_path_user(OPENSSL_KEY)),
@@ -46,7 +46,7 @@ test_that("basic workflow", {
                    bin2str(openssl_fingerprint(tmp[[1]]$pub), ""))
 
   x1 <- config_data(path_dat, path_us1, TRUE)
-  expect_is(x1, "encryptr_config")
+  expect_is(x1, "cyphr_config")
   ## TODO: perhaps this should be sodium_symmetric
   expect_equal(x1$type, "sodium_symmetric")
 
@@ -79,7 +79,7 @@ test_that("basic workflow", {
   data_admin_authorise(path_dat, path_user=path_us1, yes=TRUE)
 
   x2 <- config_data(path_dat, path_us2, TRUE)
-  expect_is(x2, "encryptr_config")
+  expect_is(x2, "cyphr_config")
 
   rand <- paste(sample(letters), collapse="")
   filename <- file.path(path_dat, "testing")
@@ -134,7 +134,7 @@ test_that("request access", {
 
   res <- data_admin_init(path_dat, path_us1)
 
-  oo <- options(encryptr.user.path=path_us2)
+  oo <- options(cyphr.user.path=path_us2)
   on.exit(options(oo))
 
   hash <- data_request_access(path_dat)

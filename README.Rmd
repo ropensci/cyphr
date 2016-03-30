@@ -1,7 +1,7 @@
+# cyphr
 
-[![Linux Build Status](https://travis-ci.org/dide-tools/encryptr.svg?branch=master)](https://travis-ci.org/dide-tools/encryptr)
-[![Windows Build status](https://ci.appveyor.com/api/projects/status/github/dide-tools/encryptr?svg=true)](https://ci.appveyor.com/project/dide-tools/encryptr)
-
+[![Linux Build Status](https://travis-ci.org/richfitz/cyphr.svg?branch=master)](https://travis-ci.org/richfitz/cyphr)
+[![Windows Build status](https://ci.appveyor.com/api/projects/status/github/richfitz/cyphr?svg=true)](https://ci.appveyor.com/project/richfitz/cyphr)
 
 # encryptr
 
@@ -48,7 +48,7 @@ In addition, the package implements a workflow that allows a group to securely s
 
 ## Objects to handle keys:
 
-Decide on a style of encryption and create a `encryptr_config` object
+Decide on a style of encryption and create a `cyphr_config` object
 
 * `config_sodium_symmetric`: [Symmetric encryption, using sodium](http://127.0.0.1:19184/library/sodium/doc/intro.html#secret-key-encryption) -- everyone shares the same key (which must be kept secret!) and can encrypt and decrpt data with it.  This is used as a building block but is inflexible because of the need to keep the key secret.
 * `config_sodium_public`: [Public key encryption](http://127.0.0.1:19184/library/sodium/doc/intro.html#public-key-encryption) -- this lets people encrypt messages using your public key that only you can read using your private key.
@@ -62,7 +62,7 @@ key <- sodium::keygen()
 key
 ```
 
-With this key we can create the `encryptr_config` object:
+With this key we can create the `cyphr_config` object:
 
 ```{r}
 cfg <- encryptr::config_sodium_symmetric(key)
@@ -79,7 +79,7 @@ cfg <- encryptr::config_sodium_symmetric(path)
 cfg
 ```
 
-If you load a password protected ssh key you will be prompted for your passphrase.  `encryptr` will ensure that this is not echoed onto the console.
+If you load a password protected ssh key you will be prompted for your passphrase.  `cyphr` will ensure that this is not echoed onto the console.
 
 ```{r, eval=FALSE}
 cfg <- config_openssl()
@@ -169,7 +169,7 @@ decrypt(readxl::read_excel("myfile.xlsx"), key, file_arg="path")
 or *register* the function with the package using `rewrite_register`:
 
 ```r
-encryptr::rewrite_register("readxl", "read_excel", "path")
+cyphr::rewrite_register("readxl", "read_excel", "path")
 ```
 
 Then you can use
@@ -182,7 +182,7 @@ to decrypt the file.
 
 ## Workflow support
 
-It's possible that this means there are two packages here, but I have a single use case so they're together for now at least.  The package contains support for a group of people are working on a sensitive data set.  The data will be stored with a symmetric key.  However, we never actually store the key directly, instead we'll store a copy that is encrypted with the user key.  Any user with access to the data can authorise another user to access the data.  This is described in more detail in the [vignette](http://dide-tools.github.io/encryptr/vignettes/data.html) (in R: `vignette("data", package="encryptr")`).
+It's possible that this means there are two packages here, but I have a single use case so they're together for now at least.  The package contains support for a group of people are working on a sensitive data set.  The data will be stored with a symmetric key.  However, we never actually store the key directly, instead we'll store a copy that is encrypted with the user key.  Any user with access to the data can authorise another user to access the data.  This is described in more detail in the [vignette](http://richfitz.github.io/cyphr/vignettes/data.html) (in R: `vignette("data", package="cyphr")`).
 
 ## Why not a connection object?
 

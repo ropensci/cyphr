@@ -54,14 +54,14 @@
 ##' @seealso \code{\link{data_request_access}} for requesting access
 ##'   to the data, and and \code{config_data} for using the data
 ##'   itself.  But for a much more thorough overview, see the vignette
-##'   (\code{vignette("workflow", package="encryptr")}).
+##'   (\code{vignette("workflow", package="cyphr")}).
 data_admin_init <- function(path_data=".", path_user=NULL, quiet=FALSE) {
   key <- data_check_path_user(path_user, quiet)
 
   if (!is_directory(path_data)) {
     stop("path_data must exist and be a directory")
   }
-  path_enc <- data_path_encryptr(path_data)
+  path_enc <- data_path_cyphr(path_data)
   if (!data_check_path_data(path_data, fail=FALSE)) {
     workflow_log(quiet, "Generating data key")
     dir.create(path_enc, FALSE, TRUE)
@@ -73,7 +73,7 @@ data_admin_init <- function(path_data=".", path_user=NULL, quiet=FALSE) {
     ## this is the file that we check to see if things are set up
     ## correctly (data_check_path_data()).
     path_test <- data_filename_test(path_data)
-    encrypt(writeLines("encryptr", path_test), sym)
+    encrypt(writeLines("cyphr", path_test), sym)
     on.exit(file.remove(path_test))
     decrypt(readLines(path_test), sym)
 
@@ -152,7 +152,7 @@ data_admin_authorise <- function(path_data=".", hash=NULL, path_user=NULL,
     if (using_git(path_data)) {
       users <- paste(vapply(keys, function(x) x$user, character(1)),
                      collapse=", ")
-      path_enc <- sub("./", "", data_path_encryptr("."), fixed=TRUE)
+      path_enc <- sub("./", "", data_path_cyphr("."), fixed=TRUE)
       msg <- c("If you are using git, you will need to commit and push:",
                paste("    git add", path_enc),
                sprintf('    git commit -m "Authorised %s"', users),
@@ -179,7 +179,7 @@ data_admin_list_requests <- function(path_data=".") {
 ##' @rdname data_admin
 data_admin_list_keys <- function(path_data=".") {
   data_check_path_data(path_data)
-  data_pubs_load(data_path_encryptr(path_data))
+  data_pubs_load(data_path_cyphr(path_data))
 }
 
 ##' User commands
@@ -189,7 +189,7 @@ data_admin_list_keys <- function(path_data=".") {
 ##'   working directory.
 ##'
 ##' @param path_user Path to the directory with your user key.
-##'   Usually this can be ommited.  Use the \code{encryptr.user.path}
+##'   Usually this can be ommited.  Use the \code{cyphr.user.path}
 ##'   global option (i.e., via \code{options()}) to set this more
 ##'   conveniently.
 ##'
@@ -266,7 +266,7 @@ data_authorise_write <- function(path_data, sym, dat, yes=FALSE, quiet=FALSE) {
     stop(e)
   }
   dat$key <- encrypt_data(sym, NULL, dat$pair)
-  path_enc <- data_path_encryptr(path_data)
+  path_enc <- data_path_cyphr(path_data)
   hash_str <- bin2str(openssl_fingerprint(dat$pub), "")
 
   data_key_save(dat, file.path(path_enc, hash_str))
@@ -278,7 +278,7 @@ data_authorise_write <- function(path_data, sym, dat, yes=FALSE, quiet=FALSE) {
 data_check_path_data <- function(path_data, fail=TRUE) {
   ok <- file.exists(data_filename_test(path_data))
   if (fail && !ok) {
-    stop("encryptr not set up for ", path_data)
+    stop("cyphr not set up for ", path_data)
   }
   invisible(ok)
 }
@@ -362,21 +362,21 @@ data_path_user <- function(path) {
   find_key_openssl(path, FALSE)$pub
 }
 
-data_path_encryptr <- function(path) {
-  file.path(path, ".encryptr")
+data_path_cyphr <- function(path) {
+  file.path(path, ".cyphr")
 }
 data_path_request <- function(path_data) {
-  file.path(data_path_encryptr(path_data), "requests")
+  file.path(data_path_cyphr(path_data), "requests")
 }
 
 ## Some filename patterns:
 data_filename_test <- function(path_data) {
-  file.path(data_path_encryptr(path_data), "test")
+  file.path(data_path_cyphr(path_data), "test")
 }
 
 data_load_sym <- function(path_data, path_user, quiet) {
   data_check_path_data(path_data)
-  path_enc <- data_path_encryptr(path_data)
+  path_enc <- data_path_cyphr(path_data)
   key <- data_check_path_user(path_user, quiet)
   hash_str <- bin2str(openssl_fingerprint(key$pub), "")
   path_data_key <- file.path(path_enc, hash_str)
@@ -400,7 +400,7 @@ data_access_error <- function(path_data, path_user, path_data_key) {
 data_test_config <- function(x, path_data, test) {
   if (test) {
     res <- try(decrypt(readLines(data_filename_test(path_data)), x))
-    if (!identical(res, "encryptr")) {
+    if (!identical(res, "cyphr")) {
       stop("Decryption failed")
     }
   }

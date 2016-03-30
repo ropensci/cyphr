@@ -39,7 +39,7 @@ decrypted data, or \code{NULL} to return a raw vector.  This is
 not used by \code{decrypt_object} or \code{decrypt_string} which
 always return an object or string.}
 
-\item{config}{A \code{encryptr_config} object describing the
+\item{config}{A \code{cyphr_config} object describing the
 encryption approach to use.}
 
 \item{object}{(for \code{encrypt_object}) an arbitrary R object to

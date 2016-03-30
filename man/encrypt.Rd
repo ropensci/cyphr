@@ -20,7 +20,7 @@ decrypt_(expr, config, file_arg = NULL, envir = parent.frame())
 would be caled for the side effect of creating or reading a
 file.}
 
-\item{config}{A \code{encryptr_config} object describing the
+\item{config}{A \code{cyphr_config} object describing the
 encryption approach to use.}
 
 \item{file_arg}{Optional hint indicating which argument to

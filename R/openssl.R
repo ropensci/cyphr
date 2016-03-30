@@ -97,7 +97,7 @@ find_key_openssl1 <- function(path, public) {
   }
   nm <- if (public) "public" else "private"
   if (is.null(path)) {
-    path <- getOption("encryptr.user.path",
+    path <- getOption("cyphr.user.path",
                       Sys_getenv(if (public) "USER_PUBKEY" else "USER_KEY"))
     if (is.null(path) && file.exists("~/.ssh/id_rsa")) {
       path <- if (public) "~/.ssh/id_rsa.pub" else "~/.ssh/id_rsa"

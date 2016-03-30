@@ -50,7 +50,7 @@ test_that("openssl", {
   expect_is(pair, "rsa_pair")
 
   x <- make_config(pair)
-  expect_is(x, "encryptr_config")
+  expect_is(x, "cyphr_config")
   expect_equal(x$type, "openssl")
 
   dat <- serialize(runif(10), NULL)

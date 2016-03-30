@@ -1,4 +1,4 @@
 library(testthat)
-library(encryptr)
+library(cyphr)
 
-test_check("encryptr")
+test_check("cyphr")

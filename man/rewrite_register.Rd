@@ -31,7 +31,7 @@ Add information about argument rewriting so that they can be used
 with \code{\link{encrypt}} and \code{\link{decrypt}}.
 }
 \details{
-If your package uses encryptr, it might be useful to add this as
+If your package uses cyphr, it might be useful to add this as
 an onLoad hook.
 }
 \examples{
@@ -43,6 +43,6 @@ args(saveRDS)
 rewrite_register("base", "saveRDS", "file")
 # It's non-API but you can see what is supported in the package by
 # looking at
-ls(encryptr:::db)
+ls(cyphr:::db)
 }
 

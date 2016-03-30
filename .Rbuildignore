@@ -6,7 +6,7 @@
 ^appveyor.yml$
 ^Makefile$
 ^ignore$
-^encryptr_.*\.tar\.gz$
+^cyphr_.*\.tar\.gz$
 ^vignettes/src$
 ^TODO\.md$
 ^update_web\.sh$

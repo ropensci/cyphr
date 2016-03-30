@@ -8,7 +8,7 @@ config_openssl(public = NULL, private = TRUE, envelope = TRUE)
 }
 \arguments{
 \item{public}{The path to the pulblic key.  If \code{NULL}, we first
-check the R option \code{encryptr.user.path} and if that is
+check the R option \code{cyphr.user.path} and if that is
 unset check the environment variable \code{USER_PUBKEY}, and if
 that is unset default to \code{~/.ssh/id_rsa.pub}.  If any of
 these are directories, we look for a file \code{id_rsa.pub}
@@ -20,7 +20,7 @@ private ey should not be loaded, (2) A logical \code{TRUE}
 indicating that the location of the private key should be
 determined from the location of the public key, (3) \code{NULL}
 to infer the location of the private key from the
-\code{encryptr.user.path} R variable and \code{USER_KEY}
+\code{cyphr.user.path} R variable and \code{USER_KEY}
 environment variable (in a similar way to \code{public} above).
 Because keypairs are often password protected, and because
 public keys are useful on their own, often it will not be needed
@@ -37,7 +37,7 @@ it can only encrypt messages smaller than the size of the key.}
 \description{
 Load an openssl key pair for use with \code{\link{encrypt}} /
 \code{\link{decrypt}}.  This is for use with \emph{asymmetric
-public key encryption} (see \code{vignette("encryptr")} and the
+public key encryption} (see \code{vignette("cyphr")} and the
 \code{openssl} package documentation for more details).  As such
 there are a couple of different ways of loading the keys.
 }
@@ -47,7 +47,7 @@ useful for decrypting message sent to you.  If you want to send
 someone else a message you will need to load \emph{their} public
 key, in which case you would use
 
-\preformatted{encryptr::config_openssl(path_pub, FALSE)}
+\preformatted{cyphr::config_openssl(path_pub, FALSE)}
 
 The \code{FALSE} prevents loading a private key (as you do not
 have the private key associated with that public key.

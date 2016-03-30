@@ -40,7 +40,7 @@ test_that("key locations", {
   ssh_keygen(user2, FALSE)
 
   on.exit({
-    options(encryptr.user.path=NULL)
+    options(cyphr.user.path=NULL)
     Sys.unsetenv("USER_KEY")
     Sys.unsetenv("USER_PUBKEY")
   })
@@ -50,7 +50,7 @@ test_that("key locations", {
   res2 <- list(pub=file.path(normalizePath(user2), "id_rsa.pub"),
                key=file.path(normalizePath(user2), "id_rsa"))
 
-  options(encryptr.user.path=user1)
+  options(cyphr.user.path=user1)
   expect_equal(find_key_openssl(), res1)
 
   expect_equal(find_key_openssl(private=FALSE),
@@ -58,7 +58,7 @@ test_that("key locations", {
   expect_equal(find_key_openssl(private=user2),
                c(res1["pub"], res2["key"]))
 
-  options(encryptr.user.path=NULL)
+  options(cyphr.user.path=NULL)
   Sys.setenv(USER_KEY=user1, USER_PUBKEY=user2)
   expect_equal(find_key_openssl(private=TRUE), res2)
   expect_equal(find_key_openssl(private=NULL),

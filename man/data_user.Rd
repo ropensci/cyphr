@@ -15,7 +15,7 @@ config_data(path_data = ".", path_user = NULL, test = TRUE,
 working directory.}
 
 \item{path_user}{Path to the directory with your user key.
-Usually this can be ommited.  Use the \code{encryptr.user.path}
+Usually this can be ommited.  Use the \code{cyphr.user.path}
 global option (i.e., via \code{options()}) to set this more
 conveniently.}
 

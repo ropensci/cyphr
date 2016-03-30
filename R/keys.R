@@ -18,7 +18,7 @@
 ##'   personal public key (\code{config_sodium_public}) or the other
 ##'   party's key (\code{config_sodium_authenticated}).
 ##'
-##' @rdname encryptr_config
+##' @rdname cyphr_config
 ##' @export
 config_sodium_symmetric <- function(path_key) {
   key <- load_key_sodium_private(path_key)
@@ -28,7 +28,7 @@ config_sodium_symmetric <- function(path_key) {
 }
 
 ##' @export
-##' @rdname encryptr_config
+##' @rdname cyphr_config
 config_sodium_public <- function(path_pub, path_key) {
   pub <- load_key_sodium_public(path_pub)
   if (is.null(path_key)) {
@@ -43,7 +43,7 @@ config_sodium_public <- function(path_pub, path_key) {
 }
 
 ##' @export
-##' @rdname encryptr_config
+##' @rdname cyphr_config
 config_sodium_authenticated <- function(path_pub, path_key) {
   pub <- load_key_sodium_public(path_pub)
   key <- load_key_sodium_private(path_key)
@@ -57,7 +57,7 @@ config_sodium_authenticated <- function(path_pub, path_key) {
 
 ##' Load an openssl key pair for use with \code{\link{encrypt}} /
 ##' \code{\link{decrypt}}.  This is for use with \emph{asymmetric
-##' public key encryption} (see \code{vignette("encryptr")} and the
+##' public key encryption} (see \code{vignette("cyphr")} and the
 ##' \code{openssl} package documentation for more details).  As such
 ##' there are a couple of different ways of loading the keys.
 ##'
@@ -66,7 +66,7 @@ config_sodium_authenticated <- function(path_pub, path_key) {
 ##' someone else a message you will need to load \emph{their} public
 ##' key, in which case you would use
 ##'
-##' \preformatted{encryptr::config_openssl(path_pub, FALSE)}
+##' \preformatted{cyphr::config_openssl(path_pub, FALSE)}
 ##'
 ##' The \code{FALSE} prevents loading a private key (as you do not
 ##' have the private key associated with that public key.
@@ -81,7 +81,7 @@ config_sodium_authenticated <- function(path_pub, path_key) {
 ##' @title Load openssl keys
 ##'
 ##' @param public The path to the pulblic key.  If \code{NULL}, we first
-##'   check the R option \code{encryptr.user.path} and if that is
+##'   check the R option \code{cyphr.user.path} and if that is
 ##'   unset check the environment variable \code{USER_PUBKEY}, and if
 ##'   that is unset default to \code{~/.ssh/id_rsa.pub}.  If any of
 ##'   these are directories, we look for a file \code{id_rsa.pub}
@@ -93,7 +93,7 @@ config_sodium_authenticated <- function(path_pub, path_key) {
 ##'   indicating that the location of the private key should be
 ##'   determined from the location of the public key, (3) \code{NULL}
 ##'   to infer the location of the private key from the
-##'   \code{encryptr.user.path} R variable and \code{USER_KEY}
+##'   \code{cyphr.user.path} R variable and \code{USER_KEY}
 ##'   environment variable (in a similar way to \code{public} above).
 ##'   Because keypairs are often password protected, and because
 ##'   public keys are useful on their own, often it will not be needed
@@ -136,12 +136,12 @@ config_openssl <- function(public=NULL, private=TRUE, envelope=TRUE) {
 
 config <- function(type, encrypt, decrypt) {
   structure(list(type=type, encrypt=encrypt, decrypt=decrypt),
-            class="encryptr_config")
+            class="cyphr_config")
 }
 
 ##' @export
-print.encryptr_config <- function(x, ...) {
-  cat(sprintf("<encryptr: %s>\n", x$type))
+print.cyphr_config <- function(x, ...) {
+  cat(sprintf("<cyphr: %s>\n", x$type))
 }
 
 ##' @export
@@ -154,7 +154,7 @@ make_config <- function(x, ...) {
   UseMethod("make_config")
 }
 
-make_config.encryptr_config <- function(x, ...) {
+make_config.cyphr_config <- function(x, ...) {
   x
 }
 

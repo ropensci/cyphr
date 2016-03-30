@@ -1,7 +1,7 @@
+# cyphr
 
-[![Linux Build Status](https://travis-ci.org/dide-tools/encryptr.svg?branch=master)](https://travis-ci.org/dide-tools/encryptr)
-[![Windows Build status](https://ci.appveyor.com/api/projects/status/github/dide-tools/encryptr?svg=true)](https://ci.appveyor.com/project/dide-tools/encryptr)
-
+[![Linux Build Status](https://travis-ci.org/richfitz/cyphr.svg?branch=master)](https://travis-ci.org/richfitz/cyphr)
+[![Windows Build status](https://ci.appveyor.com/api/projects/status/github/richfitz/cyphr?svg=true)](https://ci.appveyor.com/project/richfitz/cyphr)
 
 # encryptr
 
@@ -19,6 +19,10 @@ To load the packge:
 
 ```r
 library("encryptr")
+```
+
+```
+## Error in library("encryptr"): there is no package called 'encryptr'
 ```
 
 > Enryption Wrappers
@@ -52,7 +56,7 @@ In addition, the package implements a workflow that allows a group to securely s
 
 ## Objects to handle keys:
 
-Decide on a style of encryption and create a `encryptr_config` object
+Decide on a style of encryption and create a `cyphr_config` object
 
 * `config_sodium_symmetric`: [Symmetric encryption, using sodium](http://127.0.0.1:19184/library/sodium/doc/intro.html#secret-key-encryption) -- everyone shares the same key (which must be kept secret!) and can encrypt and decrpt data with it.  This is used as a building block but is inflexible because of the need to keep the key secret.
 * `config_sodium_public`: [Public key encryption](http://127.0.0.1:19184/library/sodium/doc/intro.html#public-key-encryption) -- this lets people encrypt messages using your public key that only you can read using your private key.
@@ -68,20 +72,27 @@ key
 ```
 
 ```
-##  [1] 64 c2 df a4 0f 5f 7d 88 bb 21 9a 96 82 32 01 6e 4b 8f 8a 0b 31 79 58
-## [24] 56 b4 82 4d 46 a6 6d a0 68
+##  [1] 7e dd d2 4a d2 41 5a 47 c2 53 75 45 f4 61 92 d7 26 1b 55 ad 3e a6 f2
+## [24] b6 27 c6 55 7f 5b 58 81 60
 ```
 
-With this key we can create the `encryptr_config` object:
+With this key we can create the `cyphr_config` object:
 
 
 ```r
 cfg <- encryptr::config_sodium_symmetric(key)
+```
+
+```
+## Error in loadNamespace(name): there is no package called 'encryptr'
+```
+
+```r
 class(cfg)
 ```
 
 ```
-## [1] "encryptr_config"
+## Error in eval(expr, envir, enclos): object 'cfg' not found
 ```
 
 ```r
@@ -89,7 +100,7 @@ cfg
 ```
 
 ```
-## <encryptr: sodium_symmetric>
+## Error in eval(expr, envir, enclos): object 'cfg' not found
 ```
 
 If the key was saved to file that would work too:
@@ -99,14 +110,21 @@ If the key was saved to file that would work too:
 path <- tempfile()
 writeBin(key, path)
 cfg <- encryptr::config_sodium_symmetric(path)
+```
+
+```
+## Error in loadNamespace(name): there is no package called 'encryptr'
+```
+
+```r
 cfg
 ```
 
 ```
-## <encryptr: sodium_symmetric>
+## Error in eval(expr, envir, enclos): object 'cfg' not found
 ```
 
-If you load a password protected ssh key you will be prompted for your passphrase.  `encryptr` will ensure that this is not echoed onto the console.
+If you load a password protected ssh key you will be prompted for your passphrase.  `cyphr` will ensure that this is not echoed onto the console.
 
 
 ```r
@@ -125,6 +143,10 @@ saveRDS(iris, "myfile")
 encrypt_file("myfile", "myfile.encrypted", cfg)
 ```
 
+```
+## Error in make_config(config): object 'cfg' not found
+```
+
 The file is encrypted now:
 
 
@@ -133,7 +155,12 @@ readRDS("myfile.encrypted")
 ```
 
 ```
-## Error in readRDS("myfile.encrypted"): unknown input format
+## Warning in gzfile(file, "rb"): cannot open compressed file
+## 'myfile.encrypted', probable reason 'No such file or directory'
+```
+
+```
+## Error in gzfile(file, "rb"): cannot open the connection
 ```
 
 Decrypt the file and read it:
@@ -141,14 +168,35 @@ Decrypt the file and read it:
 
 ```r
 decrypt_file("myfile.encrypted", "myfile.clear", cfg)
+```
+
+```
+## Error in make_config(config): object 'cfg' not found
+```
+
+```r
 identical(readRDS("myfile.clear"), iris)
 ```
 
 ```
-## [1] TRUE
+## Warning in gzfile(file, "rb"): cannot open compressed file 'myfile.clear',
+## probable reason 'No such file or directory'
+```
+
+```
+## Error in gzfile(file, "rb"): cannot open the connection
 ```
 
 
+```
+## Warning in file.remove("myfile", "myfile.encrypted", "myfile.clear"):
+## cannot remove file 'myfile.encrypted', reason 'No such file or directory'
+```
+
+```
+## Warning in file.remove("myfile", "myfile.encrypted", "myfile.clear"):
+## cannot remove file 'myfile.clear', reason 'No such file or directory'
+```
 
 ## Wrappers around R's file functions
 
@@ -161,11 +209,19 @@ To encrypt the output of a file producing command, wrap it in `encrypt`
 encrypt(saveRDS(iris, "myfile.rds"), cfg)
 ```
 
+```
+## Error in make_config(config): object 'cfg' not found
+```
+
 To decrypt the a file to feed into a file consuming command, wrap it in `decrypt`:
 
 
 ```r
 dat <- decrypt(readRDS("myfile.rds"), cfg)
+```
+
+```
+## Error in make_config(config): object 'cfg' not found
 ```
 
 The roundtrip preserves the data:
@@ -175,7 +231,7 @@ identical(dat, iris) # yay
 ```
 
 ```
-## [1] TRUE
+## Error in identical(dat, iris): object 'dat' not found
 ```
 
 But without the key, it cannot be read:
@@ -185,10 +241,19 @@ readRDS("myfile.rds") # unknown format
 ```
 
 ```
-## Error in readRDS("myfile.rds"): unknown input format
+## Warning in gzfile(file, "rb"): cannot open compressed file 'myfile.rds',
+## probable reason 'No such file or directory'
+```
+
+```
+## Error in gzfile(file, "rb"): cannot open the connection
 ```
 
 
+```
+## Warning in file.remove("myfile.rds"): cannot remove file 'myfile.rds',
+## reason 'No such file or directory'
+```
 
 The above commands work through computing on the language, rewriting the `readRDS` and `saveRDS` commands.  Commands for reading and writing tabular and plain text files (`read.csv`, `readLines`, etc) are also supported, and the way the rewriting is done is designed to be extensible.
 
@@ -216,7 +281,7 @@ decrypt(readxl::read_excel("myfile.xlsx"), key, file_arg="path")
 or *register* the function with the package using `rewrite_register`:
 
 ```r
-encryptr::rewrite_register("readxl", "read_excel", "path")
+cyphr::rewrite_register("readxl", "read_excel", "path")
 ```
 
 Then you can use
@@ -229,7 +294,7 @@ to decrypt the file.
 
 ## Workflow support
 
-It's possible that this means there are two packages here, but I have a single use case so they're together for now at least.  The package contains support for a group of people are working on a sensitive data set.  The data will be stored with a symmetric key.  However, we never actually store the key directly, instead we'll store a copy that is encrypted with the user key.  Any user with access to the data can authorise another user to access the data.  This is described in more detail in the [vignette](http://dide-tools.github.io/encryptr/vignettes/data.html) (in R: `vignette("data", package="encryptr")`).
+It's possible that this means there are two packages here, but I have a single use case so they're together for now at least.  The package contains support for a group of people are working on a sensitive data set.  The data will be stored with a symmetric key.  However, we never actually store the key directly, instead we'll store a copy that is encrypted with the user key.  Any user with access to the data can authorise another user to access the data.  This is described in more detail in the [vignette](http://richfitz.github.io/cyphr/vignettes/data.html) (in R: `vignette("data", package="cyphr")`).
 
 ## Why not a connection object?
 

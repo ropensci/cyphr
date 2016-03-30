@@ -32,7 +32,7 @@
 ##'   not used by \code{decrypt_object} or \code{decrypt_string} which
 ##'   always return an object or string.
 ##'
-##' @param config A \code{encryptr_config} object describing the
+##' @param config A \code{cyphr_config} object describing the
 ##'   encryption approach to use.
 ##' @export
 ##' @examples

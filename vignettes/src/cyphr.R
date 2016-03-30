@@ -12,7 +12,7 @@
 ##+ echo=FALSE, results="hide"
 local({
   path <- tempfile()
-  encryptr::ssh_keygen(path, FALSE)
+  cyphr::ssh_keygen(path, FALSE)
   Sys.setenv(USER_KEY=path)
 })
 
@@ -65,7 +65,7 @@ key
 ## Because the key is not readily idenfiable as a key we wrap it up
 ## with \code{config_sodium_symmetric} (all of the approaches will
 ## work this way).
-cfg <- encryptr::config_sodium_symmetric(key)
+cfg <- cyphr::config_sodium_symmetric(key)
 
 ## With this we can use the encryption functions in the package (see below)
 
@@ -77,7 +77,7 @@ cfg <- encryptr::config_sodium_symmetric(key)
 ## decrypt.
 
 ## To load your key pair, including your private key, you could run:
-pair <- encryptr::config_openssl()
+pair <- cyphr::config_openssl()
 
 ## which will look, in turn, at:
 ##
@@ -93,7 +93,7 @@ pair <- encryptr::config_openssl()
 ## Someone wanting to send you a message would load your public key with:
 
 ## ```r
-## pair <- encryptr::config_openssl(path, private=FALSE)
+## pair <- cyphr::config_openssl(path, private=FALSE)
 ## ```
 
 ## which would load your public key from `path` and _not_ try to load
@@ -103,7 +103,7 @@ pair <- encryptr::config_openssl()
 
 ## This is currently less useful practically because there is no
 ## standard format for storing the keys.  However, you can save them
-## to a file with `writeBin` and `encryptr` will read them from there.
+## to a file with `writeBin` and `cyphr` will read them from there.
 ## Alternatively if you have the raw bytes of the keys (which is what
 ## `sodium` returns) pass those in.
 key <- sodium::keygen()
@@ -114,13 +114,13 @@ pub
 ## With sodium key pairs there are two sorts of encryption one can do
 ## (see the sodium vignette for more details here).  First, and most
 ## similarly to the `openss` method, we can do public key encryption
-## by using `encryptr::config_sodium_public`:
-pair <- encryptr::config_sodium_public(pub, key)
+## by using `cyphr::config_sodium_public`:
+pair <- cyphr::config_sodium_public(pub, key)
 
 ## Note that ordinarily you would use someone elses public key here!
 
 ## Second, you could do _authenticated_ public key encryption with
-pair <- encryptr::config_sodium_authenticated(pub, key)
+pair <- cyphr::config_sodium_authenticated(pub, key)
 
 ## With this approach both the sender and recipient need the to know
 ## each others public keys.  With public key encryption _anyone_ can
@@ -139,13 +139,13 @@ pair <- encryptr::config_sodium_authenticated(pub, key)
 ## They're designed to be used like so:
 
 ## Suppose you have a super-secret object that you want to share privately
-cfg <- encryptr::config_sodium_symmetric(sodium::keygen())
+cfg <- cyphr::config_sodium_symmetric(sodium::keygen())
 x <- list(a = 1:10, b = "don't tell anyone else")
 
 ## If you save this to disk with `saveRDS` it will be readable by
 ## everyone.  But if you encrypted the file that `saveRDS` produced it
 ## would be protected:
-encryptr::encrypt(saveRDS(x, "secret.rds"), cfg)
+cyphr::encrypt(saveRDS(x, "secret.rds"), cfg)
 
 ## (see below for some more details on how this works).
 
@@ -156,7 +156,7 @@ readRDS("secret.rds")
 
 ## but if we wrap the call with `decrypt` and pass in the config
 ## object it can be decrypted and read:
-encryptr::decrypt(readRDS("secret.rds"), cfg)
+cyphr::decrypt(readRDS("secret.rds"), cfg)
 
 ## What happens in the call above is some moderately nasty call
 ## rewriting.  If this bothers you, you should just use `encrypt_file`
@@ -193,34 +193,34 @@ encryptr::decrypt(readRDS("secret.rds"), cfg)
 ## use:
 ##
 ## ```r
-## encryptr::rewrite_register("rio", "import", "file")
-## encryptr::rewrite_register("rio", "export", "file")
+## cyphr::rewrite_register("rio", "import", "file")
+## cyphr::rewrite_register("rio", "export", "file")
 ## ```
 ##
 ## now you can read and write tabular data into and out of a great
 ## many different file formats with encryption with calls like
 ##
 ## ```r
-## encryptr::encrypt(rio::export(mtcars, "file.json"), cfg)
-## encryptr::decrypt(rio::import("file.json"), cfg)
+## cyphr::encrypt(rio::export(mtcars, "file.json"), cfg)
+## cyphr::decrypt(rio::import("file.json"), cfg)
 ## ```
 
 ## The functions above use [non standard evaluation](http://adv-r...)
 ## and so may not be suitable for programming or use in packages.  An
 ## "escape hatch" is provided via `encrypt_` and `decrypt_` where the
 ## first argument is a quoted expression.
-encryptr::encrypt_(quote(saveRDS(x, "secret.rds")), cfg)
-encryptr::decrypt_(quote(readRDS("secret.rds")), cfg)
+cyphr::encrypt_(quote(saveRDS(x, "secret.rds")), cfg)
+cyphr::decrypt_(quote(readRDS("secret.rds")), cfg)
 
 ## ## Objects
-cfg <- encryptr::config_sodium_symmetric(sodium::keygen())
+cfg <- cyphr::config_sodium_symmetric(sodium::keygen())
 
 ## Here's an object to encrypt:
 obj <- list(x=1:10, y="secret")
 
 ## This creates a bunch of raw bytes corresponding to the data (it's
 ## not really possible to print this as anything nicer than bytes).
-secret <- encryptr::encrypt_object(obj, NULL, cfg)
+secret <- cyphr::encrypt_object(obj, NULL, cfg)
 secret
 
 ## (the `NULL` second argument to the `encrypt_object` call indicates
@@ -228,7 +228,7 @@ secret
 ## itself, like R's `serialize` function).
 
 ## The data can be decrypted with the `decrypt_object` function:
-encryptr::decrypt_object(secret, cfg)
+cyphr::decrypt_object(secret, cfg)
 
 ## ## Strings
 
@@ -236,11 +236,11 @@ encryptr::decrypt_object(secret, cfg)
 ## lightweight way (the above function routes through `serialize` /
 ## `deserialize` which can be slow and will create larger objects than
 ## using `charToRaw` / `rawToChar`)
-secret <- encryptr::encrypt_string("secret", NULL, cfg)
+secret <- cyphr::encrypt_string("secret", NULL, cfg)
 secret
 
 ## and decrypt:
-encryptr::decrypt_string(secret, cfg)
+cyphr::decrypt_string(secret, cfg)
 
 ## ## Plain raw data
 
@@ -249,11 +249,11 @@ encryptr::decrypt_string(secret, cfg)
 dat <- sodium::random(100)
 dat # some random bytes
 
-secret <- encryptr::encrypt_data(dat, NULL, cfg)
+secret <- cyphr::encrypt_data(dat, NULL, cfg)
 secret
 
 ## Decrypted data is the same as a the original data
-identical(encryptr::decrypt_data(secret, NULL, cfg), dat)
+identical(cyphr::decrypt_data(secret, NULL, cfg), dat)
 
 ## ## Files
 
@@ -264,13 +264,13 @@ identical(encryptr::decrypt_data(secret, NULL, cfg), dat)
 ## underlying the [workflow discussed elsewhere](data.html).
 
 ## First, generate a keypair.
-path_pair <- encryptr::ssh_keygen(tempfile(), FALSE)
-pair <- encryptr::config_openssl(path_pair)
+path_pair <- cyphr::ssh_keygen(tempfile(), FALSE)
+pair <- cyphr::config_openssl(path_pair)
 
 ## Next we can load the *public key* from the pair above.  Assume that
 ## the public key has been swapped around by the users by this point,
 ## and that the code here is being run on a different users's machine.
-pub <- encryptr::config_openssl(path_pair, private=FALSE)
+pub <- cyphr::config_openssl(path_pair, private=FALSE)
 
 ## Then we'll generate a sodium symmetric key to share.
 ## Alternatively, this could be any data.
@@ -278,10 +278,10 @@ data <- sodium::keygen()
 
 ## Then we can use the public key of user2 to encrypt a message that
 ## only they can read:
-secret <- encryptr::encrypt_data(data, NULL, pub)
+secret <- cyphr::encrypt_data(data, NULL, pub)
 
 ## The user can then decrypt the data this way:
-encryptr::decrypt_data(secret, NULL, pair)
+cyphr::decrypt_data(secret, NULL, pair)
 
 ## Nobody else but that user can decrypt the data.
 
@@ -306,15 +306,15 @@ pub2 <- sodium::pubkey(key2)
 ## The first user will create an authenticated config object using
 ## _their_ private key and the _other users_ public key (and the
 ## second user will do the opposite).
-cfg1 <- encryptr::config_sodium_authenticated(pub2, key1)
-cfg2 <- encryptr::config_sodium_authenticated(pub1, key2)
+cfg1 <- cyphr::config_sodium_authenticated(pub2, key1)
+cfg2 <- cyphr::config_sodium_authenticated(pub1, key2)
 
 ## The first user can now encrypt a message:
 x <- runif(10)
-secret <- encryptr::encrypt_object(x, NULL, cfg1)
+secret <- cyphr::encrypt_object(x, NULL, cfg1)
 
 ## and the second user can decrypt it:
-identical(encryptr::decrypt_object(secret, cfg2), x)
+identical(cyphr::decrypt_object(secret, cfg2), x)
 
 ## Now, suppose there is a third, malicious, user:
 key3 <- sodium::keygen()
@@ -324,19 +324,19 @@ pub3 <- sodium::pubkey(key3)
 ## because it was not encrypted with their public key:
 
 ##+ error=TRUE
-encryptr::decrypt_object(secret,
-                         encryptr::config_sodium_authenticated(pub1, key3))
+cyphr::decrypt_object(secret,
+                         cyphr::config_sodium_authenticated(pub1, key3))
 
 ## But unlike public key encryption they cannot send a fake message to
 ## the second user.  Because the second user is using the first user's
 ## public key, they expect a message _only_ from the first user:
-cfg3 <- encryptr::config_sodium_authenticated(pub3, key1)
+cfg3 <- cyphr::config_sodium_authenticated(pub3, key1)
 x3 <- x + 1 # malicious message
-secret3 <- encryptr::encrypt_object(x3, NULL, cfg3)
+secret3 <- cyphr::encrypt_object(x3, NULL, cfg3)
 
 ## When the second user tries to decrypt the message they get an error
 ##+ error=TRUE
-encryptr::decrypt_object(secret3, cfg2)
+cyphr::decrypt_object(secret3, cfg2)
 
 ##+ echo=FALSE, results="hide"
 Sys.unsetenv("USER_KEY")

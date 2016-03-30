@@ -60,6 +60,6 @@ despite the key being listed here.
 \code{\link{data_request_access}} for requesting access
   to the data, and and \code{config_data} for using the data
   itself.  But for a much more thorough overview, see the vignette
-  (\code{vignette("workflow", package="encryptr")}).
+  (\code{vignette("workflow", package="cyphr")}).
 }
 

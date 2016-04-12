@@ -15,7 +15,7 @@ To install `cyphr` from github:
 devtools::install_github("richfitz/cyphr")
 ```
 
-Note that [`libsodium`](https://download.libsodium.org/doc/) will be needed to compile the package. See [installation instructions](https://download.libsodium.org/doc/installation/index.html).
+Note that [`libsodium`](https://download.libsodium.org/doc/) will be needed to compile the package. See [installation instructions](https://github.com/jeroenooms/sodium#installation) for the 'sodium' package.
 
 > Enryption Wrappers
 

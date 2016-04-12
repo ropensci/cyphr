@@ -7,14 +7,12 @@
  [![Windows Build status](https://ci.appveyor.com/api/projects/status/github/richfitz/cyphr?svg=true)](https://ci.appveyor.com/project/richfitz/cyphr)
 -->
 
-# encryptr
-
 > Installing the package
 
-To install `encryptr` from github:
+To install `cyphr` from github:
 
 ```r
-devtools::install_github("richfitz/encryptr")
+devtools::install_github("richfitz/cyphr")
 ```
 
 Note that [`libsodium`](https://download.libsodium.org/doc/) will be needed to compile the package. See [installation instructions](https://download.libsodium.org/doc/installation/index.html).

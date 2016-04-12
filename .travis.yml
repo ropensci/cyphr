@@ -1,25 +1,26 @@
-language: c
+# R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
-sudo: required
+language: R
+sudo: true
+cache: packages
 
-# Not enabled because libsodium support will be needed, and that is
-# likely tricky.  There's a possible solution here:
-#    https://github.com/trevorbernard/jzmq
+# libsodium backports for ubuntu < wily
+# remove this when travis supports ubuntu 16.04
 before_install:
-  - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
-  - chmod 755 ./travis-tool.sh
-  - ./travis-tool.sh bootstrap
-  - ./travis-tool.sh install_aptget libcurl4-openssl-dev
+  - sudo add-apt-repository -y ppa:chris-lea/libsodium
+  - sudo apt-get update -q
+  - sudo apt-get install -y libsodium-dev libcurl4-openssl-dev
 
-install:
-  - ./travis-tool.sh install_deps
+r_github_packages:
+  - jimhester/covr
 
-script: ./travis-tool.sh run_tests
-
-after_failure:
-  - ./travis-tool.sh dump_logs
+warnings_are_errors: true
+#r_check_revdep: true
 
 notifications:
   email:
     on_success: change
     on_failure: change
+
+after_success:
+  - Rscript -e 'covr::codecov()'

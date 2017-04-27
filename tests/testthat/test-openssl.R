@@ -24,3 +24,19 @@ test_that("existing, but not directory", {
   writeLines("", file.path(path, "id_rsa"))
   expect_error(ssh_keygen(path), "private.*exists already -- not overwriting")
 })
+
+test_that("load; no password", {
+  path <- ssh_keygen(password = FALSE)
+  d <- identity_openssl(path)
+  expect_is(d(), "key")
+})
+
+test_that("load; with password", {
+  pw <- "secret"
+  path <- ssh_keygen(password = pw)
+  d <- identity_openssl(path, pw)
+  expect_is(d(), "key")
+
+  expect_error(d <- identity_openssl(path, "wrong password"),
+               "bad decrypt")
+})

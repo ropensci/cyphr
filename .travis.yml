@@ -1,0 +1,13 @@
+language: R
+sudo: false
+cache: packages
+
+apt_packages:
+  - libsodium-dev
+  - libbcurl4-openssl-dev
+
+r_packages:
+  - covr
+
+after_success:
+  - Rscript -e 'covr::codecov()'

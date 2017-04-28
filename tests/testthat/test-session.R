@@ -5,6 +5,14 @@ test_that("object", {
   d <- session_encrypt(x)
   expect_is(d, "function")
   expect_identical(d(), x)
+
+  ## Do not include sensitive information:
+  e <- environment(d)
+  expect_equal(ls(e, all.names = TRUE), "data") # in particular no 'key'
+  expect_is(attr(e$data, "nonce", exact = TRUE), "raw")
+
+  ## Environment chain includes nothing sensitive:
+  expect_identical(parent.env(e), environment(session_encrypt))
 })
 
 test_that("raw", {
@@ -12,14 +20,21 @@ test_that("raw", {
   d <- session_encrypt(y)
   expect_is(d, "function")
   expect_identical(d(), y)
+
+  ## Do not include sensitive information:
+  e <- environment(d)
+  expect_equal(ls(e, all.names = TRUE), "data") # in particular no 'key'
+  expect_is(attr(e$data, "nonce", exact = TRUE), "raw")
+
+  ## Environment chain includes nothing sensitive:
+  expect_identical(parent.env(e), environment(session_encrypt))
 })
 
-test_that("force object", {
-  y <- sodium::keygen()
-  d1 <- session_encrypt(y)
-  d2 <- session_encrypt(y, TRUE)
-  expect_lt(length(environment(d1)$data),
-            length(environment(d2)$data))
+test_that("classed raw objects", {
+  y <- as.raw(1:10)
+  class(y) <- "mything"
+  d <- session_encrypt(y)
+  expect_identical(d(), y)
 })
 
 test_that("refresh session key", {

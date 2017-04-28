@@ -12,14 +12,16 @@ session_key_refresh <- function() {
   session$key <- sodium::keygen()
 }
 
-session_encrypt <- function(key, force_object = FALSE) {
-  if (is.raw(key) && !force_object) {
+session_encrypt <- function(key) {
+  if (is.raw(key) && identical(class(key), "raw")) {
     data <- sodium::data_encrypt(key, session$key)
+    rm(key)
     function() {
       sodium::data_decrypt(data, session$key)
     }
   } else {
     data <- sodium::data_encrypt(serialize(key, NULL), session$key)
+    rm(key)
     function() {
       unserialize(sodium::data_decrypt(data, session$key))
     }

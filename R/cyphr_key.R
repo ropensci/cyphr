@@ -1,10 +1,12 @@
 ## For a symmetric key everyone has the same key
+##
+## encrypt and decrypt have signature (msg, key) -> raw
 cyphr_key <- function(type, key, encrypt, decrypt, session) {
+  key <- session_encrypt(key)
   ret <- list(type = type,
-              ## key = key,
-              encrypt = encrypt,
-              decrypt = decrypt %||% cant_decrypt,
-              session = session)
+              key = key,
+              encrypt = function(msg) encrypt(msg, key()),
+              decrypt = function(msg) decrypt(msg, key()))
   class(ret) <- "cyphr_key"
   ret
 }
@@ -14,13 +16,15 @@ cyphr_key <- function(type, key, encrypt, decrypt, session) {
 ##
 ## If we want to *read* something from somewhere we decrypt a message
 ## with *thier* public key and *our* private key
-cyphr_keypair <- function(type, pub, key, encrypt, decrypt) {
+##
+## encrypt and decrypt have signature (msg, pub, key) -> raw
+cyphr_keypair <- function(type, pub, key, encrypt, decrypt, session) {
+  key <- session_encrypt(key)
   ret <- list(type = type,
-              ## pub = pub,
-              ## key = key,
-              encrypt = encrypt,
-              decrypt = decrypt %||% cant_decrypt,
-              session = session)
+              pub = pub,
+              key = key,
+              encrypt = function(msg) encrypt(msg, pub, key()),
+              decrypt = function(msg) decrypt(msg, pub, key()))
   class(ret) <- c("cyphr_keypair", "cyphr_key")
   ret
 }
@@ -33,10 +37,6 @@ print.cyphr_key <- function(x, ...) {
 
 ##' @export
 print.cyphr_keypair <- function(x, ...) {
-  cat(sprintf("<%s key pair>\n", class(x)[[1L]]))
+  cat(sprintf("<%s key pair>\n", x$type))
   invisible(x)
-}
-
-cant_decrypt <- function(msg, ...) {
-  stop("decryption not supported")
 }

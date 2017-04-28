@@ -4,7 +4,7 @@ test_that("keygen", {
   path <- tempfile()
   res <- ssh_keygen(path, "secret")
   expect_equal(res, path)
-  expect_true(is_directory, path)
+  expect_true(is_directory(path))
   expect_true(file.exists(file.path(path, "id_rsa")))
   expect_true(file.exists(file.path(path, "id_rsa.pub")))
 })
@@ -26,17 +26,46 @@ test_that("existing, but not directory", {
 })
 
 test_that("load; no password", {
-  path <- ssh_keygen(password = FALSE)
-  d <- identity_openssl(path)
-  expect_is(d(), "key")
+  d <- openssl_load_key("pair1")
+  expect_is(d, "key")
 })
 
 test_that("load; with password", {
   pw <- "secret"
   path <- ssh_keygen(password = pw)
-  d <- identity_openssl(path, pw)
-  expect_is(d(), "key")
+  d <- openssl_load_key(path, pw)
+  expect_is(d, "key")
 
-  expect_error(d <- identity_openssl(path, "wrong password"),
+  expect_error(openssl_load_key(path, "wrong password"),
                "bad decrypt")
+})
+
+test_that("pair", {
+  pair <- keypair_openssl("pair1", "pair1")
+  expect_is(pair, "cyphr_keypair")
+  expect_is(pair, "cyphr_key")
+  expect_equal(pair$type, "openssl")
+  expect_is(pair$pub, "pubkey")
+  expect_is(pair$key, "function")
+  expect_is(pair$key(), "key")
+  expect_is(pair$encrypt, "function")
+  expect_is(pair$decrypt, "function")
+
+  r <- openssl::rand_bytes(20)
+  v <- pair$encrypt(r)
+  expect_is(v, "list")
+  expect_identical(pair$decrypt(v), r)
+})
+
+test_that("pair - communicate", {
+  pair_a <- keypair_openssl("pair2", "pair1")
+  pair_b <- keypair_openssl("pair1", "pair2")
+
+  r <- openssl::rand_bytes(20)
+  v <- pair_a$encrypt(r)
+  expect_identical(pair_b$decrypt(v), r)
+  expect_identical(pair_a$decrypt(pair_b$encrypt(r)), r)
+
+  session_key_refresh()
+  expect_error(pair_b$decrypt(v), "Failed to decrypt")
 })

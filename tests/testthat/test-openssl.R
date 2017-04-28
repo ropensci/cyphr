@@ -70,7 +70,7 @@ test_that("pair - communicate", {
   expect_error(pair_b$decrypt(v), "Failed to decrypt")
 })
 
-test_that("asymmetric", {
+test_that("symmetric", {
   k <- openssl::aes_keygen()
   key <- key_openssl(k)
   expect_is(key, "cyphr_key")

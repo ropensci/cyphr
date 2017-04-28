@@ -1,12 +1,12 @@
 ## For a symmetric key everyone has the same key
 ##
 ## encrypt and decrypt have signature (msg, key) -> raw
-cyphr_key <- function(type, key, encrypt, decrypt, session) {
+cyphr_key <- function(type, key, encrypt, decrypt, pack, unpack) {
   key <- session_encrypt(key)
   ret <- list(type = type,
               key = key,
-              encrypt = function(msg) encrypt(msg, key()),
-              decrypt = function(msg) decrypt(msg, key()))
+              encrypt = function(msg) pack(encrypt(msg, key())),
+              decrypt = function(msg) decrypt(unpack(msg), key()))
   class(ret) <- "cyphr_key"
   ret
 }
@@ -18,13 +18,15 @@ cyphr_key <- function(type, key, encrypt, decrypt, session) {
 ## with *thier* public key and *our* private key
 ##
 ## encrypt and decrypt have signature (msg, pub, key) -> raw
-cyphr_keypair <- function(type, pub, key, encrypt, decrypt, session) {
+cyphr_keypair <- function(type, pub, key, encrypt, decrypt, pack, unpack) {
   key <- session_encrypt(key)
+  force(pack)
+  force(unpack)
   ret <- list(type = type,
               pub = pub,
               key = key,
-              encrypt = function(msg) encrypt(msg, pub, key()),
-              decrypt = function(msg) decrypt(msg, pub, key()))
+              encrypt = function(msg) pack(encrypt(msg, pub, key())),
+              decrypt = function(msg) decrypt(unpack(msg), pub, key()))
   class(ret) <- c("cyphr_keypair", "cyphr_key")
   ret
 }

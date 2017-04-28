@@ -53,7 +53,25 @@ test_that("pair", {
 
   r <- openssl::rand_bytes(20)
   v <- pair$encrypt(r)
-  expect_is(v, "list")
+  expect_is(v, "raw")
+  expect_gt(length(v), length(r))
+  expect_identical(pair$decrypt(v), r)
+})
+
+test_that("pair - non envelope", {
+  pair <- keypair_openssl("pair1", "pair1", envelope = FALSE)
+  expect_is(pair, "cyphr_keypair")
+  expect_is(pair, "cyphr_key")
+  expect_equal(pair$type, "openssl")
+  expect_is(pair$pub, "pubkey")
+  expect_is(pair$key, "function")
+  expect_is(pair$key(), "key")
+  expect_is(pair$encrypt, "function")
+  expect_is(pair$decrypt, "function")
+
+  r <- openssl::rand_bytes(20)
+  v <- pair$encrypt(r)
+  expect_gt(length(v), length(r))
   expect_identical(pair$decrypt(v), r)
 })
 
@@ -82,6 +100,5 @@ test_that("symmetric", {
 
   r <- openssl::rand_bytes(20)
   v <- key$encrypt(r)
-  expect_is(attr(v, "iv", exact = TRUE), "raw")
   expect_identical(key$decrypt(v), r)
 })

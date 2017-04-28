@@ -8,11 +8,14 @@ keypair_openssl <- function(pub, key, envelope = TRUE, password = NULL) {
   if (envelope) {
     encrypt <- function(msg, pub, key) openssl::encrypt_envelope(msg, pub)
     decrypt <- function(msg, pub, key) openssl__decrypt_envelope(msg, key)
+    pack <- openssl_pack_envelope
+    unpack <- openssl_unpack_envelope
   } else {
     encrypt <- function(msg, pub, key) openssl::rsa_encrypt(msg, pub)
     decrypt <- function(msg, pub, key) openssl::rsa_decrypt(msg, key)
+    pack <- unpack <- identity
   }
-  cyphr_keypair("openssl", pub, key, encrypt, decrypt)
+  cyphr_keypair("openssl", pub, key, encrypt, decrypt, pack, unpack)
 }
 
 key_openssl <- function(key, mode = "cbc") {
@@ -29,7 +32,9 @@ key_openssl <- function(key, mode = "cbc") {
   } else {
     stop(sprintf("Invalid encryption mode '%s'", mode))
   }
-  cyphr_key("openssl", key, encrypt, decrypt)
+  pack <- openssl_pack_symmetric
+  unpack <- openssl_unpack_symmetric
+  cyphr_key("openssl", key, encrypt, decrypt, pack, unpack)
 }
 
 ## -- reading --
@@ -89,4 +94,26 @@ openssl_find_pubkey <- function(path) {
 
 openssl__decrypt_envelope <- function(x, key) {
   openssl::decrypt_envelope(x$data, x$iv, x$session, key)
+}
+
+## -- pack/unpack --
+openssl_pack_envelope <- function(x) {
+  c(x$iv, x$session, x$data)
+}
+
+openssl_unpack_envelope <- function(x) {
+  list(iv = x[1L:16L],
+       session = x[17L:272L],
+       data = x[-seq_len(272L)])
+}
+
+openssl_pack_symmetric <- function(x) {
+  c(attr(x, "iv", exact = TRUE), drop_attributes(x))
+}
+
+openssl_unpack_symmetric <- function(x) {
+  i <- seq_len(16L)
+  ret <- x[-i]
+  attr(ret, "iv") <- x[i]
+  ret
 }

@@ -43,3 +43,8 @@ read_binary_loop <- function(con, n) {
 is_connection <- function(x) {
   inherits(x, "connection")
 }
+
+drop_attributes <- function(x) {
+  attributes(x) <- NULL
+  x
+}

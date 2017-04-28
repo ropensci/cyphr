@@ -15,6 +15,23 @@ keypair_openssl <- function(pub, key, envelope = TRUE, password = NULL) {
   cyphr_keypair("openssl", pub, key, encrypt, decrypt)
 }
 
+key_openssl <- function(key, mode = "cbc") {
+  ## TODO: no check here that 'key' is sane.
+  if (mode == "cbc") {
+    encrypt <- openssl::aes_cbc_encrypt
+    decrypt <- openssl::aes_cbc_decrypt
+  } else if (mode == "ctr") {
+    encrypt <- openssl::aes_ctr_encrypt
+    decrypt <- openssl::aes_ctr_decrypt
+  } else if (mode == "gcm") {
+    encrypt <- openssl::aes_gcm_encrypt
+    decrypt <- openssl::aes_gcm_decrypt
+  } else {
+    stop(sprintf("Invalid encryption mode '%s'", mode))
+  }
+  cyphr_key("openssl", key, encrypt, decrypt)
+}
+
 ## -- reading --
 
 openssl_load_key <- function(path, password = NULL) {

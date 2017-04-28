@@ -69,3 +69,19 @@ test_that("pair - communicate", {
   session_key_refresh()
   expect_error(pair_b$decrypt(v), "Failed to decrypt")
 })
+
+test_that("asymmetric", {
+  k <- openssl::aes_keygen()
+  key <- key_openssl(k)
+  expect_is(key, "cyphr_key")
+  expect_equal(key$type, "openssl")
+  expect_is(key$key, "function")
+  expect_identical(key$key(), k)
+  expect_is(key$encrypt, "function")
+  expect_is(key$decrypt, "function")
+
+  r <- openssl::rand_bytes(20)
+  v <- key$encrypt(r)
+  expect_is(attr(v, "iv", exact = TRUE), "raw")
+  expect_identical(key$decrypt(v), r)
+})

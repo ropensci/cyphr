@@ -2,7 +2,8 @@
 ##
 ## encrypt and decrypt have signature (msg, key) -> raw
 cyphr_key <- function(type, key, encrypt, decrypt, pack, unpack) {
-  key <- session_encrypt(key)
+  force(pack)
+  force(unpack)
   ret <- list(type = type,
               key = key,
               encrypt = function(msg) pack(encrypt(msg, key())),
@@ -19,7 +20,6 @@ cyphr_key <- function(type, key, encrypt, decrypt, pack, unpack) {
 ##
 ## encrypt and decrypt have signature (msg, pub, key) -> raw
 cyphr_keypair <- function(type, pub, key, encrypt, decrypt, pack, unpack) {
-  key <- session_encrypt(key)
   force(pack)
   force(unpack)
   ret <- list(type = type,

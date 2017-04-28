@@ -1,6 +1,6 @@
 keypair_openssl <- function(pub, key, envelope = TRUE, password = NULL) {
   pub <- openssl_load_pubkey(pub)
-  key <- openssl_load_key(key, password)
+  key <- session_encrypt(openssl_load_key(key, password))
   ## TODO: how do we do *authenticated* decryption here?  I don't know
   ## if openssl supports it?  Looks like we should wrap things up a
   ## bit so that we use openssl::signature_create and
@@ -19,6 +19,7 @@ keypair_openssl <- function(pub, key, envelope = TRUE, password = NULL) {
 }
 
 key_openssl <- function(key, mode = "cbc") {
+  key <- session_encrypt(key)
   ## TODO: no check here that 'key' is sane.
   if (mode == "cbc") {
     encrypt <- openssl::aes_cbc_encrypt

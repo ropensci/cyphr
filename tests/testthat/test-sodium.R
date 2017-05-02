@@ -1,0 +1,67 @@
+context("sodium")
+
+test_that("pair", {
+  key <- sodium::keygen()
+  pub <- sodium::pubkey(key)
+
+  pair <- keypair_sodium(pub, key)
+
+  expect_is(pair, "cyphr_key")
+  expect_equal(pair$type, "sodium")
+  expect_is(pair$pub, "raw")
+  expect_is(pair$key, "function")
+  expect_is(pair$key(), "raw")
+  expect_is(pair$encrypt, "function")
+  expect_is(pair$decrypt, "function")
+
+  r <- openssl::rand_bytes(20)
+  v <- pair$encrypt(r)
+  expect_is(v, "raw")
+  expect_gt(length(v), length(r))
+  expect_identical(pair$decrypt(v), r)
+})
+
+test_that("pair (authenticated)", {
+  key <- sodium::keygen()
+  pub <- sodium::pubkey(key)
+
+  pair <- keypair_sodium(pub, key, TRUE)
+
+  expect_is(pair, "cyphr_key")
+  expect_equal(pair$type, "sodium")
+  expect_is(pair$pub, "raw")
+  expect_is(pair$key, "function")
+  expect_is(pair$key(), "raw")
+  expect_is(pair$encrypt, "function")
+  expect_is(pair$decrypt, "function")
+
+  r <- openssl::rand_bytes(20)
+  v <- pair$encrypt(r)
+  expect_is(v, "raw")
+  expect_gt(length(v), length(r))
+  expect_identical(pair$decrypt(v), r)
+})
+
+test_that("pair (communicate)", {
+  key1 <- sodium::keygen()
+  key2 <- sodium::keygen()
+  pub1 <- sodium::pubkey(key1)
+  pub2 <- sodium::pubkey(key2)
+
+  r <- openssl::rand_bytes(20)
+
+  for (auth in c(FALSE, TRUE)) {
+    pair1 <- keypair_sodium(pub2, key1, auth)
+    pair2 <- keypair_sodium(pub1, key2, auth)
+    v <- pair1$encrypt(r)
+    expect_identical(pair2$decrypt(v), r)
+    expect_identical(pair1$decrypt(pair2$encrypt(r)), r)
+    session_key_refresh()
+    expect_error(pair2$decrypt(v), "Failed to decrypt")
+  }
+})
+
+test_that("symmetric", {
+  key <- sodium::keygen()
+  key_sodium(key)
+})

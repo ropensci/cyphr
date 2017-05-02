@@ -181,36 +181,18 @@ find_function <- function(name, envir) {
 ## that are added to this list when the db call is run; those could
 ## come from a registering process easily enough (e.g., during onLoad());
 ##   rewrite_register(package, name, arg)
-db <- function() {
-  f <- function(name, arg, package, fn = NA_character_) {
-    c(name = name, arg = arg, package = package, fn = fn)
-  }
-  dat <-
-    rbind(f("readLines",   "con",      "base"),
-          f("writeLines",  "con",      "base"),
-          f("readRDS",     "file",     "base"),
-          f("saveRDS",     "file",     "base"),
-          f("read.table",  "file",     "utils"),
-          f("write.table", "file",     "utils"),
-          f("read.csv",    "file",     "utils"),
-          f("write.csv",   "file",     "utils", c("utils", "write.table")),
-          f("read.csv2",   "file",     "utils"),
-          f("write.csv2",  "file",     "utils", c("utils", "write.table")),
-          f("read.delim",  "file",     "utils"),
-          f("read.delim2", "file",     "utils"))
-  ## NOTE: graphics devices will take work to get working because it's
-  ## at device *close* that the encryption should happen.  This is
-  ## easy enough to do with dev.off() though the interface would look
-  ## better if it was around the pdf call.
-  ##
-  ## Another option would be to implement enough of a stub around
-  ## devices?  Or we could take the loggr approach and add hooks
-  ## within dev.off() that look for registered devices.
-  ##
-  ## Similar things would be needed for knitr output where a hook
-  ## needs to be added after figure generation.
-  as.data.frame(dat, stringsAsFactors = FALSE)
-}
+
+## NOTE: graphics devices will take work to get working because it's
+## at device *close* that the encryption should happen.  This is easy
+## enough to do with dev.off() though the interface would look better
+## if it was around the pdf call.
+##
+## Another option would be to implement enough of a stub around
+## devices?  Or we could take the loggr approach and add hooks within
+## dev.off() that look for registered devices.
+##
+## Similar things would be needed for knitr output where a hook needs
+## to be added after figure generation.
 
 db <- new.env(parent = baseenv())
 
@@ -271,7 +253,7 @@ rewrite_register <- function(package, name, arg, fn = NULL) {
       if (len == 1L) {
         stop(sprintf("%s must be a non-NA scalar character", nm))
       } else {
-        stop(sprintf("%s must be a character of length %d", nm, len))
+        stop(sprintf("%s must be a character vector of length %d", nm, len))
       }
     }
   }
@@ -283,24 +265,27 @@ rewrite_register <- function(package, name, arg, fn = NULL) {
   }
   key <- paste(package, name, sep = "::")
   dat <- list(name = name, package = package, arg = arg, fn = fn)
-  if (exists(key) && isTRUE(identical(dat, db[[key]]))) {
+  if (exists(key, db) && !isTRUE(identical(dat, db[[key]]))) {
     stop(sprintf("An entry already exists for %s and contents differ", key))
   } else {
     assign(key, dat, envir = db)
   }
 }
 
-rewrite_register("base",  "readLines",   "con")
-rewrite_register("base",  "writeLines",  "con")
-rewrite_register("base",  "readRDS",     "file")
-rewrite_register("base",  "saveRDS",     "file")
-rewrite_register("base",  "save",        "file")
-rewrite_register("base",  "load",        "file")
-rewrite_register("utils", "read.table",  "file")
-rewrite_register("utils", "write.table", "file")
-rewrite_register("utils", "read.csv",    "file")
-rewrite_register("utils", "write.csv",   "file", c("utils", "write.table"))
-rewrite_register("utils", "read.csv2",   "file")
-rewrite_register("utils", "write.csv2",  "file", c("utils", "write.table"))
-rewrite_register("utils", "read.delim",  "file")
-rewrite_register("utils", "read.delim2", "file")
+rewrite_reset <- function() {
+  rm(list = ls(db, all.names = TRUE), envir = db)
+  rewrite_register("base",  "readLines",   "con")
+  rewrite_register("base",  "writeLines",  "con")
+  rewrite_register("base",  "readRDS",     "file")
+  rewrite_register("base",  "saveRDS",     "file")
+  rewrite_register("base",  "save",        "file")
+  rewrite_register("base",  "load",        "file")
+  rewrite_register("utils", "read.table",  "file")
+  rewrite_register("utils", "write.table", "file")
+  rewrite_register("utils", "read.csv",    "file")
+  rewrite_register("utils", "write.csv",   "file", c("utils", "write.table"))
+  rewrite_register("utils", "read.csv2",   "file")
+  rewrite_register("utils", "write.csv2",  "file", c("utils", "write.table"))
+  rewrite_register("utils", "read.delim",  "file")
+  rewrite_register("utils", "read.delim2", "file")
+}

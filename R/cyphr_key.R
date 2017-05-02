@@ -35,12 +35,12 @@ cyphr_keypair <- function(type, pub, key, encrypt, decrypt, pack, unpack) {
 
 ##' @export
 print.cyphr_key <- function(x, ...) {
-  cat(sprintf("<cyphr: %s>\n", x$type))
+  cat(sprintf("<cyphr_key: %s>\n", x$type))
   invisible(x)
 }
 
 ##' @export
 print.cyphr_keypair <- function(x, ...) {
-  cat(sprintf("<%s key pair>\n", x$type))
+  cat(sprintf("<cyphr_keypair: %s>\n", x$type))
   invisible(x)
 }

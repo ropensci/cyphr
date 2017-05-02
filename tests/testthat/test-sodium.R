@@ -82,3 +82,12 @@ test_that("sodium_load_key", {
   writeBin(k, path)
   expect_identical(sodium_load_key(path), k)
 })
+
+test_that("print", {
+  key <- sodium::keygen()
+  pub <- sodium::pubkey(key)
+  expect_output(print(keypair_sodium(pub, key)), "<cyphr_keypair: sodium>",
+                fixed = TRUE)
+  expect_output(print(key_sodium(key)), "<cyphr_key: sodium>",
+                fixed = TRUE)
+})

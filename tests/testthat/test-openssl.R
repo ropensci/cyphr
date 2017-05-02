@@ -13,6 +13,13 @@ test_that("load; with password", {
 
   expect_error(openssl_load_key(path, "wrong password"),
                "bad decrypt")
+
+  testthat::with_mock(
+    `cyphr:::get_password_str` = function(...) pw,
+    expect_is(openssl_load_key(path), "key"))
+  testthat::with_mock(
+    `cyphr:::get_password_str` = function(...) "wrong",
+    expect_error(openssl_load_key(path), "bad decrypt"))
 })
 
 test_that("pair", {
@@ -76,4 +83,26 @@ test_that("symmetric", {
   r <- openssl::rand_bytes(20)
   v <- key$encrypt(r)
   expect_identical(key$decrypt(v), r)
+})
+
+test_that("symmetric", {
+  k <- openssl::aes_keygen()
+  r <- openssl::rand_bytes(20)
+  for (mode in c("cbc", "ctr", "gcm")) {
+    key <- key_openssl(k, mode)
+    expect_identical(key$decrypt(key$encrypt(r)), r)
+  }
+  expect_error(key_openssl(k, "quantum"),
+               "Invalid encryption mode 'quantum'")
+})
+
+test_that("find key", {
+  expect_error(openssl_find_key(NULL), "not yet implemented")
+  expect_error(openssl_find_pubkey(NULL), "not yet implemented")
+  path <- tempfile()
+  expect_error(openssl_find_key(path), "file does not exist")
+  expect_error(openssl_find_pubkey(path), "file does not exist")
+  dir.create(path)
+  expect_error(openssl_find_key(path), "did not find id_rsa within")
+  expect_error(openssl_find_pubkey(path), "did not find id_rsa.pub within")
 })

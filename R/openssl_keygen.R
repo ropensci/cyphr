@@ -52,7 +52,8 @@ ssh_keygen <- function(path = tempfile(), password = TRUE) {
 
   code <- system2(ssh_keygen, c("-q", "-N", pw, "-f", dest_key))
   if (code != 0L) {
-    stop("Error running ssh-keygen")
+    ## This can't be easily triggered so I'll leave this be for now.
+    stop("Error running ssh-keygen") # nocov
   }
 
   invisible(path)

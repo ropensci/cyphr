@@ -1,10 +1,15 @@
 get_password_str <- function(verify, prompt) {
-  pw <- getPass::getPass(prompt, TRUE)
+  pw <- get_pass(prompt)
   if (verify && nzchar(pw) &&
-      !identical(getPass::getPass("Verify passphrase"), pw)) {
-    stop("Passwords do not match", call.=FALSE)
+      !identical(get_pass("Verify passphrase"), pw)) {
+    stop("Passwords do not match", call. = FALSE)
   }
   pw
+}
+
+## Wrapper for testing
+get_pass <- function(prompt) {
+  getPass::getPass(prompt, TRUE) # nocov
 }
 
 is_directory <- function(x) {

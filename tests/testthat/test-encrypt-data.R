@@ -44,3 +44,24 @@ test_that("encrypt_file", {
   expect_identical(unname(tools::md5sum(path1)),
                    unname(tools::md5sum(path3)))
 })
+
+test_that("input validation", {
+  key <- key_sodium(sodium::keygen())
+  expect_error(encrypt_data(iris, key),
+               "Expected a raw vector")
+  expect_error(encrypt_string(raw(10), key),
+               "must be a scalar character")
+  expect_error(encrypt_string(letters, key),
+               "must be a scalar character")
+})
+
+test_that("decrypt_data from file", {
+  key <- key_sodium(sodium::keygen())
+  path <- tempfile()
+  r <- sodium::random(20)
+  encrypt_data(r, key, path)
+
+  expect_identical(decrypt_data(path, key), r)
+  expect_error(decrypt_data(tempfile(), key),
+               "must be a file that exists")
+})

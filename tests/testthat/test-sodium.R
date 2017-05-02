@@ -73,3 +73,12 @@ test_that("symmetric", {
   expect_gt(length(v), length(r))
   expect_identical(key$decrypt(v), r)
 })
+
+test_that("sodium_load_key", {
+  expect_error(sodium_load_key(NULL), "raw vector or a file")
+  expect_error(sodium_load_key(raw(12)), "Unexpected length")
+  path <- tempfile()
+  k <- sodium::keygen()
+  writeBin(k, path)
+  expect_identical(sodium_load_key(path), k)
+})

@@ -20,7 +20,7 @@ keypair_sodium <- function(pub, key, authenticated = FALSE) {
 }
 
 key_sodium <- function(key) {
-  key <- sodium_load_key(key)
+  key <- session_encrypt(sodium_load_key(key))
   encrypt <- sodium::data_encrypt
   decrypt <- sodium::data_decrypt
   pack <- sodium_pack

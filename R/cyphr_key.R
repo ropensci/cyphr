@@ -4,6 +4,7 @@
 cyphr_key <- function(type, key, encrypt, decrypt, pack, unpack) {
   force(pack)
   force(unpack)
+  assert_is(key, "function")
   ret <- list(type = type,
               key = key,
               encrypt = function(msg) pack(encrypt(msg, key())),
@@ -22,6 +23,7 @@ cyphr_key <- function(type, key, encrypt, decrypt, pack, unpack) {
 cyphr_keypair <- function(type, pub, key, encrypt, decrypt, pack, unpack) {
   force(pack)
   force(unpack)
+  assert_is(key, "function")
   ret <- list(type = type,
               pub = pub,
               key = key,

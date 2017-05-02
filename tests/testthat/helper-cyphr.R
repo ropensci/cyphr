@@ -4,3 +4,9 @@ for (i in 1:2) {
     ssh_keygen(dest, password = FALSE)
   }
 }
+
+## NOTE: helper only, does not preserve visibility (c.f. encrypt)
+with_connection <- function(con, expr, envir=parent.frame()) {
+  on.exit(close(con))
+  eval(expr, envir)
+}

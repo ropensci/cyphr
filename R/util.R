@@ -48,3 +48,30 @@ drop_attributes <- function(x) {
   attributes(x) <- NULL
   x
 }
+
+file_remove_if_exists <- function(...) {
+  paths <- c(...)
+  ok <- file.exists(paths)
+  if (any(ok)) {
+    file.remove(paths[ok])
+  }
+}
+
+tempfile_keep_ext <- function(filename, local = FALSE) {
+  if (!is.character(filename)) {
+    tempfile()
+  } else {
+    dir <- if (local) dirname(filename) else tempdir()
+    re <- ".*(\\.[^.]+)$"
+    r <- regexpr("\\.([[:alnum:]]+)$", filename)
+    base <- basename(filename)
+    if (r > 0) {
+      ext <- substr(base, r, nchar(base))
+      base <- substr(base, 1, r - 1L)
+    } else {
+      base <- base
+      ext <- ""
+    }
+    tempfile(base, dir, ext)
+  }
+}

@@ -65,7 +65,7 @@ encrypt_data <- function(data, key, dest = NULL) {
     stop("Expected a raw vector; consider serialize(data, NULL)")
   }
   assert_is(key, "cyphr_key")
-  res <- serialize(key$encrypt(data), NULL)
+  res <- key$encrypt(data)
   if (is.null(dest)) {
     res
   } else {
@@ -105,7 +105,7 @@ decrypt_data <- function(data, key, dest = NULL) {
       stop("If given as a character string, data must be a file that exists")
     }
   }
-  res <- key$decrypt(unserialize(data))
+  res <- key$decrypt(data)
   if (is.null(dest)) {
     res
   } else {

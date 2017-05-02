@@ -62,6 +62,14 @@ test_that("pair (communicate)", {
 })
 
 test_that("symmetric", {
-  key <- sodium::keygen()
-  key_sodium(key)
+  k <- sodium::keygen()
+  key <- key_sodium(k)
+  expect_is(key$key, "function")
+  expect_identical(key$key(), k)
+
+  r <- openssl::rand_bytes(20)
+  v <- key$encrypt(r)
+  expect_is(v, "raw")
+  expect_gt(length(v), length(r))
+  expect_identical(key$decrypt(v), r)
 })

@@ -6,7 +6,7 @@ for (i in 1:2) {
 }
 
 ## NOTE: helper only, does not preserve visibility (c.f. encrypt)
-with_connection <- function(con, expr, envir=parent.frame()) {
+with_connection <- function(con, expr, envir = parent.frame()) {
   on.exit(close(con))
   eval(expr, envir)
 }

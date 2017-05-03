@@ -1,3 +1,31 @@
+##' Wrap a pair of openssl keys.  You should pass your private key and
+##' the public key of the person that you are communicating with.
+##' @title Asymmetric encryption with openssl
+##'
+##' @param pub An openssl public key.  Usually this will be the path
+##'   to the key, in which case it may either the path to a public key
+##'   or be the path to a directory containing a file
+##'   \code{id_rsa.pub}
+##'
+##' @param key An openssl private key.  Usually this will be the path
+##'   to the key, in which case it may either the path to a private
+##'   key or be the path to a directory containing a file.  You may
+##'   specify \code{NULL} here, in which case the environment variable
+##'   \code{USER_KEY} is checked and if that is not defined then
+##'   \code{~/.ssh} will be used.
+##'
+##' @param envelope A logical indicating if "envelope" encryption
+##'   functions should be used.  If so, then we use
+##'   \code{openssl::encrypt_envelope} and
+##'   \code{openssl::decrypt_envelope}.  If \code{FALSE} then we use
+##'   \code{openssl::rsa_encrypt} and \code{openssl::rsa_decrypt}.
+##'   See the openssl docs for futher details.
+##'
+##' @param password A password for the private key.  If \code{NULL}
+##'   then you will be prompted interactively for your password, and
+##'   if a string then that string will be used as the password (but
+##'   be careful in scripts!)
+##' @export
 keypair_openssl <- function(pub, key, envelope = TRUE, password = NULL) {
   pub <- openssl_load_pubkey(pub)
   key <- session_encrypt(openssl_load_key(key, password))
@@ -18,9 +46,30 @@ keypair_openssl <- function(pub, key, envelope = TRUE, password = NULL) {
   cyphr_keypair("openssl", pub, key, encrypt, decrypt, pack, unpack)
 }
 
+##' Wrap an openssl symmetric (aes) key.  This can be used with the
+##' functions \code{\link{encrypt_data}} and
+##' \code{\link{decrypt_data}}, along with the higher level wrappers
+##' \code{\link{encrypt}} and \code{\link{decrypt}}.  With a symmetric
+##' key, everybody uses the same key for encryption and decryption.
+##'
+##' @title Symmetric encryption with openssl
+##' @param key An openssl aes key (i.e., an object of class \code{aes}).
+##' @param mode The encryption mode to use.  Options are \code{cbc},
+##'   \code{ctr} and \code{gcm} (see the \code{openssl} package for
+##'   more details)
+##' @export
+##' @examples
+##' # Create a new key
+##' key <- cyphr::key_openssl(openssl::aes_keygen())
+##' key
+##'
+##' # With this key encrypt a string
+##' secret <- cyphr::encrypt_string("my secret string", key)
+##' # And decrypt it again:
+##' cyphr::decrypt_string(secret, key)
 key_openssl <- function(key, mode = "cbc") {
+  assert_is(key, "aes")
   key <- session_encrypt(key)
-  ## TODO: no check here that 'key' is sane.
   if (mode == "cbc") {
     encrypt <- openssl::aes_cbc_encrypt
     decrypt <- openssl::aes_cbc_decrypt
@@ -41,13 +90,14 @@ key_openssl <- function(key, mode = "cbc") {
 ## -- reading --
 
 openssl_load_key <- function(path, password = NULL) {
+  key_path <- openssl_find_key(path)
   if (is.null(password)) {
     password <- function(...) {
-      msg <- sprintf("Please enter password for private key %s: ", path)
+      msg <- sprintf("Please enter password for private key %s: ", key_path)
       get_password_str(FALSE, msg)
     }
   }
-  openssl::read_key(openssl_find_key(path), password)
+  openssl::read_key(key_path, password)
 }
 
 openssl_load_pubkey <- function(path) {

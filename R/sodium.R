@@ -1,9 +1,32 @@
-## NOTE: the order here (pub, key) is very important; if the wrong
-## order is used you cannot decrypt things.  Unfortunately because
-## sodium keys are just bytesstrings there is nothing to distinguish
-## the public and private keys so this is a pretty easy mistake to
-## make.
-keypair_sodium <- function(pub, key, authenticated = FALSE) {
+##' Wrap a pair of sodium keys for asymmetric encryption.  You should
+##' pass your private key and the public key of the person that you
+##' are communicating with.
+##'
+##' \emph{NOTE}: the order here (pub, key) is very important; if the
+##' wrong order is used you cannot decrypt things.  Unfortunately
+##' because sodium keys are just bytesstrings there is nothing to
+##' distinguish the public and private keys so this is a pretty easy
+##' mistake to make.
+##' @title Asymmetric encryption with sodium
+##'
+##' @param pub A sodium public key.  This is either a raw vector of
+##'   length 32 or a path to file containing the contents of the key
+##'   (written by \code{writeBin}.
+##'
+##' @param key A sodium private key.  This is either a raw vector of
+##'   length 32 or a path to file containing the contents of the key
+##'   (written by \code{writeBin}.
+##'
+##' @param authenticated Logical, indicating if authenticated
+##'   encryption (via \code{sodium::auth_encrypt} /
+##'   \code{sodium::auth_decrypt}) should be used.  If \code{FALSE}
+##'   then \code{sodium::simple_encrypt} /
+##'   \code{sodium::simple_decrypt} will be used.  The difference is
+##'   that with \code{authenticated = TRUE} the message is signed with
+##'   your private key so that tampering with the message will be
+##'   detectd.
+##' @export
+keypair_sodium <- function(pub, key, authenticated = TRUE) {
   pub <- sodium_load_key(pub)
   key <- session_encrypt(sodium_load_key(key))
   if (authenticated) {
@@ -19,6 +42,24 @@ keypair_sodium <- function(pub, key, authenticated = FALSE) {
   cyphr_keypair("sodium", pub, key, encrypt, decrypt, pack, unpack)
 }
 
+##' Wrap a sodium symmetric key.  This can be used with the functions
+##' \code{\link{encrypt_data}} and \code{\link{decrypt_data}}, along
+##' with the higher level wrappers \code{\link{encrypt}} and
+##' \code{\link{decrypt}}.  With a symmetric key, everybody uses the
+##' same key for encryption and decryption.
+##'
+##' @title Symmetric encryption with sodium
+##' @param key A sodium key (i.e., generated with \code{link{sodium::keygen}}
+##' @export
+##' @examples
+##' # Create a new key
+##' key <- cyphr::key_openssl(sodium::keygen())
+##' key
+##'
+##' # With this key encrypt a string
+##' secret <- cyphr::encrypt_string("my secret string", key)
+##' # And decrypt it again:
+##' cyphr::decrypt_string(secret, key)
 key_sodium <- function(key) {
   key <- session_encrypt(sodium_load_key(key))
   encrypt <- sodium::data_encrypt

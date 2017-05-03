@@ -58,8 +58,11 @@ openssl_load_pubkey <- function(path) {
 
 openssl_find_key <- function(path) {
   if (is.null(path)) {
-    ## The logic for what to search through is pretty nasty.
-    stop("not yet implemented")
+    ## NOTE: same logic as the openssl package
+    path <- Sys.getenv("USER_KEY", "~/.ssh/id_rsa")
+    if (!file.exists(path)) {
+      stop("Did not find default ssh private key at ", path)
+    }
   }
   if (!file.exists(path)) {
     stop("file does not exist")
@@ -76,8 +79,13 @@ openssl_find_key <- function(path) {
 ## It's possible that we should always require a full file here?
 openssl_find_pubkey <- function(path) {
   if (is.null(path)) {
-    ## The logic for what to search through is pretty nasty.
-    stop("not yet implemented")
+    ## NOTE: almost same logic as the openssl package (but without the
+    ## automatic derivation bit because that would require loading the
+    ## private key which would trigger a password request).
+    path <- Sys.getenv("USER_PUBKEY", "~/.ssh/id_rsa.pub")
+    if (!file.exists(path)) {
+      stop("Did not find default ssh public key at ", path)
+    }
   }
   if (!file.exists(path)) {
     stop("file does not exist")

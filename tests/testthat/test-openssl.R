@@ -97,12 +97,30 @@ test_that("symmetric", {
 })
 
 test_that("find key", {
-  expect_error(openssl_find_key(NULL), "not yet implemented")
-  expect_error(openssl_find_pubkey(NULL), "not yet implemented")
   path <- tempfile()
   expect_error(openssl_find_key(path), "file does not exist")
   expect_error(openssl_find_pubkey(path), "file does not exist")
   dir.create(path)
   expect_error(openssl_find_key(path), "did not find id_rsa within")
   expect_error(openssl_find_pubkey(path), "did not find id_rsa.pub within")
+})
+
+test_that("default key", {
+  if (file.exists("~/.ssh/id_rsa")) {
+    expect_equal(openssl_find_key(NULL), "~/.ssh/id_rsa")
+  }
+  if (file.exists("~/.ssh/id_rsa.pub")) {
+    expect_equal(openssl_find_pubkey(NULL), "~/.ssh/id_rsa.pub")
+  }
+
+  path <- tempfile()
+  oo <- sys_setenv(USER_KEY = path, USER_PUBKEY = path)
+  on.exit(sys_resetenv(oo))
+
+  expect_error(openssl_find_key(NULL), "Did not find default ssh private key")
+  expect_error(openssl_find_pubkey(NULL), "Did not find default ssh public key")
+
+  ssh_keygen(path, FALSE)
+  expect_equal(openssl_find_key(NULL), file.path(path, "id_rsa"))
+  expect_equal(openssl_find_pubkey(NULL), file.path(path, "id_rsa.pub"))
 })

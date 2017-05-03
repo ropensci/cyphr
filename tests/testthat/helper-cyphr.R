@@ -10,3 +10,20 @@ with_connection <- function(con, expr, envir = parent.frame()) {
   on.exit(close(con))
   eval(expr, envir)
 }
+
+sys_setenv <- function(...) {
+  vars <- names(list(...))
+  prev <- vapply(vars, Sys.getenv, "", NA_character_)
+  Sys.setenv(...)
+  prev
+}
+
+sys_resetenv <- function(old) {
+  i <- is.na(old)
+  if (any(i)) {
+    Sys.unsetenv(names(old)[i])
+  }
+  if (any(!i)) {
+    Sys.setenv(old[!i])
+  }
+}

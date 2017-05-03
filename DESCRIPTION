@@ -15,7 +15,9 @@ Imports:
     openssl,
     sodium
 Suggests:
+    knitr,
     rmarkdown,
     testthat
 RoxygenNote: 5.0.1
-VignetteBuilder: rmarkdown
+VignetteBuilder: rmarkdown,
+    knitr

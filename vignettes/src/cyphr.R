@@ -26,10 +26,14 @@ local({
 ## This package tries to smooth over some of the differences in
 ## encryption approaches (symmetric vs asymmetric, sodium vs openssl)
 ## to provide a simple interface for users who just want to encrypt or
-## decrypt things.  My main motivation for writing this package is
-## described in the [data workflow](data.html) vignette but
-## implementing that requires a few features that might be generally
-## useful.
+## decrypt things.
+
+## The scope of the package is to protect data that has been saved to
+## disk.  It is not designed to stop an attacker targeting the R
+## process itself to determine the contents of sensitive data.  The
+## package does try to prevent you accidently saving to disk the
+## contents of sensitive information, including the keys that could
+## decrypt such information.
 
 ## This vignette works through the basic functionality of the package.
 ## It does not offer much in the way of an introduction to encryption
@@ -408,6 +412,49 @@ cyphr::decrypt(readRDS("secret.rds"), key)
 ## first argument is a quoted expression.
 cyphr::encrypt_(quote(saveRDS(x, "secret.rds")), key)
 cyphr::decrypt_(quote(readRDS("secret.rds")), key)
+
+## # Session keys
+
+## When using `key_openssl`, `keypair_openssl`, `key_sodium`, or
+## `keypair_sodium` we generate something that can decrypt data.  The
+## objects that are returned by these functions can encrypt and
+## decrypt data and so it is reasonable to be concerned that if these
+## objects were themselves saved to disk your data would be
+## compromised.
+##
+## To avoid this, `cyphr` does not store private or symmetric keys
+## directly in these objects but instead encrypts the sensitive keys
+## with a `cyphr`-specific session key that is regenerated each time
+## the package is loaded.  This means that the objects are practically
+## only useful within one session, and if saved with `save.image`
+## (perhaps automatically at the end of a session) the keys cannot be
+## used to decrypt data.
+##
+## To manually invalidate all keys you can use the
+## `cyphr::session_key_refresh` function.  For example, here is a
+## symmetric key:
+key <- cyphr::key_sodium(sodium::keygen())
+
+## which we can use to encrypt a secret string
+secret <- cyphr::encrypt_string("my secret", key)
+
+## and decrypt it:
+cyphr::decrypt_string(secret, key)
+
+## If we refresh the session key we invalidate the `key` object
+cyphr::session_key_refresh()
+
+## and after this point the key cannot be used any further
+##+ error = TRUE
+cyphr::decrypt_string(secret, key)
+
+## This approach works because the package holds the session key
+## within its environment (in `cyphr:::session$key`) which R will not
+## serialize.  As noted above - this approach does not prevent an
+## attacker with the ability to snoop on your R session from
+## discovering your private keys or sensitive data but it does prevent
+## accidently saving keys in a way that would be useful for an
+## attacker to use in a subsequent session.
 
 ##+ echo = FALSE, results = "hide"
 Sys.unsetenv("USER_KEY")

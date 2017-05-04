@@ -18,7 +18,7 @@ same key for encryption and decryption.
 }
 \examples{
 # Create a new key
-key <- cyphr::key_openssl(sodium::keygen())
+key <- cyphr::key_sodium(sodium::keygen())
 key
 
 # With this key encrypt a string

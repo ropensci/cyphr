@@ -53,7 +53,7 @@ keypair_sodium <- function(pub, key, authenticated = TRUE) {
 ##' @export
 ##' @examples
 ##' # Create a new key
-##' key <- cyphr::key_openssl(sodium::keygen())
+##' key <- cyphr::key_sodium(sodium::keygen())
 ##' key
 ##'
 ##' # With this key encrypt a string

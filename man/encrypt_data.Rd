@@ -65,8 +65,7 @@ encrypt and decrypt arbitrary R objects (\code{encrypt_object},
 \code{decrypt_file}).
 }
 \examples{
-key_data <- sodium::keygen()
-key <- keypair_sodium_symmetric(key_data)
+key <- key_sodium(sodium::keygen())
 # Some super secret data we want to encrypt:
 x <- runif(10)
 # Convert the data into a raw vector:
@@ -74,19 +73,19 @@ data <- serialize(x, NULL)
 data
 # Encrypt the data; without the key above we will never be able to
 # decrypt this.
-data_enc <- encrypt_data(data, NULL, key)
+data_enc <- encrypt_data(data, key)
 data_enc
 # Our random numbers:
-unserialize(decrypt_data(data_enc, NULL, key))
+unserialize(decrypt_data(data_enc, key))
 # Same as the never-encrypted version:
 x
 
 # This can be achieved more easily using `encrypt_object`:
-data_enc <- encrypt_object(x, NULL, key)
+data_enc <- encrypt_object(x, key)
 identical(decrypt_object(data_enc, key), x)
 
 # Encrypt strings easily:
-str_enc <- encrypt_string("secret message", NULL, key)
+str_enc <- encrypt_string("secret message", key)
 str_enc
 decrypt_string(str_enc, key)
 }

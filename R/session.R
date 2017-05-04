@@ -8,22 +8,45 @@
 ## getting the key out, but then they know their own key already of
 ## course).
 session <- new.env(parent = emptyenv())
+
+##' Refresh the session key, invalidating all keys created by
+##' \code{\link{key_openssl}}, \code{\link{keypair_openssl}},
+##' \code{\link{key_sodium}} and \code{\link{keypair_sodium}}.
+##'
+##' Running this function will invalidate \emph{all} keys loaded with
+##' the above functions.  It should not be needed very often.
+##'
+##' @title Refresh the session key
+##' @export
 session_key_refresh <- function() {
   session$key <- sodium::keygen()
 }
 
 session_encrypt <- function(key) {
   if (is.raw(key) && identical(class(key), "raw")) {
-    data <- sodium::data_encrypt(key, session$key)
+    data <- session_encrypt_key_data(key)
     rm(key)
     function() {
-      sodium::data_decrypt(data, session$key)
+      session_decrypt_key(data)
     }
   } else {
-    data <- sodium::data_encrypt(serialize(key, NULL), session$key)
+    data <- session_encrypt_key_data(serialize(key, NULL))
     rm(key)
     function() {
-      unserialize(sodium::data_decrypt(data, session$key))
+      unserialize(session_decrypt_key(data))
     }
   }
+}
+
+session_encrypt_key_data <- function(key) {
+  sodium::data_encrypt(key, session$key)
+}
+
+session_decrypt_key <- function(data) {
+  tryCatch(
+    sodium::data_decrypt(data, session$key),
+    error = function(e) {
+      stop("Failed to decrypt key as session key has changed",
+           call. = FALSE)
+    })
 }

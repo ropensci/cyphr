@@ -18,3 +18,31 @@ test_that("get_password_str", {
     expect_equal(get_password_str(TRUE, "password"), "a"),
     expect_equal(get_password_str(FALSE, "password"), "a"))
 })
+
+test_that("prompt_confirm", {
+  ## testthat::skip_if_not_installed("mockr")
+  ## env <- environment(prompt_confirm)
+  ## mockr::with_mock(read_line = function(...) "n",
+  ##                  expect_equal(prompt_confirm(), FALSE),
+  ##                  .env = env)
+  testthat::with_mock(`cyphr:::read_line` = function(...) "n",
+                      expect_equal(prompt_confirm(), FALSE))
+  testthat::with_mock(`cyphr:::read_line` = function(...) "y",
+                      expect_equal(prompt_confirm(), TRUE))
+  testthat::with_mock(`cyphr:::read_line` = function(...) "",
+                      expect_equal(prompt_confirm(), FALSE))
+
+  first <- TRUE
+  res <- testthat::with_mock(
+    `cyphr:::read_line` = function(...) {
+      if (first) {
+        first <<- FALSE
+        "x"
+      } else {
+        "y"
+      }
+    },
+    evaluate_promise(prompt_confirm()))
+  expect_equal(res$result, TRUE)
+  expect_match(res$output, "Invalid choice")
+})

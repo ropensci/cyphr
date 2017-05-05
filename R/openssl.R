@@ -176,3 +176,7 @@ openssl_unpack_symmetric <- function(x) {
   attr(ret, "iv") <- x[i]
   ret
 }
+
+openssl_fingerprint <- function(k) {
+  as.list(k)$fingerprint
+}

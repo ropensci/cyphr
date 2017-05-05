@@ -80,3 +80,59 @@ tempfile_keep_ext <- function(filename, local = FALSE) {
     tempfile(base, dir, ext)
   }
 }
+
+bin2str <- function(x, sep = "::") {
+  as.character(x, sep)
+}
+str2bin <- function(x) {
+  sodium::hex2bin(x)
+}
+
+find_file_descend <- function(target, start = ".", limit = "/") {
+  root <- normalizePath(limit, mustWork = TRUE)
+  start <- normalizePath(start, mustWork = TRUE)
+
+  f <- function(path) {
+    if (file.exists(file.path(path, target))) {
+      return(path)
+    }
+    if (normalizePath(path, mustWork = TRUE) == root) {
+      return(NULL)
+    }
+    Recall(file.path(path, ".."))
+  }
+  ret <- f(start)
+  if (!(is.null(ret))) {
+    ret <- normalizePath(ret, mustWork = TRUE)
+  }
+  ret
+}
+
+using_git <- function(path) {
+  !is.null(find_file_descend(".git", path))
+}
+
+## Replace with ask once it's on CRAN?
+prompt_confirm <- function(msg = "continue?", valid = c(n = FALSE, y = TRUE),
+                           default = names(valid)[[1]]) {
+  valid_values <- names(valid)
+  msg <- sprintf("%s [%s]: ", msg,
+                 paste(c(toupper(default), setdiff(valid_values, default)),
+                       collapse = "/"))
+  repeat {
+    x <- trimws(tolower(read_line(msg)))
+    if (!nzchar(x)) {
+      x <- default
+    }
+    if (x %in% valid_values) {
+      return(valid[[x]])
+    } else {
+      cat("Invalid choice\n")
+    }
+  }
+}
+
+## Factoring out so that it is mockable:
+read_line <- function(prompt) {
+  readline(prompt = prompt) # nocov
+}

@@ -2,9 +2,13 @@ language: R
 sudo: false
 cache: packages
 
-apt_packages:
-  - libsodium-dev
-  - libbcurl4-openssl-dev
+addons:
+  apt:
+    sources:
+      - sourceline: 'ppa:chris-lea/libsodium'
+    packages:
+      - libsodium-dev
+      - libssl-dev
 
 r_packages:
   - covr

@@ -314,7 +314,8 @@ data_pub_load <- function(hash, path_request) {
 
 data_pubs_load <- function(path) {
   hash <- dir(path, pattern = "^[[:xdigit:]]{32}$")
-  dat <- setNames(lapply(hash, data_pub_load, path), hash)
+  dat <- lapply(hash, data_pub_load, path)
+  naems(dat) <- hash
   class(dat) <- "data_keys"
   dat
 }

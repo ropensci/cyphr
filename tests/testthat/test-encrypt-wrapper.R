@@ -32,8 +32,6 @@ test_that("nse 2", {
   encrypt(write.csv(iris, filename, row.names = FALSE), x)
   expect_true(file.exists(filename))
 
-  expect_warning(readLines(filename), "embedded nul")
-
   expect_equal(decrypt(read.csv(filename), x), iris)
 })
 

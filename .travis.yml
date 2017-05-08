@@ -8,7 +8,7 @@ addons:
       - sourceline: 'ppa:chris-lea/libsodium'
     packages:
       - libsodium-dev
-      - libbcurl4-openssl-dev
+      - libssl-dev
 
 r_packages:
   - covr

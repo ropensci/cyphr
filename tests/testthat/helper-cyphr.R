@@ -24,6 +24,6 @@ sys_resetenv <- function(old) {
     Sys.unsetenv(names(old)[i])
   }
   if (any(!i)) {
-    Sys.setenv(old[!i])
+    do.call("Sys.setenv", as.list(old[!i]))
   }
 }

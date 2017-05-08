@@ -157,6 +157,7 @@ data_admin_authorise <- function(path_data = ".", hash = NULL, path_user = NULL,
   if (length(dir(path_req, all.files = TRUE, no.. = TRUE)) == 0L) {
     file.remove(path_req)
   }
+  invisible()
 }
 
 ##' @export

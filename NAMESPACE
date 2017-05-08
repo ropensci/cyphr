@@ -2,6 +2,13 @@
 
 S3method(print,cyphr_key)
 S3method(print,cyphr_keypair)
+S3method(print,data_keys)
+export(data_admin_authorise)
+export(data_admin_init)
+export(data_admin_list_keys)
+export(data_admin_list_requests)
+export(data_key)
+export(data_request_access)
 export(decrypt)
 export(decrypt_)
 export(decrypt_data)

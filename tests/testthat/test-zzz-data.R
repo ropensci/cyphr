@@ -49,7 +49,7 @@ test_that("initialisation", {
   expect_message(data_request_access(path, "pair1"),
                  "You appear to already have access")
 
-  expect_message(data_admin_init(path, "pair1", quit),
+  expect_message(data_admin_init(path, "pair1", quiet),
                  "Already set up")
 })
 

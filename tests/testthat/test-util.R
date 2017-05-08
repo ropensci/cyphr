@@ -21,10 +21,6 @@ test_that("get_password_str", {
 
 test_that("prompt_confirm", {
   ## testthat::skip_if_not_installed("mockr")
-  ## env <- environment(prompt_confirm)
-  ## mockr::with_mock(read_line = function(...) "n",
-  ##                  expect_equal(prompt_confirm(), FALSE),
-  ##                  .env = env)
   testthat::with_mock(`cyphr:::read_line` = function(...) "n",
                       expect_equal(prompt_confirm(), FALSE))
   testthat::with_mock(`cyphr:::read_line` = function(...) "y",

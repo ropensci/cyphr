@@ -1,4 +1,4 @@
-for (i in 1:2) {
+for (i in 1:3) {
   dest <- paste0("pair", i)
   if (!file.exists(dest)) {
     ssh_keygen(dest, password = FALSE)

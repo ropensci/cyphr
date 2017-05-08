@@ -140,3 +140,82 @@ test_that("authorise no keys", {
   expect_message(data_admin_authorise(path, path_user = "pair1"),
                  "No keys to add")
 })
+
+test_that("cancel auth", {
+  path <- tempfile()
+  dir.create(path, FALSE, TRUE)
+  res <- data_admin_init(path, "pair1")
+  h <- data_request_access(path, "pair2")
+
+  testthat::with_mock(
+    `cyphr:::prompt_confirm` = function() FALSE,
+    expect_message(try(data_admin_authorise(path, h, "pair1", FALSE),
+                       silent = TRUE),
+                   "Cancelled adding key"),
+    expect_error(data_admin_authorise(path, h, "pair1", FALSE),
+                 "Errors adding 1 key"))
+})
+
+test_that("print keys", {
+  path <- tempfile()
+  dir.create(path, FALSE, TRUE)
+  res <- data_admin_init(path, "pair1")
+
+  expect_output(print(data_admin_list_requests(path)), "(empty)",
+                fixed = TRUE)
+  msg <- capture.output(print(data_admin_list_keys(path)))
+  expect_match(msg[[1]], "1 key:")
+
+  h <- data_request_access(path, "pair2")
+  ans <- data_admin_authorise(path, h, "pair1", TRUE)
+
+  msg <- capture.output(print(data_admin_list_keys(path)))
+  expect_match(msg[[1]], "2 keys:")
+})
+
+test_that("detect tampering", {
+  path <- tempfile()
+  dir.create(path, FALSE, TRUE)
+  res <- data_admin_init(path, "pair1")
+
+  ## Here's the request:
+  h <- data_request_access(path, "pair2")
+
+  ## Here's the attacker:
+  pair3 <- data_load_keypair_user("pair3")
+
+  path_req <- data_path_request(path)
+  path_use <- file.path(path_req, bin2str(h, ""))
+  expect_true(file.exists(path_use))
+  dat <- readRDS(path_use)
+
+  ## Try adding our own key here:
+  dat$pub <- pair3$pub
+  saveRDS(dat, path_use)
+
+  expect_error(data_admin_authorise(path, h, "pair1", TRUE, quiet),
+               "Public key hash disagrees for")
+})
+
+test_that("decryption failed gives reasonable error", {
+  path1 <- tempfile()
+  path2 <- tempfile()
+  dir.create(path1, FALSE, TRUE)
+  dir.create(path2, FALSE, TRUE)
+  res1 <- data_admin_init(path1, "pair1")
+  res2 <- data_admin_init(path2, "pair1")
+  file.copy(data_path_test(path1), data_path_test(path2), overwrite = TRUE)
+  expect_error(data_key(path2, "pair1"),
+               "Decryption failed")
+})
+
+test_that("gracefully fail to initialise", {
+  path <- tempfile()
+  dir.create(path, FALSE, TRUE)
+  testthat::with_mock(
+    `cyphr:::data_authorise_write` = function(...) stop("Unexplained error"),
+    expect_message(try(data_admin_init(path, "pair1"), silent = TRUE),
+                   "Removing data key"))
+  expect_equal(dir(data_path_cyphr(path), all.files = TRUE, no.. = TRUE),
+               character(0))
+})

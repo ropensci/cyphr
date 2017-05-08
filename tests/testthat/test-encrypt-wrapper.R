@@ -5,7 +5,8 @@ test_that("se", {
   x <- key_sodium(sodium::keygen())
   encrypt_(quote(saveRDS(iris, "output.rds")), x)
   expect_identical(decrypt_(quote(readRDS("output.rds")), x), iris)
-  expect_error(readRDS("output.rds"), "unknown input format")
+  ## Matching the exact message here is error-prone
+  expect_error(readRDS("output.rds"))
 })
 
 test_that("nse", {

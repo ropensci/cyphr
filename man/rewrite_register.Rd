@@ -32,7 +32,7 @@ with \code{\link{encrypt}} and \code{\link{decrypt}}.
 }
 \details{
 If your package uses cyphr, it might be useful to add this as
-an onLoad hook.
+an \code{.onLoad()} hook.
 }
 \examples{
 # The saveRDS function is already supported.  But if we wanted to

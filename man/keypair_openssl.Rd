@@ -24,7 +24,7 @@ functions should be used.  If so, then we use
 \code{openssl::encrypt_envelope} and
 \code{openssl::decrypt_envelope}.  If \code{FALSE} then we use
 \code{openssl::rsa_encrypt} and \code{openssl::rsa_decrypt}.
-See the openssl docs for futher details.}
+See the openssl docs for further details.}
 
 \item{password}{A password for the private key.  If \code{NULL}
 then you will be prompted interactively for your password, and

@@ -1,6 +1,6 @@
 ##' Wrapper functions for encryption.  These functions wrap
 ##' expressions that produce or consume a file and arrange to encrypt
-##' (for producing functions) or decryprt (for consuming functions).
+##' (for producing functions) or decrypt (for consuming functions).
 ##' The forms with a trailing underscore (\code{encrypt_},
 ##' \code{decrypt_}) do not use any non-standard evaluation and may be
 ##' more useful for programming.
@@ -13,7 +13,7 @@
 ##' @title Easy encryption and decryption
 ##'
 ##' @param expr A single expression representing a function call that
-##'   would be caled for the side effect of creating or reading a
+##'   would be called for the side effect of creating or reading a
 ##'   file.
 ##'
 ##' @param key A \code{cyphr_key} object describing the
@@ -179,7 +179,8 @@ find_function <- function(name, envir) {
 ##
 ## making this extensible probably requires having additional elements
 ## that are added to this list when the db call is run; those could
-## come from a registering process easily enough (e.g., during onLoad());
+## come from a registering process easily enough (e.g., during
+## \code{.onLoad()});
 ##   rewrite_register(package, name, arg)
 
 ## NOTE: graphics devices will take work to get working because it's
@@ -219,7 +220,7 @@ db_lookup <- function(package, name, arg) {
 ##' with \code{\link{encrypt}} and \code{\link{decrypt}}.
 ##'
 ##' If your package uses cyphr, it might be useful to add this as
-##' an onLoad hook.
+##' an \code{.onLoad()} hook.
 ##' @title Register functions to work with encrypt/decrypt
 ##' @param package The name of the package with the function to
 ##'   support (as a scalar character).  If your function has no

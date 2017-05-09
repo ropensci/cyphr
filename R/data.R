@@ -46,7 +46,7 @@
 ##'   things like RStudio projects.
 ##'
 ##' @param path_user Path to the directory with your ssh key.
-##'   Usually this can be ommited.
+##'   Usually this can be omitted.
 ##'
 ##' @param quiet Suppress printing of informative messages.
 ##' @export
@@ -181,7 +181,7 @@ data_admin_list_keys <- function(path_data = ".") {
 ##'   working directory.
 ##'
 ##' @param path_user Path to the directory with your user key.
-##'   Usually this can be ommited.  Use the \code{cyphr.user.path}
+##'   Usually this can be omitted.  Use the \code{cyphr.user.path}
 ##'   global option (i.e., via \code{options()}) to set this more
 ##'   conveniently.
 ##'

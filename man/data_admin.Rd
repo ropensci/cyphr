@@ -23,7 +23,7 @@ to use the working directory of R, which should work well for
 things like RStudio projects.}
 
 \item{path_user}{Path to the directory with your ssh key.
-Usually this can be ommited.}
+Usually this can be omitted.}
 
 \item{quiet}{Suppress printing of informative messages.}
 

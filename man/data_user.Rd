@@ -14,7 +14,7 @@ data_key(path_data = ".", path_user = NULL, test = TRUE, quiet = FALSE)
 working directory.}
 
 \item{path_user}{Path to the directory with your user key.
-Usually this can be ommited.  Use the \code{cyphr.user.path}
+Usually this can be omitted.  Use the \code{cyphr.user.path}
 global option (i.e., via \code{options()}) to set this more
 conveniently.}
 

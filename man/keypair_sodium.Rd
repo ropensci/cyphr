@@ -22,7 +22,7 @@ then \code{sodium::simple_encrypt} /
 \code{sodium::simple_decrypt} will be used.  The difference is
 that with \code{authenticated = TRUE} the message is signed with
 your private key so that tampering with the message will be
-detectd.}
+detected.}
 }
 \description{
 Wrap a pair of sodium keys for asymmetric encryption.  You should
@@ -32,7 +32,7 @@ are communicating with.
 \details{
 \emph{NOTE}: the order here (pub, key) is very important; if the
 wrong order is used you cannot decrypt things.  Unfortunately
-because sodium keys are just bytesstrings there is nothing to
+because sodium keys are just byte sequences there is nothing to
 distinguish the public and private keys so this is a pretty easy
 mistake to make.
 }

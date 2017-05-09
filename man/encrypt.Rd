@@ -17,7 +17,7 @@ decrypt_(expr, key, file_arg = NULL, envir = parent.frame())
 }
 \arguments{
 \item{expr}{A single expression representing a function call that
-would be caled for the side effect of creating or reading a
+would be called for the side effect of creating or reading a
 file.}
 
 \item{key}{A \code{cyphr_key} object describing the
@@ -32,7 +32,7 @@ some built-in functions.}
 \description{
 Wrapper functions for encryption.  These functions wrap
 expressions that produce or consume a file and arrange to encrypt
-(for producing functions) or decryprt (for consuming functions).
+(for producing functions) or decrypt (for consuming functions).
 The forms with a trailing underscore (\code{encrypt_},
 \code{decrypt_}) do not use any non-standard evaluation and may be
 more useful for programming.

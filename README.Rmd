@@ -99,15 +99,15 @@ file.remove("myfile", "myfile.encrypted", "myfile.clear")
 
 ## Wrappers around R's file functions
 
-While encrypting files is nice, the aim of the package is
+Encrypting files like the above risks leaving a cleartext version around.  If you want to wrap the output of something like `write.csv` or `saveRDS` you really have no choice but to write out the file first, encrypt it, and delete the clear version.  Making sure that this happens even if a step fails is error prone and takes a surprising number of repetitive lines of code.
 
-To encrypt the output of a file producing command, wrap it in `cyphr::encrypt`
+Alternatively, to encrypt the output of a file producing command, just wrap it in `cyphr::encrypt`
 
 ```{r}
 cyphr::encrypt(saveRDS(iris, "myfile.rds"), key)
 ```
 
-To decrypt the a file to feed into a file consuming command, wrap it in `cyphr::decrypt`:
+Then to decrypt the a file to feed into a file consuming command, wrap it in `cyphr::decrypt`:
 
 ```{r}
 dat <- cyphr::decrypt(readRDS("myfile.rds"), key)

@@ -52,8 +52,8 @@ k
 ```
 
 ```
-##  [1] 9f a1 af 9c 70 a7 c2 6e 35 aa 03 a3 2d c5 18 13 da eb a4 ce 37 9b bc
-## [24] cf 8e c1 3c 3a 40 5e 73 0e
+##  [1] 6f 44 87 6e 1d b6 4e c4 2c 26 01 69 41 de 21 03 a7 be cd b7 76 de 4c
+## [24] 41 e9 9b 73 5d a9 e9 4a 49
 ```
 
 With this key we can create the `key_sodium` object:
@@ -116,16 +116,16 @@ identical(readRDS("myfile.clear"), iris)
 
 ## Wrappers around R's file functions
 
-While encrypting files is nice, the aim of the package is
+Encrypting files like the above risks leaving a cleartext version around.  If you want to wrap the output of something like `write.csv` or `saveRDS` you really have no choice but to write out the file first, encrypt it, and delete the clear version.  Making sure that this happens even if a step fails is error prone and takes a surprising number of repetitive lines of code.
 
-To encrypt the output of a file producing command, wrap it in `cyphr::encrypt`
+Alternatively, to encrypt the output of a file producing command, just wrap it in `cyphr::encrypt`
 
 
 ```r
 cyphr::encrypt(saveRDS(iris, "myfile.rds"), key)
 ```
 
-To decrypt the a file to feed into a file consuming command, wrap it in `cyphr::decrypt`:
+Then to decrypt the a file to feed into a file consuming command, wrap it in `cyphr::decrypt`:
 
 
 ```r

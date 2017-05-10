@@ -115,7 +115,7 @@ openssl_find_key <- function(path) {
     }
   }
   if (!file.exists(path)) {
-    stop("file does not exist")
+    stop("Private key does not exist at ", path)
   }
   if (is_directory(path)) {
     path <- file.path(path, "id_rsa")
@@ -138,7 +138,7 @@ openssl_find_pubkey <- function(path) {
     }
   }
   if (!file.exists(path)) {
-    stop("file does not exist")
+    stop("Public key does not exist at ", path)
   }
   if (is_directory(path)) {
     path <- file.path(path, "id_rsa.pub")

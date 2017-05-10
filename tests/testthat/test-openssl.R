@@ -99,8 +99,8 @@ test_that("symmetric", {
 
 test_that("find key", {
   path <- tempfile()
-  expect_error(openssl_find_key(path), "file does not exist")
-  expect_error(openssl_find_pubkey(path), "file does not exist")
+  expect_error(openssl_find_key(path), "Private key does not exist")
+  expect_error(openssl_find_pubkey(path), "Public key does not exist")
   dir.create(path)
   expect_error(openssl_find_key(path), "did not find id_rsa within")
   expect_error(openssl_find_pubkey(path), "did not find id_rsa.pub within")

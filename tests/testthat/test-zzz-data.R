@@ -2,7 +2,7 @@ context("data workflow")
 
 test_that("missing user key throws error", {
   expect_error(data_load_keypair_user(tempfile()),
-               "file does not exist")
+               "key does not exist")
 })
 
 test_that("load and reload openssl keypair", {

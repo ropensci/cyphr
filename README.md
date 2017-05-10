@@ -34,14 +34,18 @@ dat <- cyphr::decrypt(read.csv("file.csv", stringsAsFactors = FALSE), key)
 
 In addition, the package implements a workflow that allows a group to securely share data by encrypting it with a shared ("symmetric") key that is in turn encrypted with each users ssh keys.  The use case is a group of researchers who are collaborating on a dataset that cannot be made public, for example containing sensitive data.  However, they have decided or need to store it in a setting that they are not 100% confident about the security of the data.  So encrypt the data at each read/write.
 
+## Scope
+
+The scope of the package is to protect data that has been saved to disk.  It is not designed to stop an attacker targeting the R process itself to determine the contents of sensitive data.  The package does try to prevent you accidently saving to disk the contents of sensitive information, including the keys that could decrypt such information.
+
 ## Objects to handle keys:
 
 Decide on a style of encryption and create a key object
 
-* `key_sodium`: [Symmetric encryption, using sodium](http://127.0.0.1:19184/library/sodium/doc/intro.html#secret-key-encryption) -- everyone shares the same key (which must be kept secret!) and can encrypt and decrpt data with it.  This is used as a building block but is inflexible because of the need to keep the key secret.
-* `keypair_sodium`: [Public key encryption](http://127.0.0.1:19184/library/sodium/doc/intro.html#public-key-encryption) -- this lets people encrypt messages using your public key that only you can read using your private key.
-* `key_openssl`: [Symmetric encryption using openssl]
-* `keypair_openssl`: Public key encryption, using [openssl](https://cran.r-project.org/web/packages/openssl) (see `?encrypt_envelope` in the the `openssl` package.
+* `key_sodium`: Symmetric encryption, using [sodium](https://cran.r-project.org/web/packages/sodium) -- everyone shares the same key (which must be kept secret!) and can encrypt and decrypt data with it.  This is used as a building block but is inflexible because of the need to keep the key secret.
+* `keypair_sodium`: Public key encryption with [sodium](https://cran.r-project.org/web/packages/sodium) -- this lets people encrypt messages using your public key that only you can read using your private key.
+* `key_openssl`: Symmetric encryption using [openssl](https://cran.r-project.org/web/packages/openssl)
+* `keypair_openssl`: Public key encryption, using [openssl](https://cran.r-project.org/web/packages/openssl), which has the big advantage that many people already have compatible (ssh) keys in standard places with standard file formats (see `?encrypt_envelope` in the the `openssl` package).
 
 To generate keys, you really should read the underling documentation in the `sodium` or `openssl` packages!  The `sodium` keys do not have a file format: they are simply random data.  So a secret symmetric key in `sodium` might be:
 
@@ -52,8 +56,8 @@ k
 ```
 
 ```
-##  [1] 6f 44 87 6e 1d b6 4e c4 2c 26 01 69 41 de 21 03 a7 be cd b7 76 de 4c
-## [24] 41 e9 9b 73 5d a9 e9 4a 49
+##  [1] 1a 38 e1 39 5e 79 40 5d 5e 9f 8f bd 01 9e 8d 54 4a 64 ce c6 6f e1 4d
+## [24] 06 11 64 5b de 1b 60 f6 54
 ```
 
 With this key we can create the `key_sodium` object:
@@ -75,8 +79,8 @@ If you load a password protected ssh key you will be prompted for your passphras
 
 ```r
 key <- cyphr::key_openssl()
-key
 ## Please enter private key passphrase:
+key
 ```
 
 ## Encrypt / decrypt a file
@@ -125,7 +129,7 @@ Alternatively, to encrypt the output of a file producing command, just wrap it i
 cyphr::encrypt(saveRDS(iris, "myfile.rds"), key)
 ```
 
-Then to decrypt the a file to feed into a file consuming command, wrap it in `cyphr::decrypt`:
+Then to decrypt the a file to feed into a file consuming command, wrap it in `cyphr::decrypt`
 
 
 ```r
@@ -145,7 +149,7 @@ identical(dat, iris) # yay
 But without the key, it cannot be read:
 
 ```r
-readRDS("myfile.rds") # unknown input format
+readRDS("myfile.rds")
 ```
 
 ```
@@ -191,13 +195,15 @@ cyphr::decrypt(readxl::read_excel("myfile.xlsx"), key)
 
 to decrypt the file.
 
-## Workflow support
+## Collaborating with encrypted data
 
-It's possible that this means there are two packages here, but I have a single use case so they're together for now at least.  The package contains support for a group of people are working on a sensitive data set.  The data will be stored with a symmetric key.  However, we never actually store the key directly, instead we'll store a copy that is encrypted with the user key.  Any user with access to the data can authorise another user to access the data.  This is described in more detail in the [vignette](http://richfitz.github.io/cyphr/vignettes/data.html) (in R: `vignette("data", package = "cyphr")`).
+Even with high-level functions to ease encrypting and decrypting things given a key, there is some work to be done to distribute a set of keys across a group of people who are working together so that everyone can encrypt and decrypt the data but so that the keys themselves are not compromised.
+
+The package contains support for a group of people are working on a sensitive data set.  The data will be stored with a symmetric key.  However, we never actually store the key directly, instead we'll store a copy for each user that is encrypted with the user's key.  Any user with access to the data can authorise another user to access the data.  This is described in more detail in the [vignette](http://richfitz.github.io/cyphr/vignettes/data.html) (in R: `vignette("data", package = "cyphr")`).
 
 ## Why not a connection object?
 
-A proper connection could be nice but there are two issues stopping this:
+A proper connection could be nice but there are at least three issues stopping this:
 
 1. `sodium` does not support streaming encryption/decrption.  It might be possible (bindings to node and swift have it).  In general this would be great and allow the sort of cool things you can do with streaming large data in curl.
 2. R plays pretty loose and free with creating connections when given a filename; `readRDS`/`saveRDS` will open files with decompression on in binary mode, `read.csv`/`write.csv` don't.  `write.table` adds encoding information when openning the connection object.  The logic around what happens is entirely within the functions themselves so is hard to capture in a general way.
@@ -205,7 +211,7 @@ A proper connection could be nice but there are two issues stopping this:
 
 There are still problems with the approach I've taken:
 
-* Appending does not work: we'd need to unencrypt the file first for that to be OK.  This is an issue for `write.table`, but not `writeLines`.
+* Appending does not work: we'd need to unencrypt the file first for that to be OK
 * Non-file arguments are going to suck (though it's possible that something could be done to detect connections)
 
 In the end, you can always write things out however you like and use `encrypt_file` to encrypt the file afterwards.
@@ -221,5 +227,3 @@ To install `cyphr` from github:
 ```r
 remotes::install_github("richfitz/cyphr", upgrade = FALSE)
 ```
-
-Note that [`libsodium`](https://download.libsodium.org/doc/) will be needed to compile the package. See [installation instructions](https://download.libsodium.org/doc/installation/index.html).

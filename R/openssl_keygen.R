@@ -55,7 +55,7 @@ ssh_keygen <- function(path = tempfile(), password = TRUE, use_shell = FALSE) {
     stop("Invalid input for password")
   }
 
-  if (!nzchar(password)) {
+  if (!nzchar(pw)) {
     pw <- if (use_shell) "''" else NULL
   }
 

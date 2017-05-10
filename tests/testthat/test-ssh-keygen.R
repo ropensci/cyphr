@@ -44,6 +44,12 @@ test_that("no password", {
   expect_is(openssl_load_key(path, ""), "key")
 })
 
+test_that("no password - shell", {
+  path <- tempfile()
+  res <- ssh_keygen(path, FALSE, TRUE)
+  expect_is(openssl_load_key(path, ""), "key")
+})
+
 test_that("invalid password", {
   expect_error(ssh_keygen(tempfile(), 124), "Invalid input for password")
 })

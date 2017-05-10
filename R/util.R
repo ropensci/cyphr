@@ -1,7 +1,6 @@
 get_password_str <- function(verify, prompt) {
   pw <- get_pass(prompt)
-  if (verify && nzchar(pw) &&
-      !identical(get_pass("Verify passphrase"), pw)) {
+  if (verify && !identical(get_pass("Verify passphrase: "), pw)) {
     stop("Passwords do not match", call. = FALSE)
   }
   pw

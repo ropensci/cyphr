@@ -7,6 +7,19 @@ test_that("keygen", {
   expect_true(is_directory(path))
   expect_true(file.exists(file.path(path, "id_rsa")))
   expect_true(file.exists(file.path(path, "id_rsa.pub")))
+  expect_is(keypair_openssl(path, path, password = "secret"),
+            "cyphr_keypair")
+})
+
+test_that("shell", {
+  path <- tempfile()
+  res <- ssh_keygen(path, "secret", TRUE)
+  expect_equal(res, path)
+  expect_true(is_directory(path))
+  expect_true(file.exists(file.path(path, "id_rsa")))
+  expect_true(file.exists(file.path(path, "id_rsa.pub")))
+  expect_is(keypair_openssl(path, path, password = "secret"),
+            "cyphr_keypair")
 })
 
 test_that("existing, but not directory", {

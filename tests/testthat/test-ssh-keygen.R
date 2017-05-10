@@ -59,6 +59,6 @@ test_that("get password", {
   testthat::with_mock(
     `cyphr::get_password_str` = function(...) "secret",
     ssh_keygen(path, TRUE))
-  expect_error(openssl_load_key(path, "wrong password"), "bad decrypt")
+  expect_error(openssl_load_key(path, "wrong password"))
   expect_is(openssl_load_key(path, "secret"), "key")
 })

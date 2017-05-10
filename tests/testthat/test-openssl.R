@@ -11,15 +11,14 @@ test_that("load; with password", {
   d <- openssl_load_key(path, pw)
   expect_is(d, "key")
 
-  expect_error(openssl_load_key(path, "wrong password"),
-               "bad decrypt")
+  expect_error(openssl_load_key(path, "wrong password"))
 
   testthat::with_mock(
     `cyphr:::get_password_str` = function(...) pw,
     expect_is(openssl_load_key(path), "key"))
   testthat::with_mock(
     `cyphr:::get_password_str` = function(...) "wrong",
-    expect_error(openssl_load_key(path), "bad decrypt"))
+    expect_error(openssl_load_key(path)))
 })
 
 test_that("pair", {

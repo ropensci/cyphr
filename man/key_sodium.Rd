@@ -26,4 +26,3 @@ secret <- cyphr::encrypt_string("my secret string", key)
 # And decrypt it again:
 cyphr::decrypt_string(secret, key)
 }
-

@@ -15,4 +15,3 @@ Refresh the session key, invalidating all keys created by
 Running this function will invalidate \emph{all} keys loaded with
 the above functions.  It should not be needed very often.
 }
-

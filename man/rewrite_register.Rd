@@ -45,4 +45,3 @@ rewrite_register("base", "saveRDS", "file")
 # looking at
 ls(cyphr:::db)
 }
-

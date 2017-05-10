@@ -36,4 +36,3 @@ because sodium keys are just byte sequences there is nothing to
 distinguish the public and private keys so this is a pretty easy
 mistake to make.
 }
-

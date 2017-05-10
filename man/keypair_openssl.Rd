@@ -35,4 +35,3 @@ be careful in scripts!)}
 Wrap a pair of openssl keys.  You should pass your private key and
 the public key of the person that you are communicating with.
 }
-

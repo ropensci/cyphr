@@ -27,3 +27,10 @@ sys_resetenv <- function(old) {
     do.call("Sys.setenv", as.list(old[!i]))
   }
 }
+
+skip_if_no_ssh_keygen <- function() {
+  if (nzchar(Sys.which("ssh-keygen"))) {
+    return()
+  }
+  testthat::skip("ssh-keygen not found")
+}

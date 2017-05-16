@@ -28,8 +28,7 @@ test_that("command rewriting", {
 
   expect_error(rewrite(quote(readRDS("myfile")), file_arg = "foo"),
                "Cannot infer file argument")
-  expect_error(rewrite(quote(unknown("myfile"))),
-               "was not found")
+  expect_error(rewrite(quote(unknown("myfile"))))
   expect_error(rewrite(quote(plot("myfile"))),
                "Rewrite rule for graphics::plot not found", fixed = TRUE)
 })

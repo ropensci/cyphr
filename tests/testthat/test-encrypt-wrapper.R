@@ -20,7 +20,7 @@ test_that("nse", {
   expect_true(file.exists(filename))
   ## Only one extra file in the tempdir; nothing else left.
   expect_equal(length(dir(tempdir())), len + 1L)
-  expect_error(readRDS(filename), "unknown input format")
+  expect_error(readRDS(filename))
   expect_equal(decrypt(readRDS(filename), x), iris)
 })
 

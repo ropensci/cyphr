@@ -42,3 +42,12 @@ test_that("prompt_confirm", {
   expect_equal(res$result, TRUE)
   expect_match(res$output, "Invalid choice")
 })
+
+test_that("Descend failure", {
+  path <- tempfile()
+  dir.create(path)
+  on.exit(unlink(path, recursive = TRUE))
+  expect_null(find_file_descend(".cyphr_foobar", tempdir(), path))
+  expect_null(find_file_descend(".cyphr_foobar", "/", path))
+  expect_null(find_file_descend(".cyphr_foobar", "/", "/"))
+})

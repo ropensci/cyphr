@@ -98,7 +98,11 @@ find_file_descend <- function(target, start = ".", limit = "/") {
     if (normalizePath(path, mustWork = TRUE) == root) {
       return(NULL)
     }
-    Recall(file.path(path, ".."))
+    parent <- normalizePath(file.path(path, ".."))
+    if (parent == path) {
+      return(NULL)
+    }
+    Recall(parent)
   }
   ret <- f(start)
   if (!(is.null(ret))) {
@@ -108,7 +112,8 @@ find_file_descend <- function(target, start = ".", limit = "/") {
 }
 
 using_git <- function(path) {
-  !is.null(find_file_descend(".git", path))
+  tryCatch(!is.null(find_file_descend(".git", path)),
+           error = function(e) FALSE)
 }
 
 ## Replace with ask once it's on CRAN?

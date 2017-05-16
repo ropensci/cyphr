@@ -1,8 +1,8 @@
 Package: cyphr
 Title: High Level Encryption Wrappers
 Version: 0.1.0
-Author: Rich FitzJohn
-Maintainer: Rich FitzJohn <rich.fitzjohn@gmail.com>
+Authors@R: person("Rich", "FitzJohn", role = c("aut", "cre"),
+    email = "rich.fitzjohn@gmail.com")
 Description: Encryption wrappers, using low-level support from sodium and
     openssl.
 License: MIT + file LICENSE

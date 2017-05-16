@@ -155,7 +155,7 @@ data_admin_authorise <- function(path_data = ".", hash = NULL, path_user = NULL,
 
   path_req <- data_path_request(path_data)
   if (length(dir(path_req, all.files = TRUE, no.. = TRUE)) == 0L) {
-    file.remove(path_req)
+    unlink(path_req, recursive = TRUE)
   }
   invisible()
 }

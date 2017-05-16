@@ -51,7 +51,7 @@ Decide on a style of encryption and create a key object
 * `key_openssl`: Symmetric encryption using [openssl](https://cran.r-project.org/web/packages/openssl)
 * `keypair_openssl`: Public key encryption, using [openssl](https://cran.r-project.org/web/packages/openssl), which has the big advantage that many people already have compatible (ssh) keys in standard places with standard file formats (see `?encrypt_envelope` in the the `openssl` package).
 
-To generate keys, you really should read the underling documentation in the `sodium` or `openssl` packages!  The `sodium` keys do not have a file format: they are simply random data.  So a secret symmetric key in `sodium` might be:
+To generate keys, you really should read the underlying documentation in the `sodium` or `openssl` packages!  The `sodium` keys do not have a file format: they are simply random data.  So a secret symmetric key in `sodium` might be:
 
 ```{r}
 k <- sodium::keygen()

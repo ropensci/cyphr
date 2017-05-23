@@ -199,3 +199,9 @@ To install `cyphr` from github:
 ```{r, eval = FALSE}
 remotes::install_github("richfitz/cyphr", upgrade = FALSE)
 ```
+
+## Licence
+
+MIT © [Rich FitzJohn](https://github.com/richfitz).
+
+Please note that this project is released with a [Contributor Code of Conduct](CONDUCT.md). By participating in this project you agree to abide by its terms.

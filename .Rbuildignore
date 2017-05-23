@@ -15,3 +15,4 @@
 ^tests/testthat/data$
 ^notes\.md$
 ^tmp\.R$
+^CONDUCT\.md$

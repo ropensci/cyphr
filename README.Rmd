@@ -38,6 +38,13 @@ dat <- cyphr::decrypt(read.csv("file.csv", stringsAsFactors = FALSE), key)
 
 In addition, the package implements a workflow that allows a group to securely share data by encrypting it with a shared ("symmetric") key that is in turn encrypted with each users ssh keys.  The use case is a group of researchers who are collaborating on a dataset that cannot be made public, for example containing sensitive data.  However, they have decided or need to store it in a setting that they are not 100% confident about the security of the data.  So encrypt the data at each read/write.
 
+## Installation
+
+To install `cyphr` from github:
+```{r, eval = FALSE}
+remotes::install_github("richfitz/cyphr", upgrade = FALSE)
+```
+
 ## Scope
 
 The scope of the package is to protect data that has been saved to disk.  It is not designed to stop an attacker targeting the R process itself to determine the contents of sensitive data.  The package does try to prevent you accidently saving to disk the contents of sensitive information, including the keys that could decrypt such information.
@@ -191,14 +198,7 @@ In the end, you can always write things out however you like and use `encrypt_fi
 
 ## Why are wrappers needed?
 
-The low level functions in `sodium` and `openssl` work with raw data, for generality.  Few users encounter raw vectors in their typical use of R, so these require serialisation.  Most of the encryption involves a little extra random data (the "nonce" in `sodium` and similar additional pieces with `openssl`).  These need storing with the data, and then separating from the dadta when decryption happens.
-
-## Installation
-
-To install `cyphr` from github:
-```{r, eval = FALSE}
-remotes::install_github("richfitz/cyphr", upgrade = FALSE)
-```
+The low level functions in `sodium` and `openssl` work with raw data, for generality.  Few users encounter raw vectors in their typical use of R, so these require serialisation.  Most of the encryption involves a little extra random data (the "nonce" in `sodium` and similar additional pieces with `openssl`).  These need storing with the data, and then separating from the data when decryption happens.
 
 ## Licence
 

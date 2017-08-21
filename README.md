@@ -1,11 +1,10 @@
-
-
 # cyphr
 
 [![Project Status: WIP - Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](http://www.repostatus.org/badges/latest/wip.svg)](http://www.repostatus.org/#wip)
 [![Linux Build Status](https://travis-ci.org/richfitz/cyphr.svg?branch=master)](https://travis-ci.org/richfitz/cyphr)
  [![Windows Build status](https://ci.appveyor.com/api/projects/status/github/richfitz/cyphr?svg=true)](https://ci.appveyor.com/project/richfitz/cyphr)
 [![codecov.io](https://codecov.io/github/richfitz/cyphr/coverage.svg?branch=master)](https://codecov.io/github/richfitz/cyphr?branch=master)
+[![](http://badges.ropensci.org/114_status.svg)](https://github.com/ropensci/onboarding/issues/114)
 
 Encryption wrappers, using low-level support from [`sodium`](https://github.com/jeroenooms/sodium) and [`openssl`](https://github.com/jeroenooms/openssl).  This package is designed to be easy to use, rather than the most secure thing (you're using R, remember).
 

@@ -3,8 +3,8 @@ Title: High Level Encryption Wrappers
 Version: 0.1.0
 Authors@R: person("Rich", "FitzJohn", role = c("aut", "cre"),
     email = "rich.fitzjohn@gmail.com")
-Description: Encryption wrappers, using low-level support from sodium and
-    openssl.
+Description: Encryption wrappers, using low-level support from 'sodium' and
+    'openssl'.
 License: MIT + file LICENSE
 LazyData: true
 URL: https://github.com/dide-tools/cyphr

@@ -307,3 +307,5 @@ h
 
 ##+ echo = FALSE, results = "hide"
 unlink(data_dir, recursive = TRUE)
+unlink("alice", recursive = TRUE)
+unlink("bob", recursive = TRUE)

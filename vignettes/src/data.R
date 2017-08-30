@@ -43,18 +43,18 @@ sys_resetenv <- function(old) {
 
 ## A group of people are working on a sensitive data set that for
 ## practical reasons needs to be stored in a place that we're not 100%
-## happy with the securtity (e.g., dropbox), or we're concerned that
+## happy with the security (e.g., Dropbox), or we're concerned tha
 ## files stored in plain text on users computers (e.g. laptops) may
 ## lead to the data being compromised.
 
 ## If the data can be stored encrypted but everyone in the group can
 ## still read and write the data then we've improved the situation
 ## somewhat.  But organising for everyone to get a copy of the key to
-## decrypt the data files is nontrivial.  The workflow described here
-## aims to simplify this proceedure using lower-level functions in the
+## decrypt the data files is non-trivial.  The workflow described here
+## aims to simplify this procedure using lower-level functions in the
 ## `cyphr` package.
 
-## The general proceedure is this:
+## The general procedure is this:
 ##
 ## 1. A person will set up a set of personal keys and a key for the
 ## data.  The data key will be encrypted with their personal key so
@@ -126,7 +126,7 @@ head(cyphr::decrypt(readRDS(filename), key))
 
 ## We're going to assume that the user can read and write to the data.
 ## This is the case for my use case where the data are stored on
-## dropbox and will be the case with github based distribution, though
+## dropbox and will be the case with GitHub based distribution, though
 ## there would be a pull request step in here.
 
 ## This user cannot read the data, though trying to will print a
@@ -218,7 +218,7 @@ sys_resetenv(oo)
 ## the _data_ are safe; only people who have keys to the data will be
 ## able to read it.
 
-## Cyphr uses two different encryption algorithms; it uses rsa
+## `cyphr` uses two different encryption algorithms; it uses RSA
 ## encryption via the `openssl` package for user keys, because there
 ## is a common file format for these keys so it makes user
 ## configuration easier.  It uses the modern sodium package (and
@@ -254,7 +254,7 @@ names(cyphr::data_admin_list_keys("data"))
 ## * user: the reported user name of the person who created request for data
 ## * host: the reported computer name
 ## * date: the time the request was generated
-## * pub: the rsa public key of the user
+## * pub: the RSA public key of the user
 ## * signature: the signature of the contents of "user", "host",
 ##   "date", "pub".  This ensures that the data have not been changed
 ##   since they were created.
@@ -289,12 +289,12 @@ h
 
 ## ## Limitations
 
-## In the dropbox scenario, non-password protected keys will afford
+## In the Dropbox scenario, non-password protected keys will afford
 ## only limited protection.  This is because even though the keys and
-## data are stored separately on dropbox, they will be in the same
+## data are stored separately on Dropbox, they will be in the same
 ## place on a local computer; if that computer is lost then the only
 ## thing preventing an attacker recovering the data is security
-## through obscuritty (the data would appear to be random junk but
+## through obscurity (the data would appear to be random junk but
 ## they will be able to run your analysis scripts as easily as you
 ## can).  Password protected keys will improve this situation
 ## considerably as without a password the data cannot be recovered.

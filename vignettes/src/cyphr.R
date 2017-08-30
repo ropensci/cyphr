@@ -24,14 +24,14 @@ local({
 })
 
 ## This package tries to smooth over some of the differences in
-## encryption approaches (symmetric vs asymmetric, sodium vs openssl)
+## encryption approaches (symmetric vs. asymmetric, sodium vs. openssl)
 ## to provide a simple interface for users who just want to encrypt or
 ## decrypt things.
 
 ## The scope of the package is to protect data that has been saved to
 ## disk.  It is not designed to stop an attacker targeting the R
 ## process itself to determine the contents of sensitive data.  The
-## package does try to prevent you accidently saving to disk the
+## package does try to prevent you accidentally saving to disk the
 ## contents of sensitive information, including the keys that could
 ## decrypt such information.
 
@@ -60,7 +60,7 @@ local({
 
 ## We support symmetric keys and asymmetric key pairs from the
 ## `openssl` and `sodium` packages (which wrap around
-## industry-standard cryptograpgic libraries).
+## industry-standard cryptographic libraries).
 
 ## The `openssl` keys have the advantage of a standard key format, and
 ## that many people (especially on Linux and macOS) have a keypair
@@ -135,7 +135,7 @@ key
 ## ## Asymmetric encryption ("key pairs")
 
 ## With asymmetric encryption everybody has two keys that differ from
-## everyone elses key.  One key is public and can be shared freely
+## everyone else's key.  One key is public and can be shared freely
 ## with anyone you would like to communicate with and the other is
 ## private and must never be disclosed.
 
@@ -153,7 +153,7 @@ key
 ## ### `openssl`
 
 ## Let's suppose that we have two parties "Alice" and "Bob" who want
-## to talk with one another.  I have generated ssh keys (with no
+## to talk with one another.  I have generated SSH keys (with no
 ## password) in the directories `alice` and `bob` (though in
 ## practice these would of course be on different machines and Alice
 ## would have *no* access to Bob's private key!).  Here, the paths
@@ -453,7 +453,7 @@ cyphr::decrypt_string(secret, key)
 ## serialize.  As noted above - this approach does not prevent an
 ## attacker with the ability to snoop on your R session from
 ## discovering your private keys or sensitive data but it does prevent
-## accidently saving keys in a way that would be useful for an
+## accidentally saving keys in a way that would be useful for an
 ## attacker to use in a subsequent session.
 
 ##+ echo = FALSE, results = "hide"

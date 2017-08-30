@@ -245,7 +245,7 @@ secret
 With `sodium`, things are largely the same with the exception that
 there is no standard format for saving sodium keys.  The bits below
 use an in-memory key (which is just a collection of bytes) but
-these can also be file names, each of which contains the contents of
+these can also be filenames, each of which contains the contents of
 the key written out with `writeBin`.
 
 First, generate keys for Alice:
@@ -343,7 +343,7 @@ though it is not actually an rds file:
 readRDS(path)
 ```
 
-When passed a file name (as opposed to a raw vector),
+When passed a filename (as opposed to a raw vector),
 `cyphr::decrypt_object` will read the object in before decrypting
 it
 ``` {r }
@@ -449,7 +449,7 @@ rewriting.  If this bothers you, you should just use `encrypt_file`
 
 The `encrypt` function inspects the call in the first argument
 passed to it and works out for the function provided (`saveRDS`)
-which argument corresponds to the file name (here `"secret.rds"`).
+which argument corresponds to the filename (here `"secret.rds"`).
 It then rewrites the call to write out to a temporary file (using
 `tempfile()`).  Then it calls `encrypt_file` (see below) on this
 temporary file to create the file asked for (`"secret.rds"`).  Then
@@ -457,7 +457,7 @@ it deletes the temporary file, though this will also happen in case
 of an error in any of the above.
 
 The `decrypt` function works similarly.  It inspects the call and
-detects that the first argument represents the file name.  It
+detects that the first argument represents the filename.  It
 decrypts that file to create a temporary file, and then runs
 `readRDS` on that file.  Again it will delete the temporary file on
 exit.
@@ -474,7 +474,7 @@ The functions supported via this interface are:
 But new functions can be added with the `rewrite_register`
 function.  For example, to support the excellent
 [rio](https://cran.r-project.org/web/packages/rio) package, whose
-`import` and `export` functions take the file name `file` you could
+`import` and `export` functions take the filename `file` you could
 use:
 
 ```r

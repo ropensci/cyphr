@@ -114,8 +114,6 @@ test_that("git messages", {
   quiet <- FALSE
   res <- data_admin_init(path, "pair1", quiet)
 
-  ## TODO: This path could be improved by relativising the working
-  ## directory against the git directory
   res <- testthat::evaluate_promise(data_request_access(path, "pair2", quiet))
   expect_match(res$messages, "If you are using git", all = FALSE)
 

@@ -265,7 +265,7 @@ data_authorise_write <- function(path_data, sym, dat, yes = FALSE,
     stop(e)
   }
 
-  ## TODO: we don't support half-pairs yet so using lower-level
+  ## NOTE: we don't support half-pairs yet so using lower-level
   ## functions.  However, I won't be the only person who wants this.
   ##
   ## We could do:
@@ -273,6 +273,9 @@ data_authorise_write <- function(path_data, sym, dat, yes = FALSE,
   ##   dat$key <- encrypt_data(sym$key(), keypair_openssl(dat$pub, FALSE))
   ##
   ## with the FALSE indicating that we did not want to load the private key.
+  ##
+  ## but I don't think that the complication here is worthwhile (and
+  ## it will work poorly in the case where signed encryption is used).
   dat$key <- openssl::rsa_encrypt(sym$key(), dat$pub)
 
   hash_str <- bin2str(openssl_fingerprint(dat$pub), "")

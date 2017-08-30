@@ -207,7 +207,7 @@ sys_resetenv(oo)
 ## works because we can rely on the underlying maths enough to be open
 ## about how things are stored and where.
 
-## Most encryption libraries work require some degree of security in
+## Most encryption libraries require some degree of security in
 ## the underlying software.  Because of the way R works this is very
 ## difficult to guarantee; it is trivial to rewrite code in running
 ## packages to skip past verification checks.  So this package is

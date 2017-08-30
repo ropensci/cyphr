@@ -22,7 +22,7 @@ test_that("load; with password", {
 })
 
 test_that("pair", {
-  pair <- keypair_openssl("pair1", "pair1")
+  pair <- keypair_openssl("pair1", "pair1", authenticated = FALSE)
   expect_is(pair, "cyphr_keypair")
   expect_is(pair, "cyphr_key")
   expect_equal(pair$type, "openssl")
@@ -40,7 +40,43 @@ test_that("pair", {
 })
 
 test_that("pair - non envelope", {
-  pair <- keypair_openssl("pair1", "pair1", envelope = FALSE)
+  pair <- keypair_openssl("pair1", "pair1", envelope = FALSE,
+                          authenticated = FALSE)
+  expect_is(pair, "cyphr_keypair")
+  expect_is(pair, "cyphr_key")
+  expect_equal(pair$type, "openssl")
+  expect_is(pair$pub, "pubkey")
+  expect_is(pair$key, "function")
+  expect_is(pair$key(), "key")
+  expect_is(pair$encrypt, "function")
+  expect_is(pair$decrypt, "function")
+
+  r <- openssl::rand_bytes(20)
+  v <- pair$encrypt(r)
+  expect_gt(length(v), length(r))
+  expect_identical(pair$decrypt(v), r)
+})
+
+test_that("pair - auth", {
+  pair <- keypair_openssl("pair1", "pair1", authenticated = TRUE)
+  expect_is(pair, "cyphr_keypair")
+  expect_is(pair, "cyphr_key")
+  expect_equal(pair$type, "openssl")
+  expect_is(pair$pub, "pubkey")
+  expect_is(pair$key, "function")
+  expect_is(pair$key(), "key")
+  expect_is(pair$encrypt, "function")
+  expect_is(pair$decrypt, "function")
+
+  r <- openssl::rand_bytes(20)
+  v <- pair$encrypt(r)
+  expect_gt(length(v), length(r))
+  expect_identical(pair$decrypt(v), r)
+})
+
+test_that("pair - auth, non envelope", {
+  pair <- keypair_openssl("pair1", "pair1", envelope = FALSE,
+                          authenticated = TRUE)
   expect_is(pair, "cyphr_keypair")
   expect_is(pair, "cyphr_key")
   expect_equal(pair$type, "openssl")
@@ -124,4 +160,56 @@ test_that("default key", {
   ssh_keygen(path, FALSE)
   expect_equal(openssl_find_key(NULL), file.path(path, "id_rsa"))
   expect_equal(openssl_find_pubkey(NULL), file.path(path, "id_rsa.pub"))
+})
+
+test_that("detect incorrect sender", {
+  pair_a_auth <- keypair_openssl("pair2", "pair1")
+  pair_a_noauth <- keypair_openssl("pair2", "pair1", authenticated = FALSE)
+
+  pair_b <- keypair_openssl("pair1", "pair2")
+  pair_c_auth <- keypair_openssl("pair1", "pair3")
+  pair_c_noauth <- keypair_openssl("pair1", "pair3", authenticate = FALSE)
+
+  r1 <- openssl::rand_bytes(20)
+  r2 <- openssl::rand_bytes(20)
+  r3 <- openssl::rand_bytes(20)
+
+  v1 <- pair_b$encrypt(r1)
+  v2 <- pair_c_auth$encrypt(r2)
+  v3 <- pair_c_noauth$encrypt(r3)
+
+  expect_identical(pair_a_noauth$decrypt(v1), r1)
+  expect_identical(pair_a_auth$decrypt(v1), r1)
+
+  expect_identical(pair_a_noauth$decrypt(v2), r2)
+  expect_error(pair_a_auth$decrypt(v2),
+               "Signatures do not match")
+
+  expect_identical(pair_a_noauth$decrypt(v3), r3)
+  expect_error(pair_a_auth$decrypt(v3),
+               "Signature missing for encrypyted data")
+})
+
+test_that("detect tampering", {
+  pair_a_auth <- keypair_openssl("pair2", "pair1")
+  pair_a_noauth <- keypair_openssl("pair2", "pair1", authenticated = FALSE)
+  pair_b <- keypair_openssl("pair1", "pair2")
+  pair_c <- keypair_openssl("pair1", "pair3", authenticated = FALSE)
+
+  r1 <- openssl::rand_bytes(20)
+  r2 <- openssl::rand_bytes(20)
+  v1 <- pair_b$encrypt(r1)
+  v2 <- pair_c$encrypt(r2)
+
+  expect_identical(pair_a_noauth$decrypt(v1), r1)
+  expect_identical(pair_a_auth$decrypt(v1), r1)
+
+  ## Then tamper with the message
+  tmp <- unserialize(v2)
+  tmp$signature <- unserialize(v1)$signature
+  v3 <- serialize(tmp, NULL)
+
+  expect_identical(pair_a_noauth$decrypt(v3), r2)
+  expect_error(pair_a_auth$decrypt(v3),
+               "Signatures do not match")
 })

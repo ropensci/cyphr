@@ -1,3 +1,5 @@
+
+
 # cyphr
 
 [![Project Status: WIP - Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](http://www.repostatus.org/badges/latest/wip.svg)](http://www.repostatus.org/#wip)
@@ -5,6 +7,8 @@
  [![Windows Build status](https://ci.appveyor.com/api/projects/status/github/richfitz/cyphr?svg=true)](https://ci.appveyor.com/project/richfitz/cyphr)
 [![codecov.io](https://codecov.io/github/richfitz/cyphr/coverage.svg?branch=master)](https://codecov.io/github/richfitz/cyphr?branch=master)
 [![](http://badges.ropensci.org/114_status.svg)](https://github.com/ropensci/onboarding/issues/114)
+
+**WARNING: until this package reaches version 1, the format used internally to move data around may change without warning or regard for backward compatibility - this will make it very difficult to recover your data!  Once we reach version 1.0.0, we will be careful to support backward compatiblity**
 
 Encryption wrappers, using low-level support from [`sodium`](https://github.com/jeroenooms/sodium) and [`openssl`](https://github.com/jeroenooms/openssl).  This package is designed to be easy to use, rather than the most secure thing (you're using R, remember).
 
@@ -33,6 +37,14 @@ dat <- cyphr::decrypt(read.csv("file.csv", stringsAsFactors = FALSE), key)
 
 In addition, the package implements a workflow that allows a group to securely share data by encrypting it with a shared ("symmetric") key that is in turn encrypted with each users ssh keys.  The use case is a group of researchers who are collaborating on a dataset that cannot be made public, for example containing sensitive data.  However, they have decided or need to store it in a setting that they are not 100% confident about the security of the data.  So encrypt the data at each read/write.
 
+## Installation
+
+To install `cyphr` from github:
+
+```r
+remotes::install_github("richfitz/cyphr", upgrade = FALSE)
+```
+
 ## Scope
 
 The scope of the package is to protect data that has been saved to disk.  It is not designed to stop an attacker targeting the R process itself to determine the contents of sensitive data.  The package does try to prevent you accidently saving to disk the contents of sensitive information, including the keys that could decrypt such information.
@@ -55,8 +67,8 @@ k
 ```
 
 ```
-##  [1] 1a 38 e1 39 5e 79 40 5d 5e 9f 8f bd 01 9e 8d 54 4a 64 ce c6 6f e1 4d
-## [24] 06 11 64 5b de 1b 60 f6 54
+##  [1] 28 c8 c3 d7 ca 08 5a 6c 83 9b a5 23 ab fe 28 ed 24 ca 40 84 5a f3 e2
+## [24] 8f b2 de 8f 4d 0e 28 c0 de
 ```
 
 With this key we can create the `key_sodium` object:
@@ -217,15 +229,7 @@ In the end, you can always write things out however you like and use `encrypt_fi
 
 ## Why are wrappers needed?
 
-The low level functions in `sodium` and `openssl` work with raw data, for generality.  Few users encounter raw vectors in their typical use of R, so these require serialisation.  Most of the encryption involves a little extra random data (the "nonce" in `sodium` and similar additional pieces with `openssl`).  These need storing with the data, and then separating from the dadta when decryption happens.
-
-## Installation
-
-To install `cyphr` from github:
-
-```r
-remotes::install_github("richfitz/cyphr", upgrade = FALSE)
-```
+The low level functions in `sodium` and `openssl` work with raw data, for generality.  Few users encounter raw vectors in their typical use of R, so these require serialisation.  Most of the encryption involves a little extra random data (the "nonce" in `sodium` and similar additional pieces with `openssl`).  These need storing with the data, and then separating from the data when decryption happens.
 
 ## Licence
 

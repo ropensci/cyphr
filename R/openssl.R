@@ -19,29 +19,48 @@
 ##'   \code{openssl::encrypt_envelope} and
 ##'   \code{openssl::decrypt_envelope}.  If \code{FALSE} then we use
 ##'   \code{openssl::rsa_encrypt} and \code{openssl::rsa_decrypt}.
-##'   See the openssl docs for further details.
+##'   See the openssl docs for further details.  The main effect of
+##'   this is that using \code{envelope = TRUE} will allow you to
+##'   encrypt much larger data than \code{envelope = FALSE}; this is
+##'   because openssl asymmetric encryption can only encrypt data up
+##'   to the size of the key itself.
 ##'
 ##' @param password A password for the private key.  If \code{NULL}
 ##'   then you will be prompted interactively for your password, and
 ##'   if a string then that string will be used as the password (but
 ##'   be careful in scripts!)
+##'
+##' @param authenticated Logical, indicating if the result should be
+##'   signed with your public key.  If \code{TRUE} then your key will
+##'   be verified on decryption.  This provides tampering detection.
 ##' @export
-keypair_openssl <- function(pub, key, envelope = TRUE, password = NULL) {
+keypair_openssl <- function(pub, key, envelope = TRUE, password = NULL,
+                            authenticated = TRUE) {
   pub <- openssl_load_pubkey(pub)
   key <- session_encrypt(openssl_load_key(key, password))
   ## TODO: how do we do *authenticated* decryption here?  I don't know
   ## if openssl supports it?  Looks like we should wrap things up a
   ## bit so that we use openssl::signature_create and
   ## openssl::signature_verify
-  if (envelope) {
-    encrypt <- function(msg, pub, key) openssl::encrypt_envelope(msg, pub)
-    decrypt <- function(msg, pub, key) openssl__decrypt_envelope(msg, key)
-    pack <- openssl_pack_envelope
-    unpack <- openssl_unpack_envelope
+  pack <- openssl_pack
+  unpack <- openssl_unpack
+  if (authenticated) {
+    if (envelope) {
+      encrypt <- openssl__encrypt_envelope_auth
+      decrypt <- openssl__decrypt_envelope_auth
+    } else {
+      encrypt <- openssl__encrypt_rsa_auth
+      decrypt <- openssl__decrypt_rsa_auth
+    }
   } else {
-    encrypt <- function(msg, pub, key) openssl::rsa_encrypt(msg, pub)
-    decrypt <- function(msg, pub, key) openssl::rsa_decrypt(msg, key)
-    pack <- unpack <- identity
+    if (envelope) {
+      encrypt <- function(msg, pub, key) openssl::encrypt_envelope(msg, pub)
+      decrypt <- function(msg, pub, key) openssl__decrypt_envelope(msg, key)
+    } else {
+      encrypt <- function(msg, pub, key) openssl::rsa_encrypt(msg, pub)
+      decrypt <- function(msg, pub, key) openssl::rsa_decrypt(msg, key)
+      pack <- unpack <- identity
+    }
   }
   cyphr_keypair("openssl", pub, key, encrypt, decrypt, pack, unpack)
 }
@@ -155,15 +174,48 @@ openssl__decrypt_envelope <- function(x, key) {
   openssl::decrypt_envelope(x$data, x$iv, x$session, key)
 }
 
-## -- pack/unpack --
-openssl_pack_envelope <- function(x) {
-  c(x$iv, x$session, x$data)
+openssl__encrypt_envelope_auth <- function(msg, pub, key) {
+  dat <- openssl::encrypt_envelope(msg, pub)
+  dat$signature <- openssl::signature_create(msg, openssl::sha256, key)
+  dat
 }
 
-openssl_unpack_envelope <- function(x) {
-  list(iv = x[1L:16L],
-       session = x[17L:272L],
-       data = x[-seq_len(272L)])
+openssl__decrypt_envelope_auth <- function(x, pub, key) {
+  msg <- openssl::decrypt_envelope(x$data, x$iv, x$session, key)
+  openssl_verify(msg, x$signature, pub)
+  msg
+}
+
+openssl__encrypt_rsa_auth <- function(msg, pub, key) {
+  dat <- list(data = openssl::rsa_encrypt(msg, pub))
+  dat$signature <- openssl::signature_create(msg, openssl::sha256, key)
+  dat
+}
+
+openssl__decrypt_rsa_auth <- function(x, pub, key) {
+  msg <- openssl::rsa_decrypt(x$data, key)
+  openssl_verify(msg, x$signature, pub)
+  msg
+}
+
+openssl_verify <- function(msg, signature, pub) {
+  if (is.null(signature)) {
+    stop("Signature missing for encrypyted data - refusing to decrypt")
+  }
+  withCallingHandlers(
+    openssl::signature_verify(msg, signature, openssl::sha256, pub),
+    error = function(e) {
+      stop("Signatures do not match: ", e$message)
+    })
+}
+
+## -- pack/unpack --
+openssl_pack <- function(x) {
+  serialize(x, NULL)
+}
+
+openssl_unpack <- function(x) {
+  unserialize(x)
 }
 
 openssl_pack_symmetric <- function(x) {

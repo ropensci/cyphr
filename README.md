@@ -3,9 +3,9 @@
 # cyphr
 
 [![Project Status: WIP - Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](http://www.repostatus.org/badges/latest/wip.svg)](http://www.repostatus.org/#wip)
-[![Linux Build Status](https://travis-ci.org/richfitz/cyphr.svg?branch=master)](https://travis-ci.org/richfitz/cyphr)
- [![Windows Build status](https://ci.appveyor.com/api/projects/status/github/richfitz/cyphr?svg=true)](https://ci.appveyor.com/project/richfitz/cyphr)
-[![codecov.io](https://codecov.io/github/richfitz/cyphr/coverage.svg?branch=master)](https://codecov.io/github/richfitz/cyphr?branch=master)
+[![Linux Build Status](https://travis-ci.org/ropensci/cyphr.svg?branch=master)](https://travis-ci.org/ropensci/cyphr)
+ [![Windows Build status](https://ci.appveyor.com/api/projects/status/github/ropensci/cyphr?svg=true)](https://ci.appveyor.com/project/ropensci/cyphr)
+[![codecov.io](https://codecov.io/github/ropensci/cyphr/coverage.svg?branch=master)](https://codecov.io/github/ropensci/cyphr?branch=master)
 [![](http://badges.ropensci.org/114_status.svg)](https://github.com/ropensci/onboarding/issues/114)
 
 **WARNING: until this package reaches version 1, the format used internally to move data around may change without warning or regard for backward compatibility - this will make it very difficult to recover your data!  Once we reach version 1.0.0, we will be careful to support backward compatiblity**
@@ -42,7 +42,7 @@ In addition, the package implements a workflow that allows a group to securely s
 To install `cyphr` from github:
 
 ```r
-remotes::install_github("richfitz/cyphr", upgrade = FALSE)
+remotes::install_github("ropensci/cyphr", upgrade = FALSE)
 ```
 
 ## Scope
@@ -67,8 +67,8 @@ k
 ```
 
 ```
-##  [1] 28 c8 c3 d7 ca 08 5a 6c 83 9b a5 23 ab fe 28 ed 24 ca 40 84 5a f3 e2
-## [24] 8f b2 de 8f 4d 0e 28 c0 de
+##  [1] 14 b1 69 26 86 12 d1 54 5f 16 de bc 1a d4 8c 75 99 0b 4e ad 12 b8 0d
+## [24] 10 95 ed 8a 96 f2 35 be df
 ```
 
 With this key we can create the `key_sodium` object:
@@ -210,7 +210,7 @@ to decrypt the file.
 
 Even with high-level functions to ease encrypting and decrypting things given a key, there is some work to be done to distribute a set of keys across a group of people who are working together so that everyone can encrypt and decrypt the data but so that the keys themselves are not compromised.
 
-The package contains support for a group of people are working on a sensitive data set.  The data will be stored with a symmetric key.  However, we never actually store the key directly, instead we'll store a copy for each user that is encrypted with the user's key.  Any user with access to the data can authorise another user to access the data.  This is described in more detail in the [vignette](http://richfitz.github.io/cyphr/vignettes/data.html) (in R: `vignette("data", package = "cyphr")`).
+The package contains support for a group of people are working on a sensitive data set.  The data will be stored with a symmetric key.  However, we never actually store the key directly, instead we'll store a copy for each user that is encrypted with the user's key.  Any user with access to the data can authorise another user to access the data.  This is described in more detail in the [vignette](http://ropensci.github.io/cyphr/vignettes/data.html) (in R: `vignette("data", package = "cyphr")`).
 
 ## Why not a connection object?
 

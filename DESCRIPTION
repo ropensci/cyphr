@@ -7,8 +7,8 @@ Description: Encryption wrappers, using low-level support from 'sodium' and
     'openssl'.
 License: MIT + file LICENSE
 LazyData: true
-URL: https://github.com/dide-tools/cyphr
-BugReports: https://github.com/dide-tools/cyphr/issues
+URL: https://github.com/ropensci/cyphr
+BugReports: https://github.com/ropensci/cyphr/issues
 Depends: R (>= 3.2.1)
 Imports:
     getPass,

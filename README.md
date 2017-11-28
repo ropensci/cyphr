@@ -236,3 +236,5 @@ The low level functions in `sodium` and `openssl` work with raw data, for genera
 MIT © [Rich FitzJohn](https://github.com/richfitz).
 
 Please note that this project is released with a [Contributor Code of Conduct](CONDUCT.md). By participating in this project you agree to abide by its terms.
+
+[![ropensci_footer](https://ropensci.org/public_images/ropensci_footer.png)](https://ropensci.org)

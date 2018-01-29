@@ -5,14 +5,19 @@
 ##' @param pub An openssl public key.  Usually this will be the path
 ##'   to the key, in which case it may either the path to a public key
 ##'   or be the path to a directory containing a file
-##'   \code{id_rsa.pub}
+##'   \code{id_rsa.pub}.  If \code{NULL}, then your public key will be
+##'   used (found via the environment variable \code{USER_PUBKEY},
+##'   then \code{~/.ssh/id_rsa.pub}).  However, it is not that common
+##'   to use your own public key - typically you want either the
+##'   sender of a message you are going to decrypt, or the recipient
+##'   of a message you want to send.
 ##'
 ##' @param key An openssl private key.  Usually this will be the path
 ##'   to the key, in which case it may either the path to a private
 ##'   key or be the path to a directory containing a file.  You may
 ##'   specify \code{NULL} here, in which case the environment variable
 ##'   \code{USER_KEY} is checked and if that is not defined then
-##'   \code{~/.ssh} will be used.
+##'   \code{~/.ssh/id_rsa} will be used.
 ##'
 ##' @param envelope A logical indicating if "envelope" encryption
 ##'   functions should be used.  If so, then we use

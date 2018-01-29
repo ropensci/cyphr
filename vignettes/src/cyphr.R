@@ -38,8 +38,10 @@ local({
 ## This vignette works through the basic functionality of the package.
 ## It does not offer much in the way of an introduction to encryption
 ## itself; for that see the excellent vignettes in the `openssl` and
-## `sodium` packages.  This package is a thin wrapper for those
-## packages.
+## `sodium` packages (see `vignette("crypto101")` and
+## `vignette("bignum")` for information about how encryption works).
+## This package is a wrapper around those packages in order to make
+## them more accessible.
 
 ## # Keys and the like
 
@@ -60,13 +62,16 @@ local({
 
 ## We support symmetric keys and asymmetric key pairs from the
 ## `openssl` and `sodium` packages (which wrap around
-## industry-standard cryptographic libraries).
+## industry-standard cryptographic libraries) - this vignette will
+## show how to create and load keys of different types as they're
+## used.
 
 ## The `openssl` keys have the advantage of a standard key format, and
 ## that many people (especially on Linux and macOS) have a keypair
-## already.  The `sodium` keys have the advantage of being a new
-## library, starting from a clean slate rather than carrying with it
-## accumulated ideas from the last 20 years of development.
+## already (see below if you're not sure if you do).  The `sodium`
+## keys have the advantage of being a new library, starting from a
+## clean slate rather than carrying with it accumulated ideas from the
+## last 20 years of development.
 
 ## The idea in `cyphr` is that we can abstract away some differences
 ## in the types of keys and the functions that go with them to create
@@ -203,6 +208,80 @@ pair_us <- cyphr::keypair_openssl("bob", NULL)
 ## which could then used to send bob a message with:
 secret <- cyphr::encrypt_string("secret message", pair_us)
 secret
+
+## This all skips over how Alice and Bob will exchange this secret
+## information.  Because the secret is bytes, it's a bit odd to work
+## with.  Alice could save the secret to disk with
+secret <- cyphr::encrypt_string("secret message", pair_a)
+writeBin(secret, "for_bob_only")
+
+## And then send Bob the file `for_bob_only` (over email or any other
+## insecure medium).
+
+## and bob could read the secret in with:
+secret <- readBin("for_bob_only", raw(), file.size("for_bob_only"))
+cyphr::decrypt_string(secret, pair_b)
+
+## As an alternative, you can "base64 encode" the bytes into something
+## that you can just email around:
+secret_base64 <- openssl::base64_encode(secret)
+secret_base64
+
+## This can be converted back with `openssl::base64_decode`:
+identical(openssl::base64_decode(secret_base64), secret)
+
+## Or, less compactly but also suitable for email, you might just
+## convert the bytes into their hex representation:
+secret_hex <- sodium::bin2hex(secret)
+secret_hex
+
+## and the reverse with `sodium::hex2bin`:
+identical(sodium::hex2bin(secret_hex), secret)
+
+## (this is somewhat less space efficient than base64 encoding.
+
+## As a final option, you can just save the secret with `saveRDS` and
+## read it in with `readRDS` like any other option.  This will be the
+## best route if the secret is saved into a more complicated R object
+## (e.g., a list or `data.frame`).
+
+## See the other cyphr vignette (`vignette("data", package =
+## "cyphr")`) for a suggested workflow for exchanging secrets within a
+## team, and the wrapper functions below for more convenient ways of
+## working with encrypted data.
+
+## **Do you already have an ssh keypair?** To find out, run
+
+## ```r
+## cyphr::keypair_openssl(NULL, NULL)
+## ```
+
+## One of three things will happen:
+
+## 1. you will be prompted for your password to decrypt your private
+## key, and then after entering it an object `<cyphr_keypair:
+## openssl>` will be returned - you're good to go!
+##
+## 2. you were _not_ prompted for your password, but got a
+## `<cyphr_keypair: openssl>` object.  You should consider whether
+## this is appropriate and consider generating a new keypair with the
+## private key encrypted.  If you don't then anyone who can read your
+## private key can decrypt any message intended for you.
+##
+## 3. you get an error like `Did not find default ssh public key at
+## ~/.ssh/id_rsa.pub`.  You need to create a keypair.
+
+## To create a keypair, you can use the `cyphr::ssh_keygen()` function as
+##
+## ```r
+## cyphr::ssh_keygen("~/.ssh")
+## ```
+##
+## This will create the keypair as `~/.ssh/id_rsa` and
+## `~/.ssh/id_rsa.pub`, which is where `cyphr` will look for your keys
+## by default.  See `?ssh_keygen` for more information.  (On Linux and
+## macOS you might use the `ssh-keygen` command line utility.  On
+## windows, PuTTY` has a utility for creating keys.)
 
 ## ### `sodium`
 
@@ -343,9 +422,10 @@ tools::md5sum(c("iris.csv", "iris2.csv"))
 key <- cyphr::key_sodium(sodium::keygen())
 x <- list(a = 1:10, b = "don't tell anyone else")
 
-## If you save this to disk with `saveRDS` it will be readable by
-## everyone.  But if you encrypted the file that `saveRDS` produced it
-## would be protected:
+## If you save `x` to disk with `saveRDS` it will be readable by
+## everyone until it is deleted.  But if you encrypted the file that
+## `saveRDS` produced it would be protected and only people with the
+## key can read it:
 cyphr::encrypt(saveRDS(x, "secret.rds"), key)
 
 ## (see below for some more details on how this works).
@@ -359,9 +439,18 @@ readRDS("secret.rds")
 ## object it can be decrypted and read:
 cyphr::decrypt(readRDS("secret.rds"), key)
 
-## What happens in the call above is some moderately nasty call
-## rewriting.  If this bothers you, you should just use `encrypt_file`
-## / `decrypt_file` and make sure to clean up after yourself.
+## What happens in the call above is `cyphr` uses "non standard
+## evaluation" to rewrite the call above so that it becomes
+## (approximately)
+##
+## 1. use `cyphr::decrypt_file` to decrypt "secret.rds" as a temporary file
+## 2. call `readRDS` on that temporary file
+## 3. delete the temporary file (even if there is an error in the above calls)
+##
+## This non-standard evaluation breaks referential integrity (so may
+## not be suitable for programming).  You can always do this manually
+## with `encrypt_file` / `decrypt_file` so long as you make sure to
+## clean up after yourself.
 
 ## The `encrypt` function inspects the call in the first argument
 ## passed to it and works out for the function provided (`saveRDS`)

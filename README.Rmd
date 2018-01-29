@@ -18,9 +18,9 @@ knitr::opts_chunk$set(
 
 **WARNING: until this package reaches version 1, the format used internally to move data around may change without warning or regard for backward compatibility - this will make it very difficult to recover your data!  Once we reach version 1.0.0, we will be careful to support backward compatiblity**
 
-Encryption wrappers, using low-level support from [`sodium`](https://github.com/jeroenooms/sodium) and [`openssl`](https://github.com/jeroenooms/openssl).  This package is designed to be easy to use, rather than the most secure thing (you're using R, remember).
+Encryption wrappers, using low-level support from [`sodium`](https://github.com/jeroenooms/sodium) and [`openssl`](https://github.com/jeroenooms/openssl).  This package is designed to be easy to use, rather than the most secure thing (you're using R, remember - for examples of what `cyphr` can't protect against see [`jammr`](https://github.com/Ironholds/jammr), [`rpwnd`](https://github.com/hrbrmstr/rpwnd) and [`evil.R`](https://github.com/romainfrancois/evil.R).)
 
-It provides high level functions to:
+`cyphr` provides high level functions to:
 
 * Encrypt and decrypt
   * **strings**: `encrypt_string` / `decrypt_string`
@@ -115,7 +115,7 @@ file.remove("myfile", "myfile.encrypted", "myfile.clear")
 
 ## Wrappers around R's file functions
 
-Encrypting files like the above risks leaving a cleartext version around.  If you want to wrap the output of something like `write.csv` or `saveRDS` you really have no choice but to write out the file first, encrypt it, and delete the clear version.  Making sure that this happens even if a step fails is error prone and takes a surprising number of repetitive lines of code.
+Encrypting files like the above risks leaving a cleartext (i.e., unencrypted) version around.  If you want to wrap the output of something like `write.csv` or `saveRDS` you really have no choice but to write out the file first, encrypt it, and delete the clear version.  Making sure that this happens even if a step fails is error prone and takes a surprising number of repetitive lines of code.
 
 Alternatively, to encrypt the output of a file producing command, just wrap it in `cyphr::encrypt`
 
@@ -190,7 +190,7 @@ The package contains support for a group of people are working on a sensitive da
 
 A proper connection could be nice but there are at least three issues stopping this:
 
-1. `sodium` does not support streaming encryption/decrption.  It might be possible (bindings to node and swift have it).  In general this would be great and allow the sort of cool things you can do with streaming large data in curl.
+1. `sodium` does not support streaming encryption/decryption.  It might be possible (bindings to node and swift have it).  In general this would be great and allow the sort of cool things you can do with streaming large data in curl.
 2. R plays pretty loose and free with creating connections when given a filename; `readRDS`/`saveRDS` will open files with decompression on in binary mode, `read.csv`/`write.csv` don't.  `write.table` adds encoding information when openning the connection object.  The logic around what happens is entirely within the functions themselves so is hard to capture in a general way.
 3. Connection objects look like a pain to write.
 

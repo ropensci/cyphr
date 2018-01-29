@@ -548,3 +548,20 @@ cyphr::decrypt_string(secret, key)
 ##+ echo = FALSE, results = "hide"
 Sys.unsetenv("USER_KEY")
 file.remove(c("secret.rds", "iris.csv", "iris2.csv"))
+
+## # Further reading
+
+## * The wikipedia page on Public Key cryptography has some nice
+##   diagrams that explain how key and data interact
+##   https://en.wikipedia.org/wiki/Public-key_cryptography
+## * The vigettes in the `openssl` (`vignette(package = "openssl")`)
+##   and `sodium` (`vignette(package = "openssl")`) packages have
+##   explanations of how the tools used in `cyphr` work and interface
+##   with R.
+
+## Confused?  Need help?  Found a bug?
+
+## * Post an issue on the [`cyphr` issue
+##   tracker](https://github.com/ropensci/cyphr/issues)
+## * Start a discussion on the [rOpenSci discussion
+##   forum](https://discuss.ropensci.org/)

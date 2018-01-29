@@ -4,13 +4,15 @@
 
 [![Project Status: WIP - Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](http://www.repostatus.org/badges/latest/wip.svg)](http://www.repostatus.org/#wip)
 [![Linux Build Status](https://travis-ci.org/ropensci/cyphr.svg?branch=master)](https://travis-ci.org/ropensci/cyphr)
- [![Windows Build status](https://ci.appveyor.com/api/projects/status/github/ropensci/cyphr?svg=true)](https://ci.appveyor.com/project/ropensci/cyphr)
+[![Windows Build status](https://ci.appveyor.com/api/projects/status/uqvjcxarec484st8?svg=true)](https://ci.appveyor.com/project/ropensci/cyphr)
+
+
 [![codecov.io](https://codecov.io/github/ropensci/cyphr/coverage.svg?branch=master)](https://codecov.io/github/ropensci/cyphr?branch=master)
 [![](http://badges.ropensci.org/114_status.svg)](https://github.com/ropensci/onboarding/issues/114)
 
 **WARNING: until this package reaches version 1, the format used internally to move data around may change without warning or regard for backward compatibility - this will make it very difficult to recover your data!  Once we reach version 1.0.0, we will be careful to support backward compatiblity**
 
-Encryption wrappers, using low-level support from [`sodium`](https://github.com/jeroenooms/sodium) and [`openssl`](https://github.com/jeroenooms/openssl).  This package is designed to be easy to use, rather than the most secure thing (you're using R, remember - for examples of what `cyphr` can't protect against see [`jammr`](https://github.com/Ironholds/jammr), [`rpwnd`](https://github.com/hrbrmstr/rpwnd) and [`evil.R`](https://github.com/romainfrancois/evil.R).)
+High-level functions for supporting encryption and decryption of data from R.  This allows secure storage and exchange of information, while trying to keep the encryption/decryption code from taking over your analyses.  `cyphr` wraps the lower-level support from [`sodium`](https://github.com/jeroenooms/sodium) and [`openssl`](https://github.com/jeroenooms/openssl).  This package is designed to be easy to use, rather than the most secure thing (you're using R, remember - for examples of what `cyphr` can't protect against see [`jammr`](https://github.com/Ironholds/jammr), [`rpwnd`](https://github.com/hrbrmstr/rpwnd) and [`evil.R`](https://github.com/romainfrancois/evil.R).)
 
 `cyphr` provides high level functions to:
 
@@ -54,11 +56,11 @@ The scope of the package is to protect data that has been saved to disk.  It is 
 Decide on a style of encryption and create a key object
 
 * `key_sodium`: Symmetric encryption, using [sodium](https://cran.r-project.org/web/packages/sodium) -- everyone shares the same key (which must be kept secret!) and can encrypt and decrypt data with it.  This is used as a building block but is inflexible because of the need to keep the key secret.
-* `keypair_sodium`: Public key encryption with [sodium](https://cran.r-project.org/web/packages/sodium) -- this lets people encrypt messages using your public key that only you can read using your private key.
 * `key_openssl`: Symmetric encryption using [openssl](https://cran.r-project.org/web/packages/openssl)
+* `keypair_sodium`: Public key encryption with [sodium](https://cran.r-project.org/web/packages/sodium) -- this lets people encrypt messages using your public key that only you can read using your private key.
 * `keypair_openssl`: Public key encryption, using [openssl](https://cran.r-project.org/web/packages/openssl), which has the big advantage that many people already have compatible (ssh) keys in standard places with standard file formats (see `?encrypt_envelope` in the the `openssl` package).
 
-To generate keys, you really should read the underlying documentation in the `sodium` or `openssl` packages!  The `sodium` keys do not have a file format: they are simply random data.  So a secret symmetric key in `sodium` might be:
+`cyphr` does not include wrappers for key generation for sodium - sodium keys do not have a file format:  So a secret symmetric key in `sodium` might be:
 
 
 ```r
@@ -67,8 +69,8 @@ k
 ```
 
 ```
-##  [1] 14 b1 69 26 86 12 d1 54 5f 16 de bc 1a d4 8c 75 99 0b 4e ad 12 b8 0d
-## [24] 10 95 ed 8a 96 f2 35 be df
+##  [1] 96 98 90 4b 8b 04 27 0a 26 a3 e5 b8 78 fa 09 1d ff 4c 73 28 d6 51 b5
+## [24] 97 88 ce 23 e1 a7 09 52 74
 ```
 
 With this key we can create the `key_sodium` object:
@@ -171,9 +173,7 @@ readRDS("myfile.rds")
 
 The above commands work through computing on the language, rewriting the `readRDS` and `saveRDS` commands.  Commands for reading and writing tabular and plain text files (`read.csv`, `readLines`, etc) are also supported, and the way the rewriting is done is designed to be extensible.
 
-With (probably) some limitations, the argument to the wrapped functions can be connection objects.  In this case the *actual* command is written to a file and the contents of that file are encrypted and written to the connection.  When reading/writing multiple objects from/to a single connection though, this is likely to go very badly.
-
-Because `cyphr::encrypt` and `cyphr::decrypt` compute on the language, standard evaluation forms `cyphr::encrypt_` and `cyphr::decrypt_` are provided that take a quoted expression as their first argument.
+The argument to the wrapped functions can be connection objects.  In this case the *actual* command is written to a file and the contents of that file are encrypted and written to the connection.  When reading/writing multiple objects from/to a single connection though, this is likely to go very badly.
 
 ### Supporting additional functions
 
@@ -204,28 +204,13 @@ Then you can use
 cyphr::decrypt(readxl::read_excel("myfile.xlsx"), key)
 ```
 
-to decrypt the file.
+to decrypt the file (these are equivalent, but the former will likely be more convenient if you're only dealing with a couple of files, the latter will be more convenient if you are dealing with many).
 
 ## Collaborating with encrypted data
 
 Even with high-level functions to ease encrypting and decrypting things given a key, there is some work to be done to distribute a set of keys across a group of people who are working together so that everyone can encrypt and decrypt the data but so that the keys themselves are not compromised.
 
 The package contains support for a group of people are working on a sensitive data set.  The data will be stored with a symmetric key.  However, we never actually store the key directly, instead we'll store a copy for each user that is encrypted with the user's key.  Any user with access to the data can authorise another user to access the data.  This is described in more detail in the [vignette](http://ropensci.github.io/cyphr/vignettes/data.html) (in R: `vignette("data", package = "cyphr")`).
-
-## Why not a connection object?
-
-A proper connection could be nice but there are at least three issues stopping this:
-
-1. `sodium` does not support streaming encryption/decryption.  It might be possible (bindings to node and swift have it).  In general this would be great and allow the sort of cool things you can do with streaming large data in curl.
-2. R plays pretty loose and free with creating connections when given a filename; `readRDS`/`saveRDS` will open files with decompression on in binary mode, `read.csv`/`write.csv` don't.  `write.table` adds encoding information when openning the connection object.  The logic around what happens is entirely within the functions themselves so is hard to capture in a general way.
-3. Connection objects look like a pain to write.
-
-There are still problems with the approach I've taken:
-
-* Appending does not work: we'd need to unencrypt the file first for that to be OK
-* Non-file arguments are going to suck (though it's possible that something could be done to detect connections)
-
-In the end, you can always write things out however you like and use `encrypt_file` to encrypt the file afterwards.
 
 ## Why are wrappers needed?
 

@@ -74,8 +74,16 @@ encrypt_data <- function(data, key, dest = NULL) {
 
 ##' @export
 ##' @rdname encrypt_data
-encrypt_object <- function(object, key, dest = NULL) {
-  encrypt_data(serialize(object, NULL), key, dest)
+##' @param rds_version RDS serialisation version to use (see
+##'   \code{\link{serialize}}.  The default in R version 3.3 and below
+##'   is version 2 - in the R 3.4 series version 3 was introduced and
+##'   is becoming the default.  Version 3 format serialisation is not
+##'   understood by older versions so if you need to exchange data
+##'   with older R versions, you will need to use \code{rds_version =
+##'   2}.  The default argument here (\code{NULL}) will ensure the
+##'   same serialisation is used as R would use by default.
+encrypt_object <- function(object, key, dest = NULL, rds_version = NULL) {
+  encrypt_data(serialize(object, NULL, version = rds_version), key, dest)
 }
 
 ##' @export

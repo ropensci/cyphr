@@ -13,7 +13,7 @@
 \usage{
 encrypt_data(data, key, dest = NULL)
 
-encrypt_object(object, key, dest = NULL)
+encrypt_object(object, key, dest = NULL, rds_version = NULL)
 
 encrypt_string(string, key, dest = NULL)
 
@@ -45,6 +45,15 @@ always return an object or string.}
 \item{object}{(for \code{encrypt_object}) an arbitrary R object to
 encrypt.  It will be serialised to raw first (see
 \code{\link{serialize}}).}
+
+\item{rds_version}{RDS serialisation version to use (see
+\code{\link{serialize}}.  The default in R version 3.3 and below
+is version 2 - in the R 3.4 series version 3 was introduced and
+is becoming the default.  Version 3 format serialisation is not
+understood by older versions so if you need to exchange data
+with older R versions, you will need to use \code{rds_version =
+2}.  The default argument here (\code{NULL}) will ensure the
+same serialisation is used as R would use by default.}
 
 \item{string}{(for \code{encrypt_string}) a scalar character
 vector to encrypt.  It will be converted to raw first with

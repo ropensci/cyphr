@@ -102,7 +102,7 @@ key_openssl <- function(key, mode = "cbc") {
     stop(sprintf("Invalid encryption mode '%s'", mode))
   }
   pack <- openssl_pack_symmetric
-  unpack <- openssl_unpack_symmetric
+  unpack <- openssl_unpack_symmetric(if (mode == "gcm") 12L else 16L)
   cyphr_key("openssl", key, encrypt, decrypt, pack, unpack)
 }
 
@@ -222,11 +222,14 @@ openssl_pack_symmetric <- function(x) {
   c(attr(x, "iv", exact = TRUE), drop_attributes(x))
 }
 
-openssl_unpack_symmetric <- function(x) {
-  i <- seq_len(16L)
-  ret <- x[-i]
-  attr(ret, "iv") <- x[i]
-  ret
+openssl_unpack_symmetric <- function(iv_len) {
+  force(iv_len)
+  function(x) {
+    i <- seq_len(iv_len)
+    ret <- x[-i]
+    attr(ret, "iv") <- x[i]
+    ret
+  }
 }
 
 openssl_fingerprint <- function(k) {

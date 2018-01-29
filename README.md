@@ -2,15 +2,11 @@
 
 # cyphr
 
-[![Project Status: WIP - Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](http://www.repostatus.org/badges/latest/wip.svg)](http://www.repostatus.org/#wip)
+[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
 [![Linux Build Status](https://travis-ci.org/ropensci/cyphr.svg?branch=master)](https://travis-ci.org/ropensci/cyphr)
 [![Windows Build status](https://ci.appveyor.com/api/projects/status/uqvjcxarec484st8?svg=true)](https://ci.appveyor.com/project/ropensci/cyphr)
-
-
 [![codecov.io](https://codecov.io/github/ropensci/cyphr/coverage.svg?branch=master)](https://codecov.io/github/ropensci/cyphr?branch=master)
 [![](http://badges.ropensci.org/114_status.svg)](https://github.com/ropensci/onboarding/issues/114)
-
-**WARNING: until this package reaches version 1, the format used internally to move data around may change without warning or regard for backward compatibility - this will make it very difficult to recover your data!  Once we reach version 1.0.0, we will be careful to support backward compatiblity**
 
 High-level functions for supporting encryption and decryption of data from R.  This allows secure storage and exchange of information, while trying to keep the encryption/decryption code from taking over your analyses.  `cyphr` wraps the lower-level support from [`sodium`](https://github.com/jeroenooms/sodium) and [`openssl`](https://github.com/jeroenooms/openssl).  This package is designed to be easy to use, rather than the most secure thing (you're using R, remember - for examples of what `cyphr` can't protect against see [`jammr`](https://github.com/Ironholds/jammr), [`rpwnd`](https://github.com/hrbrmstr/rpwnd) and [`evil.R`](https://github.com/romainfrancois/evil.R).)
 
@@ -69,8 +65,8 @@ k
 ```
 
 ```
-##  [1] 96 98 90 4b 8b 04 27 0a 26 a3 e5 b8 78 fa 09 1d ff 4c 73 28 d6 51 b5
-## [24] 97 88 ce 23 e1 a7 09 52 74
+##  [1] 37 ca 8b ca fb a0 c8 89 f4 53 d2 db f2 5e d0 c0 e1 b7 e7 96 a6 df 5d
+## [24] 0a ca f7 80 30 7b e4 98 09
 ```
 
 With this key we can create the `key_sodium` object:

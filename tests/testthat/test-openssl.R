@@ -124,9 +124,9 @@ test_that("symmetric", {
   k <- openssl::aes_keygen()
   r <- openssl::rand_bytes(20)
 
-  key_cbc <- key_openssl(k, mode)
-  key_ctr <- key_openssl(k, mode)
-  key_gcm <- key_openssl(k, mode)
+  key_cbc <- key_openssl(k, "cbc")
+  key_ctr <- key_openssl(k, "ctr")
+  key_gcm <- key_openssl(k, "gcm")
 
   expect_identical(key_cbc$decrypt(key_cbc$encrypt(r)), r)
   expect_identical(key_ctr$decrypt(key_ctr$encrypt(r)), r)

@@ -17,3 +17,4 @@
 ^tmp\.R$
 ^CONDUCT\.md$
 ^vignettes/README\.md$
+^docs$

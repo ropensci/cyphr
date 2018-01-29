@@ -123,12 +123,15 @@ test_that("symmetric", {
 test_that("symmetric", {
   k <- openssl::aes_keygen()
   r <- openssl::rand_bytes(20)
-  for (mode in c("cbc", "ctr", "gcm")) {
-    key <- key_openssl(k, mode)
-    if (!(mode == "gcm" && identical(Sys.getenv("TRAVIS"), "true"))) {
-      expect_identical(key$decrypt(key$encrypt(r)), r)
-    }
-  }
+
+  key_cbc <- key_openssl(k, mode)
+  key_ctr <- key_openssl(k, mode)
+  key_gcm <- key_openssl(k, mode)
+
+  expect_identical(key_cbc$decrypt(key_cbc$encrypt(r)), r)
+  expect_identical(key_ctr$decrypt(key_ctr$encrypt(r)), r)
+  expect_identical(key_gcm$decrypt(key_gcm$encrypt(r)), r)
+
   expect_error(key_openssl(k, "quantum"),
                "Invalid encryption mode 'quantum'")
 })

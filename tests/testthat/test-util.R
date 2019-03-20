@@ -51,3 +51,14 @@ test_that("Descend failure", {
   expect_null(find_file_descend(".cyphr_foobar", "/", path))
   expect_null(find_file_descend(".cyphr_foobar", "/", "/"))
 })
+
+
+test_that("is_directory", {
+  path <- tempfile()
+  expect_false(is_directory(path))
+  file.create(path)
+  expect_false(is_directory(path))
+  unlink(path)
+  dir.create(path)
+  expect_true(is_directory(path))
+})

@@ -12,7 +12,7 @@ get_pass <- function(prompt) {
 }
 
 is_directory <- function(x) {
-  file.exists(x) && file.info(x, FALSE)[["isdir"]]
+  file.exists(x) && file.info(x, extra_cols = FALSE)[["isdir"]]
 }
 
 Sys_which <- function(name) {

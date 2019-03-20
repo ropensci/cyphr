@@ -34,3 +34,12 @@ skip_if_no_ssh_keygen <- function() {
   }
   testthat::skip("ssh-keygen not found")
 }
+
+
+unzip_reference <- function(zip) {
+  tmp <- tempfile()
+  res <- utils::unzip(zip, exdir = tmp)
+  files <- dir(tmp)
+  stopifnot(length(files) == 1)
+  file.path(tmp, files)
+}

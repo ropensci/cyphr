@@ -7,7 +7,8 @@
 \usage{
 data_request_access(path_data = ".", path_user = NULL, quiet = FALSE)
 
-data_key(path_data = ".", path_user = NULL, test = TRUE, quiet = FALSE)
+data_key(path_data = ".", path_user = NULL, test = TRUE,
+  quiet = FALSE)
 }
 \arguments{
 \item{path_data}{Path to the data.  The default is the current

@@ -547,7 +547,8 @@ cyphr::decrypt_string(secret, key)
 
 ##+ echo = FALSE, results = "hide"
 Sys.unsetenv("USER_KEY")
-file.remove(c("secret.rds", "iris.csv", "iris2.csv"))
+file.remove(c("secret.rds", "iris.csv", "iris2.csv", "for_bob_only",
+              "iris.csv.env"))
 
 ## # Further reading
 

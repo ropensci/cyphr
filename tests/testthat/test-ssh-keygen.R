@@ -13,6 +13,7 @@ test_that("keygen", {
 
 test_that("shell", {
   skip_if_no_ssh_keygen()
+  skip_in_cran() # too system specific
   path <- tempfile()
   res <- ssh_keygen(path, "secret", TRUE)
   expect_equal(res, path)
@@ -47,6 +48,7 @@ test_that("no password", {
 
 test_that("no password - shell", {
   skip_if_no_ssh_keygen()
+  skip_on_cran() # too system specific
   path <- tempfile()
   res <- ssh_keygen(path, FALSE, TRUE)
   expect_is(openssl_load_key(path, ""), "key")

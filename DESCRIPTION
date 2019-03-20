@@ -3,13 +3,17 @@ Title: High Level Encryption Wrappers
 Version: 1.0.0
 Authors@R: person("Rich", "FitzJohn", role = c("aut", "cre"),
     email = "rich.fitzjohn@gmail.com")
-Description: Encryption wrappers, using low-level support from 'sodium' and
-    'openssl'.
+Description: Encryption wrappers, using low-level support from
+    'sodium' and 'openssl'.  'cyphr' tries to smooth over some pain
+    points when using encryption within applications and data analysis
+    by wrapping around differences in function names and arguments in
+    different encryption providing packages.  It also provides
+    high-level wrappers for input/output functions for seamlessly
+    adding encryption to existing analyses.
 License: MIT + file LICENSE
 LazyData: true
 URL: https://github.com/ropensci/cyphr
 BugReports: https://github.com/ropensci/cyphr/issues
-Depends: R (>= 3.2.1)
 Imports:
     getPass,
     openssl (>= 0.9.9),
@@ -22,3 +26,4 @@ RoxygenNote: 6.1.1
 VignetteBuilder: rmarkdown,
     knitr
 Encoding: UTF-8
+Language: en-GB

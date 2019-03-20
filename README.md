@@ -51,10 +51,10 @@ The scope of the package is to protect data that has been saved to disk.  It is 
 
 Decide on a style of encryption and create a key object
 
-* `key_sodium`: Symmetric encryption, using [sodium](https://cran.r-project.org/web/packages/sodium) -- everyone shares the same key (which must be kept secret!) and can encrypt and decrypt data with it.  This is used as a building block but is inflexible because of the need to keep the key secret.
-* `key_openssl`: Symmetric encryption using [openssl](https://cran.r-project.org/web/packages/openssl)
-* `keypair_sodium`: Public key encryption with [sodium](https://cran.r-project.org/web/packages/sodium) -- this lets people encrypt messages using your public key that only you can read using your private key.
-* `keypair_openssl`: Public key encryption, using [openssl](https://cran.r-project.org/web/packages/openssl), which has the big advantage that many people already have compatible (ssh) keys in standard places with standard file formats (see `?encrypt_envelope` in the the `openssl` package).
+* `key_sodium`: Symmetric encryption, using [sodium](https://cran.r-project.org/package=sodium) -- everyone shares the same key (which must be kept secret!) and can encrypt and decrypt data with it.  This is used as a building block but is inflexible because of the need to keep the key secret.
+* `key_openssl`: Symmetric encryption using [openssl](https://cran.r-project.org/package=openssl)
+* `keypair_sodium`: Public key encryption with [sodium](https://cran.r-project.org/package=sodium) -- this lets people encrypt messages using your public key that only you can read using your private key.
+* `keypair_openssl`: Public key encryption, using [openssl](https://cran.r-project.org/package=openssl), which has the big advantage that many people already have compatible (ssh) keys in standard places with standard file formats (see `?encrypt_envelope` in the the `openssl` package).
 
 `cyphr` does not include wrappers for key generation for sodium - sodium keys do not have a file format:  So a secret symmetric key in `sodium` might be:
 
@@ -65,8 +65,8 @@ k
 ```
 
 ```
-##  [1] b2 f7 9c 7a 0d 26 73 e4 01 02 e6 c9 d7 e6 f4 5c 65 48 e1 84 6c de 34
-## [24] e7 55 a5 49 70 0d 73 46 47
+##  [1] 84 83 64 a2 3c 10 e6 9f 22 8b bc cd 48 81 0f 71 a0 4b 28 57 e3 40 c4
+## [24] b7 ab 3e 00 f1 fd ff ee c8
 ```
 
 With this key we can create the `key_sodium` object:
@@ -206,7 +206,7 @@ to decrypt the file (these are equivalent, but the former will likely be more co
 
 Even with high-level functions to ease encrypting and decrypting things given a key, there is some work to be done to distribute a set of keys across a group of people who are working together so that everyone can encrypt and decrypt the data but so that the keys themselves are not compromised.
 
-The package contains support for a group of people are working on a sensitive data set.  The data will be stored with a symmetric key.  However, we never actually store the key directly, instead we'll store a copy for each user that is encrypted with the user's key.  Any user with access to the data can authorise another user to access the data.  This is described in more detail in the [vignette](http://ropensci.github.io/cyphr/vignettes/data.html) (in R: `vignette("data", package = "cyphr")`).
+The package contains support for a group of people are working on a sensitive data set.  The data will be stored with a symmetric key.  However, we never actually store the key directly, instead we'll store a copy for each user that is encrypted with the user's key.  Any user with access to the data can authorise another user to access the data.  This is described in more detail in the [vignette](http://ropensci.github.io/cyphr/articles/data.html) (in R: `vignette("data", package = "cyphr")`).
 
 ## Why are wrappers needed?
 

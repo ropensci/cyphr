@@ -1,10 +1,11 @@
+^Meta$
+^doc$
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^Makefile$
 ^README.Rmd$
 ^.travis.yml$
 ^appveyor.yml$
-^Makefile$
 ^ignore$
 ^cyphr_.*\.tar\.gz$
 ^vignettes/src$

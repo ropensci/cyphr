@@ -555,7 +555,7 @@ file.remove(c("secret.rds", "iris.csv", "iris2.csv", "for_bob_only",
 ## * The wikipedia page on Public Key cryptography has some nice
 ##   diagrams that explain how key and data interact
 ##   https://en.wikipedia.org/wiki/Public-key_cryptography
-## * The vigettes in the `openssl` (`vignette(package = "openssl")`)
+## * The vignettes in the `openssl` (`vignette(package = "openssl")`)
 ##   and `sodium` (`vignette(package = "openssl")`) packages have
 ##   explanations of how the tools used in `cyphr` work and interface
 ##   with R.

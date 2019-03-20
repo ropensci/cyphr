@@ -48,7 +48,7 @@ remotes::install_github("ropensci/cyphr", upgrade = FALSE)
 
 ## Scope
 
-The scope of the package is to protect data that has been saved to disk.  It is not designed to stop an attacker targeting the R process itself to determine the contents of sensitive data.  The package does try to prevent you accidently saving to disk the contents of sensitive information, including the keys that could decrypt such information.
+The scope of the package is to protect data that has been saved to disk.  It is not designed to stop an attacker targeting the R process itself to determine the contents of sensitive data.  The package does try to prevent you accidentally saving to disk the contents of sensitive information, including the keys that could decrypt such information.
 
 ## Objects to handle keys:
 

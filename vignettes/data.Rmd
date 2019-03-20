@@ -44,7 +44,7 @@ sys_resetenv <- function(old) {
 
 A group of people are working on a sensitive data set that for
 practical reasons needs to be stored in a place that we're not 100%
-happy with the security (e.g., Dropbox), or we're concerned tha
+happy with the security (e.g., Dropbox), or we're concerned that
 files stored in plain text on users computers (e.g. laptops) may
 lead to the data being compromised.
 
@@ -144,7 +144,7 @@ dropbox and will be the case with GitHub based distribution, though
 there would be a pull request step in here.
 
 This user cannot read the data, though trying to will print a
-message explinaing how you might request access:
+message explaining how you might request access:
 ``` {r error = TRUE}
 key_bob <- cyphr::data_key(data_dir, "bob")
 ```

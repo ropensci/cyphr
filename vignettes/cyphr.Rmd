@@ -654,7 +654,8 @@ attacker to use in a subsequent session.
 
 ``` {r echo = FALSE, results = "hide"}
 Sys.unsetenv("USER_KEY")
-file.remove(c("secret.rds", "iris.csv", "iris2.csv"))
+file.remove(c("secret.rds", "iris.csv", "iris2.csv", "for_bob_only",
+              "iris.csv.env"))
 ```
 
 # Further reading
@@ -662,7 +663,7 @@ file.remove(c("secret.rds", "iris.csv", "iris2.csv"))
 * The wikipedia page on Public Key cryptography has some nice
   diagrams that explain how key and data interact
   https://en.wikipedia.org/wiki/Public-key_cryptography
-* The vigettes in the `openssl` (`vignette(package = "openssl")`)
+* The vignettes in the `openssl` (`vignette(package = "openssl")`)
   and `sodium` (`vignette(package = "openssl")`) packages have
   explanations of how the tools used in `cyphr` work and interface
   with R.

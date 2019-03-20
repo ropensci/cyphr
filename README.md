@@ -45,7 +45,7 @@ remotes::install_github("ropensci/cyphr", upgrade = FALSE)
 
 ## Scope
 
-The scope of the package is to protect data that has been saved to disk.  It is not designed to stop an attacker targeting the R process itself to determine the contents of sensitive data.  The package does try to prevent you accidently saving to disk the contents of sensitive information, including the keys that could decrypt such information.
+The scope of the package is to protect data that has been saved to disk.  It is not designed to stop an attacker targeting the R process itself to determine the contents of sensitive data.  The package does try to prevent you accidentally saving to disk the contents of sensitive information, including the keys that could decrypt such information.
 
 ## Objects to handle keys:
 
@@ -65,8 +65,8 @@ k
 ```
 
 ```
-##  [1] 37 ca 8b ca fb a0 c8 89 f4 53 d2 db f2 5e d0 c0 e1 b7 e7 96 a6 df 5d
-## [24] 0a ca f7 80 30 7b e4 98 09
+##  [1] b2 f7 9c 7a 0d 26 73 e4 01 02 e6 c9 d7 e6 f4 5c 65 48 e1 84 6c de 34
+## [24] e7 55 a5 49 70 0d 73 46 47
 ```
 
 With this key we can create the `key_sodium` object:

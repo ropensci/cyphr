@@ -478,7 +478,7 @@ cyphr::decrypt(readRDS("secret.rds"), key)
 
 ## But new functions can be added with the `rewrite_register`
 ## function.  For example, to support the excellent
-## [rio](https://cran.r-project.org/web/packages/rio) package, whose
+## [rio](https://cran.r-project.org/package=rio) package, whose
 ## `import` and `export` functions take the filename `file` you could
 ## use:
 ##
@@ -495,7 +495,7 @@ cyphr::decrypt(readRDS("secret.rds"), key)
 ## cyphr::decrypt(rio::import("file.json"), key)
 ## ```
 
-## The functions above use [non standard evaluation](http://adv-r...)
+## The functions above use [non standard evaluation](http://adv-r.had.co.nz/Computing-on-the-language.html)
 ## and so may not be suitable for programming or use in packages.  An
 ## "escape hatch" is provided via `encrypt_` and `decrypt_` where the
 ## first argument is a quoted expression.

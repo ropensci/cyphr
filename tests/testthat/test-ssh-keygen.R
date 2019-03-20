@@ -13,7 +13,7 @@ test_that("keygen", {
 
 test_that("shell", {
   skip_if_no_ssh_keygen()
-  skip_in_cran() # too system specific
+  skip_on_cran() # too system specific
   path <- tempfile()
   res <- ssh_keygen(path, "secret", TRUE)
   expect_equal(res, path)

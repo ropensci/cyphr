@@ -9,36 +9,6 @@
 ##   %\VignetteEncoding{UTF-8}
 ## ---
 
-##+ echo = FALSE, results = "hide"
-local({
-  if (!file.exists("alice")) {
-    dir.create("alice")
-    cyphr::ssh_keygen("alice", FALSE)
-  }
-  if (!file.exists("bob")) {
-    dir.create("bob")
-    cyphr::ssh_keygen("bob", FALSE)
-  }
-  Sys.setenv(USER_KEY = "alice")
-  Sys.setenv(USER_PUBKEY = "alice")
-  unlink("data", recursive = FALSE)
-})
-sys_setenv <- function(...) {
-  vars <- names(list(...))
-  prev <- vapply(vars, Sys.getenv, "", NA_character_)
-  Sys.setenv(...)
-  prev
-}
-sys_resetenv <- function(old) {
-  i <- is.na(old)
-  if (any(i)) {
-    Sys.unsetenv(names(old)[i])
-  }
-  if (any(!i)) {
-    do.call("Sys.setenv", as.list(old[!i]))
-  }
-}
-
 ## **The scenario:**
 
 ## A group of people are working on a sensitive data set that for
@@ -65,9 +35,25 @@ sys_resetenv <- function(old) {
 ## data.  Anyone with access to the data can grant access to anyone
 ## else.
 
+## Before doing any of this, everyone needs to have ssh keys set up.
+## By default the package will use your ssh keys found at "~/.ssh";
+## see the main package vignette for how to use this.
+
+## For clarity here we will generate two sets of key pairs for two
+## actors Alice and Bob:
+path_key_alice <- cyphr::ssh_keygen(password = FALSE)
+path_key_bob <- cyphr::ssh_keygen(password = FALSE)
+
+## These would ordinarily be on different machines (nobody has access
+## to anyone else's private key) and they would be password protected.
+## In the function calls below, all the `path_user` arguments would be
+## omitted.
+
 ## We'll store data in the directory `data`; at present there is
-## nothing there.
-data_dir <- "data"
+## nothing there (this is in a temporary directory for compliance with
+## CRAN policies but would ordinarily be somewhere persistent and
+## under version control ideally).
+data_dir <- file.path(tempdir(), "data")
 dir.create(data_dir)
 dir(data_dir)
 
@@ -83,7 +69,7 @@ dir(data_dir)
 ## **Second**, create a key for the data and encrypt that key with
 ## your personal key.  Note that the data key is never stored directly
 ## - it is always stored encrypted by a personal key.
-cyphr::data_admin_init(data_dir)
+cyphr::data_admin_init(data_dir, path_user = path_key_alice)
 
 ## The data key is very important.  If it is deleted, then the data
 ## cannot be decrypted.  So do not delete the directory
@@ -95,12 +81,12 @@ cyphr::data_admin_init(data_dir)
 
 ## This command can be run multiple times safely; if it detects it has
 ## been rerun and the data key will not be regenerated.
-cyphr::data_admin_init(data_dir)
+cyphr::data_admin_init(data_dir, path_user = path_key_alice)
 
 ## **Third**, you can add encrypted data to the directory (or to
 ## anywhere really).  When run, `cyphr::config_data` will verify
 ## that it can actually decrypt things.
-key <- cyphr::data_key(data_dir)
+key <- cyphr::data_key(data_dir, path_user = path_key_alice)
 
 ## This object can be used with all the `cyphr` functions (see the
 ## "cyphr" vignette; `vignette("cyphr")`)
@@ -115,14 +101,15 @@ readRDS(filename)
 ## But we can decrypt and read it:
 head(cyphr::decrypt(readRDS(filename), key))
 
-## **Fourth**, have someone else join in.  To simulate another person
-## here, I'm going to pass an argument `bob` though to the functions.
-## This contains the path to "Bob"'s ssh keypair.  If run on an
-## actually different computer this would not be needed; this is just
-## to simulate two users in a single session for this vignette (see
-## minimal example below where this is simulated).  Again, typically
-## this user would also not use the `cyphr::ssh_keygen` function but
-## use the `ssh-keygen` command from their shell.
+## **Fourth**, have someone else join in.  Recall that to simulate
+## another person here, I'm going to pass an argument `path_user =
+## path_key_bob` though to the functions.  This contains the path to
+## "Bob"'s ssh keypair.  If run on an actually different computer this
+## would not be needed; this is just to simulate two users in a single
+## session for this vignette (see minimal example below where this is
+## simulated).  Again, typically this user would also not use the
+## `cyphr::ssh_keygen` function but use the `ssh-keygen` command from
+## their shell.
 
 ## We're going to assume that the user can read and write to the data.
 ## This is the case for my use case where the data are stored on
@@ -132,11 +119,11 @@ head(cyphr::decrypt(readRDS(filename), key))
 ## This user cannot read the data, though trying to will print a
 ## message explaining how you might request access:
 ##+ error = TRUE
-key_bob <- cyphr::data_key(data_dir, "bob")
+key_bob <- cyphr::data_key(data_dir, path_user = path_key_bob)
 
 ## But `bob` is your collaborator and needs access!  What they need
 ## to do is run:
-cyphr::data_request_access(data_dir, "bob")
+cyphr::data_request_access(data_dir, path_user = path_key_bob)
 
 ## (again, ordinarily you would not need the `bob` bit here)
 
@@ -152,7 +139,7 @@ req
 
 ## ...and then grant access to them with the
 ## `cyphr::data_admin_authorise` function.
-cyphr::data_admin_authorise(data_dir, yes = TRUE)
+cyphr::data_admin_authorise(data_dir, yes = TRUE, path_user = path_key_alice)
 
 ## If you do not specify `yes = TRUE` will prompt for confirmation at
 ## each key added.
@@ -165,7 +152,7 @@ cyphr::data_admin_list_keys(data_dir)
 
 ## **Finally**, as soon as the authorisation has happened, the user
 ## can encrypt and decrypt files:
-key_bob <- cyphr::data_key(data_dir, "bob")
+key_bob <- cyphr::data_key(data_dir, path_user = path_key_bob)
 head(cyphr::decrypt(readRDS(filename), key_bob))
 
 ## ## Minimal example
@@ -176,30 +163,26 @@ head(cyphr::decrypt(readRDS(filename), key_bob))
 unlink(data_dir, recursive = TRUE)
 dir.create(data_dir)
 
-## Setup, on computer 1:
-cyphr::data_admin_init(data_dir)
+## Setup, on alice's computer computer:
+cyphr::data_admin_init(data_dir, path_user = path_key_alice)
+
+## Get the data key key:
+key <- cyphr::data_key(data_dir, path_user = path_key_alice)
 
 ## Encrypt a file:
-cyphr::encrypt(saveRDS(iris, filename), cyphr::data_key(data_dir))
+cyphr::encrypt(saveRDS(iris, filename), key)
 
-## Request access, on computer 2:
-##+ echo = FALSE
-oo <- sys_setenv(USER_KEY = "bob", USER_PUBKEY = "bob")
-##+ echo = TRUE
-hash <- cyphr::data_request_access(data_dir)
-##+ echo = FALSE
-sys_resetenv(oo)
+## Request access, on Bob's computer computer:
+hash <- cyphr::data_request_access(data_dir, path_user = path_key_bob)
 
-## Authorise, on computer 1:
-cyphr::data_admin_authorise(data_dir, yes = TRUE)
+## Alice authorises this request::
+cyphr::data_admin_authorise(data_dir, yes = TRUE, path_user = path_key_alice)
 
-## Read data, on computer 2:
-##+ echo = FALSE
-oo <- sys_setenv(USER_KEY = "bob", USER_PUBKEY = "bob")
-##+ echo = TRUE
-head(cyphr::decrypt(readRDS(filename), cyphr::data_key(data_dir)))
-##+ echo = FALSE
-sys_resetenv(oo)
+## Bob can get the data key:
+key <- cyphr::data_key(data_dir, path_user = path_key_bob)
+
+## Bob can read the secret data:
+head(cyphr::decrypt(readRDS(filename), key))
 
 ## ## Details & disclosure
 
@@ -236,15 +219,15 @@ sys_resetenv(oo)
 ## echoing it to the terminal.
 
 ## The data directory has a hidden directory `.cyphr` in it.
-dir("data", all.files = TRUE, no.. = TRUE)
+dir(data_dir, all.files = TRUE, no.. = TRUE)
 
 ## This does not actually need to be stored with the data but it
 ## makes sense to (there are workflows where data is stored remotely
 ## where storing this directory might make sense).  This directory
 ## contains a number of files; one for each person who has access to
 ## the data.
-dir(file.path("data/.cyphr"))
-names(cyphr::data_admin_list_keys("data"))
+dir(file.path(data_dir, ".cyphr"))
+names(cyphr::data_admin_list_keys(data_dir))
 
 ## (the file `test` is a small file encrypted with the data key used
 ## to verify everything is working OK).
@@ -262,8 +245,8 @@ names(cyphr::data_admin_list_keys("data"))
 ##   private key, this cannot be used.  With the user's private key
 ##   this can be used to generate the symmetric key to the data.
 
-h <- names(cyphr::data_admin_list_keys("data"))[[1]]
-readRDS(file.path("data/.cyphr", h))
+h <- names(cyphr::data_admin_list_keys(data_dir))[[1]]
+readRDS(file.path(data_dir, ".cyphr", h))
 
 ## You can see that the hash of the public key is the same as name of
 ## the stored file here (which is used to prevent collisions when
@@ -306,6 +289,4 @@ h
 ## running R should be assumed to be straightforward.
 
 ##+ echo = FALSE, results = "hide"
-unlink(data_dir, recursive = TRUE)
-unlink("alice", recursive = TRUE)
-unlink("bob", recursive = TRUE)
+unlink(c(data_dir, path_key_alice, path_key_bob), recursive = TRUE)

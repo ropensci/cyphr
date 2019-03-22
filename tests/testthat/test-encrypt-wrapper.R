@@ -1,12 +1,13 @@
 context("encrypt() wrappers")
 
 test_that("se", {
-  on.exit(file_remove_if_exists("output.rds"))
+  path <- tempfile()
+  on.exit(file_remove_if_exists(path))
   x <- key_sodium(sodium::keygen())
-  encrypt_(quote(saveRDS(iris, "output.rds")), x)
-  expect_identical(decrypt_(quote(readRDS("output.rds")), x), iris)
+  encrypt_(quote(saveRDS(iris, path)), x)
+  expect_identical(decrypt_(quote(readRDS(path)), x), iris)
   ## Matching the exact message here is error-prone
-  expect_error(readRDS("output.rds"))
+  expect_error(readRDS(path))
 })
 
 test_that("nse", {

@@ -1,6 +1,6 @@
 Package: cyphr
 Title: High Level Encryption Wrappers
-Version: 1.0.0
+Version: 1.0.1
 Authors@R: person("Rich", "FitzJohn", role = c("aut", "cre"),
     email = "rich.fitzjohn@gmail.com")
 Description: Encryption wrappers, using low-level support from

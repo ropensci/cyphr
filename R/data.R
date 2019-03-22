@@ -41,9 +41,7 @@
 ##' @title Encrypted data administration
 ##'
 ##' @param path_data Path to the data set.  We will store a bunch of
-##'   things in a hidden directory within this path.  The default is
-##'   to use the working directory of R, which should work well for
-##'   things like RStudio projects.
+##'   things in a hidden directory within this path.
 ##'
 ##' @param path_user Path to the directory with your ssh key.
 ##'   Usually this can be omitted.
@@ -54,8 +52,40 @@
 ##' @seealso \code{\link{data_request_access}} for requesting access
 ##'   to the data, and and \code{data_key} for using the data
 ##'   itself.  But for a much more thorough overview, see the vignette
-##'   (\code{vignette("workflow", package="cyphr")}).
-data_admin_init <- function(path_data = ".", path_user = NULL, quiet = FALSE) {
+##'   (\code{vignette("data", package="cyphr")}).
+##' @examples
+##'
+##' # The workflow here does not really lend itself to an example,
+##' # please see the vignette instead.
+##'
+##' # First we need a set of user ssh keys.  In a non example
+##' # environment your personal ssh keys will probably work well, but
+##' # hopefully they are password protected so cannot be used in
+##' # examples.  The password = FALSE argument is only for testing,
+##' # and should not be used for data that you care about.
+##' path_ssh_key <- tempfile()
+##' cyphr::ssh_keygen(path_ssh_key, password = FALSE)
+##'
+##' # Initialise the data directory, using this key path.  Ordinarily
+##' # the path_user argument would not be needed because we would be
+##' # using your user ssh keys:
+##' path_data <- tempfile()
+##' dir.create(path_data, FALSE, TRUE)
+##' cyphr::data_admin_init(path_data, path_user = path_ssh_key)
+##'
+##' # Now you can get the data key
+##' key <- cyphr::data_key(path_data, path_user = path_ssh_key)
+##'
+##' # And encrypt things with it
+##' cyphr::encrypt_string("hello", key)
+##'
+##' # See the vignette for more details.  This is not the best medium
+##' # to explore this.
+##'
+##' # Cleanup
+##' unlink(path_ssh_key, recursive = TRUE)
+##' unlink(path_data, recursive = TRUE)
+data_admin_init <- function(path_data, path_user = NULL, quiet = FALSE) {
   pair <- data_load_keypair_user(path_user)
 
   if (!is_directory(path_data)) {
@@ -115,7 +145,7 @@ data_admin_init <- function(path_data = ".", path_user = NULL, quiet = FALSE) {
 ##'
 ##' @param yes Skip the confirmation prompt?  If any request is
 ##'   declined then the function will throw an error on exit.
-data_admin_authorise <- function(path_data = ".", hash = NULL, path_user = NULL,
+data_admin_authorise <- function(path_data, hash = NULL, path_user = NULL,
                                  yes = FALSE, quiet = FALSE) {
   data_check_path_data(path_data)
   keys <- data_load_request(path_data, hash, quiet)
@@ -162,14 +192,14 @@ data_admin_authorise <- function(path_data = ".", hash = NULL, path_user = NULL,
 
 ##' @export
 ##' @rdname data_admin
-data_admin_list_requests <- function(path_data = ".") {
+data_admin_list_requests <- function(path_data) {
   data_check_path_data(path_data)
   data_pubs_load(data_path_request(path_data))
 }
 
 ##' @export
 ##' @rdname data_admin
-data_admin_list_keys <- function(path_data = ".") {
+data_admin_list_keys <- function(path_data) {
   data_check_path_data(path_data)
   data_pubs_load(data_path_cyphr(path_data))
 }
@@ -177,8 +207,7 @@ data_admin_list_keys <- function(path_data = ".") {
 ##' User commands
 ##' @title User commands
 ##'
-##' @param path_data Path to the data.  The default is the current
-##'   working directory.
+##' @param path_data Path to the data
 ##'
 ##' @param path_user Path to the directory with your user key.
 ##'   Usually this can be omitted.  Use the \code{cyphr.user.path}
@@ -189,8 +218,39 @@ data_admin_list_keys <- function(path_data = ".") {
 ##'
 ##' @export
 ##' @rdname data_user
-data_request_access <- function(path_data = ".", path_user = NULL,
-                                quiet = FALSE) {
+##' @examples
+##'
+##' # The workflow here does not really lend itself to an example,
+##' # please see the vignette.
+##'
+##' # Suppose that Alice has created a data directory:
+##' path_alice <- tempfile()
+##' cyphr::ssh_keygen(path_alice, password = FALSE)
+##' path_data <- tempfile()
+##' dir.create(path_data, FALSE, TRUE)
+##' cyphr::data_admin_init(path_data, path_user = path_alice)
+##'
+##' # If Bob can also write to the data directory (e.g., it is a
+##' # shared git repo, on a shared drive, etc), then he can request
+##' # access
+##' path_bob <- tempfile()
+##' cyphr::ssh_keygen(path_bob, password = FALSE)
+##' hash <- cyphr::data_request_access(path_data, path_user = path_bob)
+##'
+##' # Alice can authorise Bob
+##' cyphr::data_admin_authorise(path_data, path_user = path_alice, yes = TRUE)
+##'
+##' # After which Bob can get the data key
+##' cyphr::data_key(path_data, path_user = path_bob)
+##'
+##' # See the vignette for more details.  This is not the best medium
+##' # to explore this.
+##'
+##' # Cleanup
+##' unlink(path_alice, recursive = TRUE)
+##' unlink(path_bob, recursive = TRUE)
+##' unlink(path_data, recursive = TRUE)
+data_request_access <- function(path_data, path_user = NULL, quiet = FALSE) {
   pair <- data_load_keypair_user(path_user)
   data_check_path_data(path_data)
 
@@ -241,7 +301,7 @@ data_request_access <- function(path_data = ".", path_user = NULL,
 ##' @export
 ##' @param test Test that the encryption is working?  (Recommended)
 ##' @rdname data_user
-data_key <- function(path_data = ".", path_user = NULL, test = TRUE,
+data_key <- function(path_data, path_user = NULL, test = TRUE,
                      quiet = FALSE) {
   x <- data_load_sym(path_data, path_user, quiet)
   if (test) {

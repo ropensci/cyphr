@@ -40,7 +40,7 @@ an \code{.onLoad()} hook.
 args(saveRDS)
 # The 'file' argument is the one that refers to the filename, so
 # we'd write:
-rewrite_register("base", "saveRDS", "file")
+cyphr::rewrite_register("base", "saveRDS", "file")
 # It's non-API but you can see what is supported in the package by
 # looking at
 ls(cyphr:::db)

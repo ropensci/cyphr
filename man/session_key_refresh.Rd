@@ -15,3 +15,11 @@ Refresh the session key, invalidating all keys created by
 Running this function will invalidate \emph{all} keys loaded with
 the above functions.  It should not be needed very often.
 }
+\examples{
+
+# Be careful - if you run this then all keys loaded from file will
+# no longer work until reloaded
+if (FALSE) {
+  cyphr::session_key_refresh()
+}
+}

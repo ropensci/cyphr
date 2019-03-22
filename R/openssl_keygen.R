@@ -21,16 +21,17 @@
 ##'   where \code{path} is \code{\link{tempfile}()}.
 ##' @export
 ##' @examples
-##' \dontrun{
 ##' # Generate a new key in a temporary directory:
-##' path <- ssh_keygen(password = FALSE)
+##' path <- cyphr::ssh_keygen(password = FALSE)
 ##' dir(path) # will contain id_rsa and id_rsa.pub
 ##'
-##' # This key can now be used via config_openssl:
-##' cfg <- config_openssl(path)
-##' secret <- encrypt_string("hello", NULL, cfg)
-##' decrypt_string(secret, cfg)
-##' }
+##' # This key can now be used via keypair_openssl:
+##' key <- cyphr::keypair_openssl(path, path)
+##' secret <- cyphr::encrypt_string("hello", key)
+##' cyphr::decrypt_string(secret, key)
+##'
+##' # Cleanup
+##' unlink(path, recursive = TRUE)
 ssh_keygen <- function(path = tempfile(), password = TRUE, use_shell = FALSE) {
   if (file.exists(path) && !is_directory(path)) {
     stop("path exists but is not a directory")

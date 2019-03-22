@@ -18,6 +18,14 @@ session <- new.env(parent = emptyenv())
 ##'
 ##' @title Refresh the session key
 ##' @export
+##'
+##' @examples
+##'
+##' # Be careful - if you run this then all keys loaded from file will
+##' # no longer work until reloaded
+##' if (FALSE) {
+##'   cyphr::session_key_refresh()
+##' }
 session_key_refresh <- function() {
   session$key <- sodium::keygen()
 }

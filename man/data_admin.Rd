@@ -7,20 +7,18 @@
 \alias{data_admin_list_keys}
 \title{Encrypted data administration}
 \usage{
-data_admin_init(path_data = ".", path_user = NULL, quiet = FALSE)
+data_admin_init(path_data, path_user = NULL, quiet = FALSE)
 
-data_admin_authorise(path_data = ".", hash = NULL, path_user = NULL,
+data_admin_authorise(path_data, hash = NULL, path_user = NULL,
   yes = FALSE, quiet = FALSE)
 
-data_admin_list_requests(path_data = ".")
+data_admin_list_requests(path_data)
 
-data_admin_list_keys(path_data = ".")
+data_admin_list_keys(path_data)
 }
 \arguments{
 \item{path_data}{Path to the data set.  We will store a bunch of
-things in a hidden directory within this path.  The default is
-to use the working directory of R, which should work well for
-things like RStudio projects.}
+things in a hidden directory within this path.}
 
 \item{path_user}{Path to the directory with your ssh key.
 Usually this can be omitted.}
@@ -56,9 +54,42 @@ moved elsewhere for example).  Conversely, if the user has deleted
 or changed their key they will not be able to access the data
 despite the key being listed here.
 }
+\examples{
+
+# The workflow here does not really lend itself to an example,
+# please see the vignette instead.
+
+# First we need a set of user ssh keys.  In a non example
+# environment your personal ssh keys will probably work well, but
+# hopefully they are password protected so cannot be used in
+# examples.  The password = FALSE argument is only for testing,
+# and should not be used for data that you care about.
+path_ssh_key <- tempfile()
+cyphr::ssh_keygen(path_ssh_key, password = FALSE)
+
+# Initialise the data directory, using this key path.  Ordinarily
+# the path_user argument would not be needed because we would be
+# using your user ssh keys:
+path_data <- tempfile()
+dir.create(path_data, FALSE, TRUE)
+cyphr::data_admin_init(path_data, path_user = path_ssh_key)
+
+# Now you can get the data key
+key <- cyphr::data_key(path_data, path_user = path_ssh_key)
+
+# And encrypt things with it
+cyphr::encrypt_string("hello", key)
+
+# See the vignette for more details.  This is not the best medium
+# to explore this.
+
+# Cleanup
+unlink(path_ssh_key, recursive = TRUE)
+unlink(path_data, recursive = TRUE)
+}
 \seealso{
 \code{\link{data_request_access}} for requesting access
   to the data, and and \code{data_key} for using the data
   itself.  But for a much more thorough overview, see the vignette
-  (\code{vignette("workflow", package="cyphr")}).
+  (\code{vignette("data", package="cyphr")}).
 }

@@ -117,8 +117,8 @@ test_that("git messages", {
   res <- testthat::evaluate_promise(data_request_access(path, "pair2", quiet))
   expect_match(res$messages, "If you are using git", all = FALSE)
 
-  res <- evaluate_promise(data_admin_authorise(path, res$value, "pair1",
-                                               TRUE, quiet))
+  res <- evaluate_promise(
+    data_admin_authorise(path, res$value, "pair1", TRUE, quiet))
   expect_match(res$messages, "If you are using git", all = FALSE)
 })
 

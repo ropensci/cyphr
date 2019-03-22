@@ -171,9 +171,8 @@ data_admin_authorise <- function(path_data, hash = NULL, path_user = NULL,
     if (using_git(path_data)) {
       users <- paste(vapply(keys, function(x) x$user, character(1)),
                      collapse = ", ")
-      path_cyphr <- sub("./", "", data_path_cyphr("."), fixed = TRUE)
       msg <- c("If you are using git, you will need to commit and push:",
-               paste("    git add", path_cyphr),
+               "    git add .cyphr",
                sprintf('    git commit -m "Authorised %s"', users),
                '    git push')
       workflow_log(quiet, paste(msg, collapse = "\n"))
@@ -290,7 +289,7 @@ data_request_access <- function(path_data, path_user = NULL, quiet = FALSE) {
   workflow_log(quiet, paste0("\thash: ", bin2str(hash, ":")))
   if (using_git(path_data)) {
     msg <- c("If you are using git, you will need to commit and push first:",
-             paste("    git add", dest),
+             "    git add .cyphr",
              '    git commit -m "Please add me to the dataset"',
              '    git push')
     workflow_log(quiet, paste(msg, collapse = "\n"))

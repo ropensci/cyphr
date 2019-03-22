@@ -9,20 +9,6 @@
 ##   %\VignetteEncoding{UTF-8}
 ## ---
 
-##+ echo = FALSE, results = "hide"
-local({
-  if (!file.exists("alice")) {
-    dir.create("alice")
-    cyphr::ssh_keygen("alice", FALSE)
-  }
-  if (!file.exists("bob")) {
-    dir.create("bob")
-    cyphr::ssh_keygen("bob", FALSE)
-  }
-  Sys.setenv(USER_KEY = "alice")
-  Sys.setenv(USER_PUBKEY = "alice")
-})
-
 ## This package tries to smooth over some of the differences in
 ## encryption approaches (symmetric vs. asymmetric, sodium vs. openssl)
 ## to provide a simple interface for users who just want to encrypt or
@@ -158,20 +144,25 @@ key
 ## ### `openssl`
 
 ## Let's suppose that we have two parties "Alice" and "Bob" who want
-## to talk with one another.  I have generated SSH keys (with no
-## password) in the directories `alice` and `bob` (though in
-## practice these would of course be on different machines and Alice
-## would have *no* access to Bob's private key!).  Here, the paths
-## `alice` and `bob` are directories that each contain a public key
-## (`id_rsa.pub`) and a private key (`id_rsa`).
-dir("alice")
+## to talk with one another.  For demonstration purposes we need to
+## generate SSH keys (with no password) in temporary directories (to
+## comply with CRAN policies).  In a real situation these would be on
+## different machines (Alice has no access to Bob's key!) and these
+## keys would be password protected.
+path_key_alice <- cyphr::ssh_keygen(password = FALSE)
+path_key_bob <- cyphr::ssh_keygen(password = FALSE)
 
-## Below, the full path to the key (e.g., `alice/id_rsa`) could be
+## Note that each directory contains a public key (`id_rsa.pub`) and a
+## private key (`id_rsa`).
+dir(path_key_alice)
+dir(path_key_bob)
+
+## Below, the full path to the key (e.g., `.../id_rsa`) could be
 ## used in place of the directory name if you prefer.
 
 ## If Alice wants to send a message to Bob she needs to use her
 ## private key and his public key
-pair_a <- cyphr::keypair_openssl("bob", "alice")
+pair_a <- cyphr::keypair_openssl(path_key_bob, path_key_alice)
 pair_a
 
 ## with this pair she can write a message to "bob":
@@ -187,7 +178,7 @@ cyphr::decrypt_string(secret, pair_a)
 
 ## For Bob to read the message, he uses his private key and Alice's
 ## public key (which she has transmitted to him previously).
-pair_b <- cyphr::keypair_openssl("alice", "bob")
+pair_b <- cyphr::keypair_openssl(path_key_alice, path_key_bob)
 
 ## With this keypair, Bob can decrypt Alice's message
 cyphr::decrypt_string(secret, pair_b)
@@ -200,26 +191,25 @@ secret2
 cyphr::decrypt_string(secret2, pair_a)
 
 ## Chances are, you have an openssl keypair in your `.ssh/` directory.
-## If so, you can pass `NULL` as the path for the private (or less
+## If so, you would pass `NULL` as the path for the private (or less
 ## usefully, the public) key pair part.  So to send a message to Bob,
 ## we'd include the path to Bob's public key.
-pair_us <- cyphr::keypair_openssl("bob", NULL)
-
-## which could then used to send bob a message with:
-secret <- cyphr::encrypt_string("secret message", pair_us)
-secret
+## ```r
+## pair_us <- cyphr::keypair_openssl(path_key_bob, NULL)
+## ```
 
 ## This all skips over how Alice and Bob will exchange this secret
 ## information.  Because the secret is bytes, it's a bit odd to work
 ## with.  Alice could save the secret to disk with
 secret <- cyphr::encrypt_string("secret message", pair_a)
-writeBin(secret, "for_bob_only")
+path_for_bob <- file.path(tempdir(), "for_bob_only")
+writeBin(secret, path_for_bob)
 
 ## And then send Bob the file `for_bob_only` (over email or any other
 ## insecure medium).
 
 ## and bob could read the secret in with:
-secret <- readBin("for_bob_only", raw(), file.size("for_bob_only"))
+secret <- readBin(path_for_bob, raw(), file.size(path_for_bob))
 cyphr::decrypt_string(secret, pair_b)
 
 ## As an alternative, you can "base64 encode" the bytes into something
@@ -352,21 +342,22 @@ secret
 cyphr::decrypt_object(secret, key)
 
 ## Optionally, this process can go via a file, using a third argument
-## to the functions:
-path <- "secret.rds"
-cyphr::encrypt_object(obj, key, path)
+## to the functions (note that temporary files are used here for
+## compliance with CRAN policies - any path may be used in practice).
+path_secret <- file.path(tempdir(), "secret.rds")
+cyphr::encrypt_object(obj, key, path_secret)
 
-## There is now a file called `secret.rds`
-file.exists(path)
+## There is now a file called `secret.rds` in the temporary directory:
+file.exists(path_secret)
 
 ## though it is not actually an rds file:
 ##+ error = TRUE
-readRDS(path)
+readRDS(path_secret)
 
 ## When passed a filename (as opposed to a raw vector),
 ## `cyphr::decrypt_object` will read the object in before decrypting
 ## it
-cyphr::decrypt_object(path, key)
+cyphr::decrypt_object(path_secret, key)
 
 ## ## Strings
 
@@ -396,18 +387,21 @@ identical(cyphr::decrypt_data(secret, key), dat)
 ## ## Files
 
 ## Suppose we have written a file that we want to encrypt to send to
-## someone:
-write.csv(iris, "iris.csv", row.names = FALSE)
+## someone (in a temporary directory for compliance with CRAN
+## policies)
+path_data_csv <- file.path(tempdir(), "iris.csv")
+write.csv(iris, path_data_csv, row.names = FALSE)
 
 ## You can encrypt that file with
-cyphr::encrypt_file("iris.csv", key, "iris.csv.enc")
-file.exists("iris.csv.enc")
+path_data_enc <- file.path(tempdir(), "iris.csv.enc")
+cyphr::encrypt_file(path_data_csv, key, path_data_enc)
 
 ## This encrypted file can then be decrypted with
-cyphr::decrypt_file("iris.csv.enc", key, "iris2.csv")
+path_data_decrypted <- file.path(tempdir(), "idis2.csv")
+cyphr::decrypt_file(path_data_enc, key, path_data_decrypted)
 
 ## Which is identical to the original:
-tools::md5sum(c("iris.csv", "iris2.csv"))
+tools::md5sum(c(path_data_csv, path_data_decrypted))
 
 ## # An even higher level interface for files
 
@@ -426,18 +420,19 @@ x <- list(a = 1:10, b = "don't tell anyone else")
 ## everyone until it is deleted.  But if you encrypted the file that
 ## `saveRDS` produced it would be protected and only people with the
 ## key can read it:
-cyphr::encrypt(saveRDS(x, "secret.rds"), key)
+path_object <- file.path(tempdir(), "secret.rds")
+cyphr::encrypt(saveRDS(x, path_object), key)
 
 ## (see below for some more details on how this works).
 
 ## This file cannot be read with `readRDS`:
 
 ##+ error = TRUE
-readRDS("secret.rds")
+readRDS(path_object)
 
 ## but if we wrap the call with `decrypt` and pass in the config
 ## object it can be decrypted and read:
-cyphr::decrypt(readRDS("secret.rds"), key)
+cyphr::decrypt(readRDS(path_object), key)
 
 ## What happens in the call above is `cyphr` uses "non standard
 ## evaluation" to rewrite the call above so that it becomes
@@ -499,8 +494,8 @@ cyphr::decrypt(readRDS("secret.rds"), key)
 ## and so may not be suitable for programming or use in packages.  An
 ## "escape hatch" is provided via `encrypt_` and `decrypt_` where the
 ## first argument is a quoted expression.
-cyphr::encrypt_(quote(saveRDS(x, "secret.rds")), key)
-cyphr::decrypt_(quote(readRDS("secret.rds")), key)
+cyphr::encrypt_(quote(saveRDS(x, path_object)), key)
+cyphr::decrypt_(quote(readRDS(path_object)), key)
 
 ## # Session keys
 
@@ -545,10 +540,11 @@ cyphr::decrypt_string(secret, key)
 ## accidentally saving keys in a way that would be useful for an
 ## attacker to use in a subsequent session.
 
-##+ echo = FALSE, results = "hide"
-Sys.unsetenv("USER_KEY")
-file.remove(c("secret.rds", "iris.csv", "iris2.csv", "for_bob_only",
-              "iris.csv.env"))
+##+ include = FALSE
+unlink(c(path_secret, path_object, path_data_csv, path_data_enc,
+         path_data_decrypted, path_for_bob,
+         path_key_alice, path_key_bob),
+       recursive = TRUE)
 
 ## # Further reading
 

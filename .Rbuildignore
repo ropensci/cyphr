@@ -19,3 +19,5 @@
 ^CONDUCT\.md$
 ^vignettes/README\.md$
 ^docs$
+^pkgdown$
+^_pkgdown\.yml$

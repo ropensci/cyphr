@@ -12,6 +12,7 @@ knitr::opts_chunk$set(
 [![Linux Build Status](https://travis-ci.org/ropensci/cyphr.svg?branch=master)](https://travis-ci.org/ropensci/cyphr)
 [![Windows Build status](https://ci.appveyor.com/api/projects/status/uqvjcxarec484st8?svg=true)](https://ci.appveyor.com/project/ropensci/cyphr)
 [![codecov.io](https://codecov.io/github/ropensci/cyphr/coverage.svg?branch=master)](https://codecov.io/github/ropensci/cyphr?branch=master)
+[![](http://www.r-pkg.org/badges/version/cyphr)](https://cran.r-project.org/package=cyphr)
 [![](http://badges.ropensci.org/114_status.svg)](https://github.com/ropensci/onboarding/issues/114)
 
 High-level functions for supporting encryption and decryption of data from R.  This allows secure storage and exchange of information, while trying to keep the encryption/decryption code from taking over your analyses.  `cyphr` wraps the lower-level support from [`sodium`](https://github.com/jeroenooms/sodium) and [`openssl`](https://github.com/jeroenooms/openssl).  This package is designed to be easy to use, rather than the most secure thing (you're using R, remember - for examples of what `cyphr` can't protect against see [`jammr`](https://github.com/Ironholds/jammr), [`rpwnd`](https://github.com/hrbrmstr/rpwnd) and [`evil.R`](https://github.com/romainfrancois/evil.R).)
@@ -40,6 +41,14 @@ dat <- cyphr::decrypt(read.csv("file.csv", stringsAsFactors = FALSE), key)
 In addition, the package implements a workflow that allows a group to securely share data by encrypting it with a shared ("symmetric") key that is in turn encrypted with each users ssh keys.  The use case is a group of researchers who are collaborating on a dataset that cannot be made public, for example containing sensitive data.  However, they have decided or need to store it in a setting that they are not 100% confident about the security of the data.  So encrypt the data at each read/write.
 
 ## Installation
+
+Install `cyphr` from CRAN with
+
+```{r, eval = FALSE}
+install.packages("cyphr")
+```
+
+To install a development version from github, you can use `remotes`
 
 To install `cyphr` from github:
 ```{r, eval = FALSE}

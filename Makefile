@@ -40,4 +40,4 @@ vignettes: vignettes/cyphr.Rmd vignettes/data.Rmd
 	${RSCRIPT} -e 'library(methods); devtools::build_vignettes()'
 
 # No real targets!
-.PHONY: all test document install vignettes
+.PHONY: all test document install vignettes pkgdown

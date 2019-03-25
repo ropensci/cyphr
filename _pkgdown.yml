@@ -1,0 +1,7 @@
+url: https://ropensci.github.io/cyphr
+
+template:
+  package: rotemplate
+
+toc:
+  depth: 3

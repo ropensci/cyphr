@@ -68,5 +68,5 @@ test_that("non-file arguments", {
   expect_identical(decrypt(readRDS(f), x), iris)
 
   con2 <- file(f, "rb")
-  expect_identical(with_connection(con, decrypt(readRDS(con2), x)), iris)
+  expect_identical(with_connection(con2, decrypt(readRDS(con2), x)), iris)
 })

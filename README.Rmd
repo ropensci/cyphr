@@ -187,7 +187,7 @@ to decrypt the file (these are equivalent, but the former will likely be more co
 
 Even with high-level functions to ease encrypting and decrypting things given a key, there is some work to be done to distribute a set of keys across a group of people who are working together so that everyone can encrypt and decrypt the data but so that the keys themselves are not compromised.
 
-The package contains support for a group of people are working on a sensitive data set.  The data will be stored with a symmetric key.  However, we never actually store the key directly, instead we'll store a copy for each user that is encrypted with the user's key.  Any user with access to the data can authorise another user to access the data.  This is described in more detail in the [vignette](http://ropensci.github.io/cyphr/articles/data.html) (in R: `vignette("data", package = "cyphr")`).
+The package contains support for a group of people are working on a sensitive data set.  The data will be stored with a symmetric key.  However, we never actually store the key directly, instead we'll store a copy for each user that is encrypted with the user's key.  Any user with access to the data can authorise another user to access the data.  This is described in more detail in the [vignette](http://docs.ropensci.org/cyphr/articles/data.html) (in R: `vignette("data", package = "cyphr")`).
 
 ## Why are wrappers needed?
 

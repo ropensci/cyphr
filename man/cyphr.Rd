@@ -12,8 +12,8 @@ Encryption wrappers, using low-level support from sodium and openssl.
 It is \emph{strongly} recommended that you read \emph{both} vignettes before attempting
 to use \code{cyphr}.
 \itemize{
-\item \href{https://ropensci.github.io/cyphr/articles/cyphr.html}{introduction} (in R: \code{vignette("cyphr", package = "cyphr")})'
-\item \href{https://ropensci.github.io/cyphr/articles/data.html}{data vignette} (in R: \code{vignette("data", package = "cyphr")})'
+\item \href{https://docs.ropensci.org/cyphr/articles/cyphr.html}{introduction} (in R: \code{vignette("cyphr", package = "cyphr")})'
+\item \href{https://docs.ropensci.org/cyphr/articles/data.html}{data vignette} (in R: \code{vignette("data", package = "cyphr")})'
 }
 }
 \author{

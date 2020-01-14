@@ -1,6 +1,6 @@
 ## cyphr 1.0.1
 
-* First CRAN relsease
+* First CRAN release
 
 ## cyphr 0.2.0
 

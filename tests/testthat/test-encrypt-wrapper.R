@@ -30,10 +30,12 @@ test_that("nse 2", {
   filename <- tempfile()
   on.exit(file_remove_if_exists(filename))
 
-  encrypt(write.csv(iris, filename, row.names = FALSE), x)
+  d <- data.frame(a = 1:10, b = sample(1:10))
+
+  encrypt(write.csv(d, filename, row.names = FALSE), x)
   expect_true(file.exists(filename))
 
-  expect_equal(decrypt(read.csv(filename), x), iris)
+  expect_equal(decrypt(read.csv(filename), x), d)
 })
 
 test_that("visibility", {

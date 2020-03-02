@@ -490,7 +490,7 @@ cyphr::decrypt(readRDS(path_object), key)
 ## cyphr::decrypt(rio::import("file.json"), key)
 ## ```
 
-## The functions above use [non standard evaluation](https://adv-r.had.co.nz/Computing-on-the-language.html)
+## The functions above use [non standard evaluation](http://adv-r.had.co.nz/Computing-on-the-language.html)
 ## and so may not be suitable for programming or use in packages.  An
 ## "escape hatch" is provided via `encrypt_` and `decrypt_` where the
 ## first argument is a quoted expression.

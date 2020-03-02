@@ -1,6 +1,6 @@
 context("encrypt() wrappers")
 
-test_that("se", {
+test_that("Roundtrip rds using standard evaluation", {
   path <- tempfile()
   on.exit(file_remove_if_exists(path))
   x <- key_sodium(sodium::keygen())
@@ -10,7 +10,7 @@ test_that("se", {
   expect_error(readRDS(path))
 })
 
-test_that("nse", {
+test_that("Roundtrip rds using nonstandard evaluation", {
   x <- key_sodium(sodium::keygen())
   len <- length(dir(tempdir()))
 
@@ -25,7 +25,7 @@ test_that("nse", {
   expect_equal(decrypt(readRDS(filename), x), iris)
 })
 
-test_that("nse 2", {
+test_that("Roundtrip csv using nonstandard evaluation", {
   x <- key_sodium(sodium::keygen())
   filename <- tempfile()
   on.exit(file_remove_if_exists(filename))
@@ -38,7 +38,7 @@ test_that("nse 2", {
   expect_equal(decrypt(read.csv(filename), x), d)
 })
 
-test_that("visibility", {
+test_that("paths are returned *invisibly*", {
   ## Also is a test for custom functions :-\
   f <- function(x, filename = tempfile(), visible = FALSE) {
     saveRDS(x, filename)
@@ -58,7 +58,7 @@ test_that("visibility", {
   expect_true(res$visible)
 })
 
-test_that("non-file arguments", {
+test_that("non-file arguments are accepted", {
   x <- key_sodium(sodium::keygen())
   f <- tempfile()
   on.exit(file.remove(f))

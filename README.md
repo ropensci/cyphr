@@ -2,12 +2,12 @@
 
 # cyphr
 
-[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
+[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![Linux Build Status](https://travis-ci.org/ropensci/cyphr.svg?branch=master)](https://travis-ci.org/ropensci/cyphr)
 [![Windows Build status](https://ci.appveyor.com/api/projects/status/uqvjcxarec484st8?svg=true)](https://ci.appveyor.com/project/ropensci/cyphr)
 [![codecov.io](https://codecov.io/github/ropensci/cyphr/coverage.svg?branch=master)](https://codecov.io/github/ropensci/cyphr?branch=master)
-[![](http://www.r-pkg.org/badges/version/cyphr)](https://cran.r-project.org/package=cyphr)
-[![](http://badges.ropensci.org/114_status.svg)](https://github.com/ropensci/onboarding/issues/114)
+[![](https://www.r-pkg.org/badges/version/cyphr)](https://cran.r-project.org/package=cyphr)
+[![](https://badges.ropensci.org/114_status.svg)](https://github.com/ropensci/onboarding/issues/114)
 
 High-level functions for supporting encryption and decryption of data from R.  This allows secure storage and exchange of information, while trying to keep the encryption/decryption code from taking over your analyses.  `cyphr` wraps the lower-level support from [`sodium`](https://github.com/jeroenooms/sodium) and [`openssl`](https://github.com/jeroenooms/openssl).  This package is designed to be easy to use, rather than the most secure thing (you're using R, remember - for examples of what `cyphr` can't protect against see [`jammr`](https://github.com/Ironholds/jammr), [`rpwnd`](https://github.com/hrbrmstr/rpwnd) and [`evil.R`](https://github.com/romainfrancois/evil.R).)
 
@@ -216,7 +216,7 @@ to decrypt the file (these are equivalent, but the former will likely be more co
 
 Even with high-level functions to ease encrypting and decrypting things given a key, there is some work to be done to distribute a set of keys across a group of people who are working together so that everyone can encrypt and decrypt the data but so that the keys themselves are not compromised.
 
-The package contains support for a group of people are working on a sensitive data set.  The data will be stored with a symmetric key.  However, we never actually store the key directly, instead we'll store a copy for each user that is encrypted with the user's key.  Any user with access to the data can authorise another user to access the data.  This is described in more detail in the [vignette](http://docs.ropensci.org/cyphr/articles/data.html) (in R: `vignette("data", package = "cyphr")`).
+The package contains support for a group of people are working on a sensitive data set.  The data will be stored with a symmetric key.  However, we never actually store the key directly, instead we'll store a copy for each user that is encrypted with the user's key.  Any user with access to the data can authorise another user to access the data.  This is described in more detail in the [vignette](https://docs.ropensci.org/cyphr/articles/data.html) (in R: `vignette("data", package = "cyphr")`).
 
 ## Why are wrappers needed?
 

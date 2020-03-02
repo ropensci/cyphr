@@ -2,6 +2,13 @@ language: R
 sudo: false
 cache: packages
 
+matrix:
+  include:
+  - r: devel
+  - r: release
+    after_success:
+    - Rscript -e 'covr::codecov()'
+
 addons:
   apt:
     sources:
@@ -12,6 +19,3 @@ addons:
 
 r_packages:
   - covr
-
-after_success:
-  - Rscript -e 'covr::codecov()'

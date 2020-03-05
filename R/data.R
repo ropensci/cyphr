@@ -273,8 +273,6 @@ data_request_access <- function(path_data, path_user = NULL, quiet = FALSE) {
     workflow_log(FALSE, "Request is already pending")
   } else {
     workflow_log(quiet, "A request has been added")
-    dat$signature <-
-      openssl::signature_create(data_key_prep(dat), key = pair$key())
     data_key_save(dat, dest)
   }
 
@@ -358,16 +356,9 @@ data_pub_load <- function(hash, path_request) {
   }
   dat <- readRDS(filename)
 
-  ## Two attempts at verifying the data provided as a key to detect
-  ## tampering.
   if (!identical(as.raw(openssl_fingerprint(dat$pub)), as.raw(hash))) {
     stop("Public key hash disagrees for: ", hash_str)
   }
-
-  tryCatch(
-    openssl::signature_verify(data_key_prep(dat), dat$signature,
-                              pubkey = dat$pub),
-    error = function(e) stop("Signature of data does not match for ", hash_str))
 
   ## Save the filename so we can organise deletion later on
   dat$filename <- filename
@@ -437,13 +428,6 @@ workflow_log <- function(quiet, ...) {
   if (!quiet) {
     message(sprintf(...))
   }
-}
-
-data_key_prep <- function(x) {
-  ## There may be other fields here; in particular "signature" (which
-  ## we do not know because it's the hash of the object) and the
-  ## private key (but I don't remember which one at this point)
-  serialize(unclass(x[c("user", "host", "date", "pub")]), NULL)
 }
 
 data_key_save <- function(x, filename) {

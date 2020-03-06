@@ -12,7 +12,56 @@ context("reference")
 ## reference directory under version number.
 
 test_that("compatibility with 1.0.0", {
+  skip_on_cran()
   path <- unzip_reference("reference/1.0.0.zip")
+  path_cypher <- file.path(path, "cypher")
+
+  cleartext <- readLines(file.path(path, "cleartext"))
+
+  path_openssl_alice <- file.path(path, "openssl", "alice")
+  path_openssl_bob <- file.path(path, "openssl", "bob")
+  path_data <- file.path(path, "data")
+
+  key_openssl_sym <- readRDS(file.path(path, "openssl", "sym.key"))
+
+  key_sodium_sym <- read_binary(file.path(path, "sodium", "sym.key"))
+  key_sodium_alice <- read_binary(file.path(path, "sodium", "alice.key"))
+  pub_sodium_alice <- read_binary(file.path(path, "sodium", "alice.pub"))
+  key_sodium_bob <- read_binary(file.path(path, "sodium", "bob.key"))
+  pub_sodium_bob <- read_binary(file.path(path, "sodium", "bob.pub"))
+
+  expect_identical(
+    decrypt_string(file.path(path_cypher, "sodium_sym"),
+                   key_sodium(key_sodium_sym)),
+    cleartext)
+
+  expect_identical(
+    decrypt_string(file.path(path_cypher, "openssl_sym"),
+                   key_openssl(key_openssl_sym)),
+    cleartext)
+
+  pair_bob <- keypair_sodium(pub_sodium_alice, key_sodium_bob)
+  expect_identical(
+    decrypt_string(file.path(path_cypher, "sodium_asym_alice"), pair_bob),
+    cleartext)
+
+  pair_bob <- keypair_openssl(path_openssl_alice, path_openssl_bob)
+  expect_identical(
+    decrypt_string(file.path(path_cypher, "openssl_asym_alice"), pair_bob),
+    cleartext)
+
+  expect_warning(
+    data_key <- data_key(path_data, path_openssl_alice),
+    "Your cyphr schema version is out of date")
+  filename <- file.path(path_data, "secret.txt")
+
+  expect_identical(decrypt(readLines(filename), data_key), cleartext)
+})
+
+
+test_that("compatibility with 1.1.0", {
+  skip_on_cran()
+  path <- unzip_reference("reference/1.1.0.zip")
   path_cypher <- file.path(path, "cypher")
 
   cleartext <- readLines(file.path(path, "cleartext"))

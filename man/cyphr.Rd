@@ -3,7 +3,6 @@
 \docType{package}
 \name{cyphr}
 \alias{cyphr}
-\alias{cyphr-package}
 \title{High Level Encryption Wrappers}
 \description{
 Encryption wrappers, using low-level support from sodium and openssl.

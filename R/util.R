@@ -140,3 +140,7 @@ prompt_confirm <- function(msg = "continue?", valid = c(n = FALSE, y = TRUE),
 read_line <- function(prompt) {
   readline(prompt = prompt) # nocov
 }
+
+`%||%` <- function(a, b) {
+  if (is.null(a)) b else a
+}

@@ -5,12 +5,14 @@
 \alias{data_key}
 \title{User commands}
 \usage{
-data_request_access(path_data, path_user = NULL, quiet = FALSE)
+data_request_access(path_data = NULL, path_user = NULL, quiet = FALSE)
 
-data_key(path_data, path_user = NULL, test = TRUE, quiet = FALSE)
+data_key(path_data = NULL, path_user = NULL, test = TRUE, quiet = FALSE)
 }
 \arguments{
-\item{path_data}{Path to the data}
+\item{path_data}{Path to the data.  If not given, then we look
+recursively down below the working directory for a ".cyphr"
+directory, and use that as the data directory.}
 
 \item{path_user}{Path to the directory with your user key.
 Usually this can be omitted.  Use the \code{cyphr.user.path}

@@ -362,3 +362,12 @@ test_that("schema validation - new version errors", {
     "Upgrade to cyphr version 9.9.9 (or newer)",
     fixed = TRUE)
 })
+
+
+test_that("new data sources do not need migrating", {
+  path <- tempfile()
+  dir.create(path, FALSE)
+  data_admin_init(path, "pair1")
+  res <- testthat::evaluate_promise(data_schema_migrate(path))
+  expect_match(res$messages, "Everything up to date!")
+})

@@ -67,7 +67,7 @@ test_that("grant access", {
   expect_identical(h2, h)
 
   pair2 <- data_load_keypair_user("pair2")
-  expect_identical(h, openssl_fingerprint(pair2$pub, data_schema_version))
+  expect_identical(h, data_key_fingerprint(pair2$pub, data_schema_version))
 
   ## This is the request:
   path_req <- file.path(data_path_request(path), bin2str(h, ""))
@@ -272,4 +272,15 @@ test_that("Custom messages", {
     res2$messages,
     "my custom .+ authorise message",
     all = FALSE)
+})
+
+
+test_that("fingerprint versioning", {
+  k <- data_load_keypair_user("pair1")$pub
+  expect_identical(
+    data_key_fingerprint(k, numeric_version("1.0.3")),
+    openssl::fingerprint(k, openssl::md5))
+  expect_identical(
+    data_key_fingerprint(k, numeric_version("1.1.0")),
+    openssl::fingerprint(k, openssl::sha256))
 })

@@ -1,3 +1,7 @@
+## cyphr 1.0.6
+
+* Added wrappers for `readxl::read_excel` and `writexl::write_excel`
+
 ## cyphr 1.0.1
 
 * First CRAN release

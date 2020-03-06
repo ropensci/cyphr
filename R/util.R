@@ -144,3 +144,11 @@ read_line <- function(prompt) {
 `%||%` <- function(a, b) {
   if (is.null(a)) b else a
 }
+
+cyphr_file <- function(...) {
+  system.file(..., package = "cyphr", mustWork = TRUE)
+}
+
+file_copy <- function(...) {
+  stopifnot(file.copy(...))
+}

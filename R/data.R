@@ -520,16 +520,37 @@ data_path_version <- function(path_data) {
 data_version_write <- function(path_data) {
   dest <- data_path_version(path_data)
   dir.create(dirname(dest), FALSE, TRUE)
-  writeLines(data_schema_version, data_path_version(path_data))
+  writeLines(as.character(data_schema_version()),
+             data_path_version(path_data))
 }
 
 data_version_read <- function(path_data) {
-  p <- data_path_version(path_data)
-  if (file.exists(p)) {
-    numeric_version(readLines(p))
-  } else {
-    numeric_version("1.0.0")
+  if (!exists(path_data, data_cache$versions)) {
+    p <- data_path_version(path_data)
+    if (file.exists(p)) {
+      v <- numeric_version(readLines(p))
+    } else {
+      v <- numeric_version("1.0.0")
+    }
+    cur <- data_schema_version()
+    if (v < cur) {
+      msg <- c(
+        sprintf(
+          "Your cyphr schema version is out of date (found %s, current is %s)",
+          v, cur),
+        "For more information, please see",
+        "https://github.com/ropensci/cyphr/issues/35")
+      warning(paste(msg, collapse = "\n"), immediate. = TRUE, call. = FALSE)
+    }
+    if (v > cur) {
+      msg <- sprintf(
+        "Upgrade to cyphr version %s (or newer) to use use this directory",
+        v)
+      stop(msg, call. = FALSE)
+    }
+    data_cache$versions[[path_data]] <- v
   }
+  data_cache$versions[[path_data]]
 }
 
 data_check_path_data <- function(path_data, fail = TRUE, search = FALSE) {
@@ -578,4 +599,15 @@ data_key_fingerprint <- function(k, version) {
   openssl::fingerprint(k, hashfun)
 }
 
-data_schema_version <- "1.1.0"
+
+data_cache <- new.env(parent = emptyenv())
+data_pkg_init <- function() {
+  rm(list = ls(data_cache, all.names = TRUE), envir = data_cache)
+  data_cache$schema_version <- numeric_version("1.1.0")
+  data_cache$versions <- list()
+}
+
+
+data_schema_version <- function() {
+  data_cache$schema_version
+}

@@ -67,7 +67,7 @@ test_that("grant access", {
   expect_identical(h2, h)
 
   pair2 <- data_load_keypair_user("pair2")
-  expect_identical(h, data_key_fingerprint(pair2$pub, data_schema_version))
+  expect_identical(h, data_key_fingerprint(pair2$pub, data_schema_version()))
 
   ## This is the request:
   path_req <- file.path(data_path_request(path), bin2str(h, ""))
@@ -283,4 +283,31 @@ test_that("fingerprint versioning", {
   expect_identical(
     data_key_fingerprint(k, numeric_version("1.1.0")),
     openssl::fingerprint(k, openssl::sha256))
+})
+
+
+test_that("schema validation - old version produces warning the first time", {
+  path <- unzip_reference("reference/1.0.0.zip")
+  path_data <- file.path(path, "data")
+  path_openssl_alice <- file.path(path, "openssl", "alice")
+
+  expect_warning(
+    data_version_read(path_data),
+    "Your cyphr schema version is out of date (found 1.0.0, current is 1.1.0)",
+    fixed = TRUE)
+  expect_silent(
+    data_version_read(path_data))
+})
+
+
+test_that("schema validation - new version errors", {
+  path <- tempfile()
+  dir.create(path, FALSE)
+  res <- data_admin_init(path, "pair1")
+  writeLines("9.9.9", data_path_version(path))
+  data_pkg_init() # clear cache
+  expect_error(
+    data_version_read(path),
+    "Upgrade to cyphr version 9.9.9 (or newer)",
+    fixed = TRUE)
 })

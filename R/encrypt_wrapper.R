@@ -318,4 +318,9 @@ rewrite_reset <- function() {
   rewrite_register("utils", "write.csv2",  "file", c("utils", "write.table"))
   rewrite_register("utils", "read.delim",  "file")
   rewrite_register("utils", "read.delim2", "file")
+  ## Other useful things
+  rewrite_register("readxl",  "read_excel", "path")
+  rewrite_register("readxl",  "read_xlsx",  "path")
+  rewrite_register("readxl",  "read_xls",   "path")
+  rewrite_register("writexl", "write_xlsx", "path")
 }

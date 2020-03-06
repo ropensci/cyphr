@@ -613,3 +613,54 @@ data_pkg_init <- function() {
 data_schema_version <- function() {
   data_cache$schema_version
 }
+
+
+data_schema_migrate <- function(path_data) {
+  path_data <- data_check_path_data(path_data, search = TRUE)
+  version <- data_version_read(path_data)
+  cur <- data_schema_version()
+  if (cur == version) {
+    message("Everything up to date!")
+    return(invisible())
+  }
+
+  ## If we change the format again, we'll need to deal with this, but
+  ## hopefully we won't!
+  stopifnot(cur == numeric_version("1.1.0"),
+            version == numeric_version("1.0.0"))
+
+  path_keys <- data_path_user_key(path_data, NULL, cur)
+  dir.create(path_keys, FALSE, TRUE)
+
+  path_cyphr <- data_path_cyphr(path_data)
+
+  keys <- dir(path_cyphr, "^[[:xdigit:]]{32}$")
+
+  keys <- data_admin_list_keys(path_data)
+  requests <- data_admin_list_requests(path_data)
+
+  dir.create(data_path_user_key(path_data, NULL, cur), FALSE, TRUE)
+
+  for (k in keys) {
+    hash_old <- data_key_fingerprint(k$pub, version)
+    hash_new <- data_key_fingerprint(k$pub, cur)
+    message(sprintf("Migrating key %s/%s (%s)",
+                    k$user, k$host, bin2str(hash_old, "")))
+    file.rename(data_path_user_key(path_data, hash_old, version),
+                data_path_user_key(path_data, hash_new, cur))
+  }
+
+  path_req <- data_path_request(path_data)
+  for (k in requests) {
+    hash_old <- data_key_fingerprint(k$pub, version)
+    hash_new <- data_key_fingerprint(k$pub, cur)
+    message(sprintf("Migrating request %s/%s (%s)",
+                    k$user, k$host, bin2str(hash_old, "")))
+    file.rename(file.path(path_req, hash_old),
+                file.path(path_req, hash_new))
+  }
+
+  data_cache$versions[[path_data]] <- NULL
+  data_version_write(path_data)
+  invisible()
+}

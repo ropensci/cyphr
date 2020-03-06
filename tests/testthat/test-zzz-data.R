@@ -303,6 +303,43 @@ test_that("schema validation - old version produces warning the first time", {
     fixed = TRUE)
   expect_silent(
     data_version_read(path_data))
+
+  data_schema_migrate(path_data)
+})
+
+
+test_that("migrate", {
+  path <- unzip_reference("reference/1.0.0.zip")
+  path_data <- file.path(path, "data")
+  path_openssl_alice <- file.path(path, "openssl", "alice")
+  path_openssl_bob <- file.path(path, "openssl", "bob")
+  suppressWarnings(data_version_read(path_data))
+
+  data_request_access(path_data, "pair3")
+
+  ## keys_old <- data_admin_list_keys(path_data)
+  ## reqs_old <- data_admin_list_requests(path_data)
+
+  res <- testthat::evaluate_promise(data_schema_migrate(path_data))
+  expect_match(res$messages, "Migrating key", all = FALSE)
+  expect_match(res$messages, "Migrating request", all = FALSE)
+
+  ## keys_new <- data_admin_list_keys(path_data)
+  ## reqs_new <- data_admin_list_requests(path_data)
+
+  ## expect_equal(unname(keys_new), unname(keys_old))
+  key1 <- data_key(path_data, path_openssl_alice)
+  key2 <- data_key(path_data, path_openssl_bob)
+  expect_identical(key1$key(), key2$key())
+
+  data_admin_list_requests(path_data)
+  data_admin_authorise(path_data, path_user = path_openssl_alice, yes = TRUE)
+  key3 <- data_key(path_data, "pair3")
+
+  expect_identical(key1$key(), key3$key())
+
+  res <- testthat::evaluate_promise(data_schema_migrate(path_data))
+  expect_match(res$messages, "Everything up to date!")
 })
 
 

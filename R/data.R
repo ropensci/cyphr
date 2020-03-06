@@ -416,7 +416,7 @@ data_load_sym <- function(path_data, path_user, quiet) {
 }
 
 data_access_error <- function(path_data, path_data_key) {
-  cmd <- call("data_request_access", path_data)
+  cmd <- call("data_request_access", as.character(path_data))
   cmd <- paste(deparse(cmd, getOption("width", 60L)), collapse = "\n")
   msg <- paste(c("Key file not found; you may not have access",
                  sprintf("(looked in %s)", path_data_key),

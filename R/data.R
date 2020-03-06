@@ -538,8 +538,9 @@ data_version_read <- function(path_data) {
         sprintf(
           "Your cyphr schema version is out of date (found %s, current is %s)",
           v, cur),
-        "For more information, please see",
-        "https://github.com/ropensci/cyphr/issues/35")
+        sprintf(
+          'Please run cyphr:::data_schema_migrate("%s")',
+          path_data))
       warning(paste(msg, collapse = "\n"), immediate. = TRUE, call. = FALSE)
     }
     if (v > cur) {

@@ -123,6 +123,12 @@ test_that("not set up", {
   path <- tempfile()
   dir.create(path, FALSE, TRUE)
   expect_error(data_key(path, "pair2"), "cyphr not set up for")
+  expect_error(
+    with_dir(path, data_key(NULL, "pair2")),
+    "cyphr not set up for")
+  expect_error(
+    with_dir(path, data_key(path_user = "pair2")),
+    "cyphr not set up for")
   res <- data_admin_init(path, "pair1")
   expect_error(data_key(path, "pair2"),
                "Key file not found; you may not have access")

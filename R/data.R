@@ -485,7 +485,9 @@ data_path_request <- function(path_data) {
 data_check_path_data <- function(path_data, fail = TRUE, search = FALSE) {
   if (search && !inherits(path_data, "AsIs")) {
     path_data <-
-      find_file_descend(".cyphr", path_data %||% getwd()) %||% path_data
+      find_file_descend(".cyphr", path_data %||% getwd()) %||%
+      path_data %||%
+      getwd()
   }
   success <- file.exists(data_path_test(path_data))
   if (!success && fail) {

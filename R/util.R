@@ -111,11 +111,6 @@ find_file_descend <- function(target, start = ".", limit = "/") {
   ret
 }
 
-using_git <- function(path) {
-  tryCatch(!is.null(find_file_descend(".git", path)),
-           error = function(e) FALSE)
-}
-
 ## Replace with ask once it's on CRAN?
 prompt_confirm <- function(msg = "continue?", valid = c(n = FALSE, y = TRUE),
                            default = names(valid)[[1]]) {

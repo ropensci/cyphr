@@ -9,3 +9,5 @@ This directory is used by `cyphr` and contains:
 ### Templates
 
 You can create files `template_request` and `template_authorise` within this directory and they will be used to provide feedback when requesting access and authorising keys.  Because this step requires some out-of-band communication this can be useful.
+
+Within the `template_request` template the string `$HASH` will be substituted for your key's hash, and within `template_authorise` the string `$USERS` will contain the usernames of added users.

@@ -30,7 +30,7 @@ test_that("command rewriting", {
                "Cannot infer file argument")
   expect_error(rewrite(quote(unknown("myfile"))))
   expect_error(rewrite(quote(plot("myfile"))),
-               "Rewrite rule for .*::plot not found", fixed = TRUE)
+               "Rewrite rule for .*::plot not found")
 })
 
 test_that("filename default argument", {

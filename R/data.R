@@ -104,6 +104,9 @@ data_admin_init <- function(path_data, path_user = NULL, quiet = FALSE) {
     data_version_write(path_data)
     version <- data_version_read(path_data)
 
+    dir.create(data_path_request(path_data), FALSE, TRUE)
+    dir.create(data_path_user_key(path_data, NULL, version), FALSE, TRUE)
+
     ## Now, the idea is to create a key for the data set:
     sym <- key_sodium(sodium::keygen())
 
@@ -385,7 +388,7 @@ data_pubs_load <- function(path_data, requests) {
   } else {
     path <- data_path_user_key(path_data, NULL, version)
   }
-  hash <- dir(path, pattern = "^[[:xdigit:]]{32}$")
+  hash <- dir(path, pattern = "^[[:xdigit:]]{32,}$")
   dat <- lapply(hash, data_pub_load, path, version)
   names(dat) <- hash
   class(dat) <- "data_keys"
@@ -500,6 +503,9 @@ data_path_request <- function(path_data) {
 
 data_path_user_key <- function(path_data, hash, version) {
   path <- data_path_cyphr(path_data)
+  if (version >= numeric_version("1.1.0")) {
+    path <- file.path(path, "keys")
+  }
   if (is.null(hash)) {
     path
   } else {
@@ -574,4 +580,4 @@ data_key_fingerprint <- function(k, version) {
   openssl::fingerprint(k, hashfun)
 }
 
-data_schema_version <- "1.0.0"
+data_schema_version <- "1.1.0"

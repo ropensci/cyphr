@@ -303,8 +303,6 @@ test_that("schema validation - old version produces warning the first time", {
     fixed = TRUE)
   expect_silent(
     data_version_read(path_data))
-
-  data_schema_migrate(path_data)
 })
 
 

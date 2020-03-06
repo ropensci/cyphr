@@ -67,7 +67,7 @@ test_that("grant access", {
   expect_identical(h2, h)
 
   pair2 <- data_load_keypair_user("pair2")
-  expect_identical(h, openssl_fingerprint(pair2$pub))
+  expect_identical(h, openssl_fingerprint(pair2$pub, data_schema_version))
 
   ## This is the request:
   path_req <- file.path(data_path_request(path), bin2str(h, ""))

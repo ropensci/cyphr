@@ -77,9 +77,6 @@ test_that("grant access", {
   expect_identical(dat_req$host, Sys.info()[["nodename"]])
   expect_identical(dat_req$user, Sys.info()[["user"]])
   expect_is(dat_req$date, "POSIXt")
-  expect_true(openssl::signature_verify(data_key_prep(dat_req),
-                                        dat_req$signature,
-                                        pubkey = dat_req$pub))
 
   ## Try loading requests:
   keys <- data_load_request(path, NULL, quiet)

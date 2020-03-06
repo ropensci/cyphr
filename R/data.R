@@ -132,7 +132,7 @@ data_admin_init <- function(path_data, path_user = NULL, quiet = FALSE) {
     dat <- data_pub_load(hash, data_path_request(path_data))
     data_authorise_write(path_data, sym, dat, TRUE, quiet)
 
-    dir.create(data_path_template(path_data))
+    dir.create(data_path_template(path_data), FALSE, TRUE)
     file_copy(cyphr_file("template/README.md"),
               file.path(data_path_cyphr(path_data), "README.md"))
     file_copy(cyphr_file("template/template_request"),

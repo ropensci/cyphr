@@ -317,17 +317,25 @@ test_that("migrate", {
 
   data_request_access(path_data, "pair3")
 
-  ## keys_old <- data_admin_list_keys(path_data)
-  ## reqs_old <- data_admin_list_requests(path_data)
+  keys_old <- data_admin_list_keys(path_data)
+  reqs_old <- data_admin_list_requests(path_data)
 
   res <- testthat::evaluate_promise(data_schema_migrate(path_data))
   expect_match(res$messages, "Migrating key", all = FALSE)
   expect_match(res$messages, "Migrating request", all = FALSE)
 
-  ## keys_new <- data_admin_list_keys(path_data)
-  ## reqs_new <- data_admin_list_requests(path_data)
+  keys_new <- data_admin_list_keys(path_data)
+  reqs_new <- data_admin_list_requests(path_data)
 
-  ## expect_equal(unname(keys_new), unname(keys_old))
+  map <- vapply(keys_old, function(k)
+    bin2str(data_key_fingerprint(k$pub, data_schema_version()), ""), "")
+
+  expect_setequal(names(keys_new), unname(map))
+  v <- c("user", "host", "date", "pub", "key")
+  for (i in seq_along(map)) {
+    expect_equal(keys_old[[i]][v], keys_new[[map[[i]]]][v])
+  }
+
   key1 <- data_key(path_data, path_openssl_alice)
   key2 <- data_key(path_data, path_openssl_bob)
   expect_identical(key1$key(), key2$key())

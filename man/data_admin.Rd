@@ -9,16 +9,23 @@
 \usage{
 data_admin_init(path_data, path_user = NULL, quiet = FALSE)
 
-data_admin_authorise(path_data, hash = NULL, path_user = NULL,
-  yes = FALSE, quiet = FALSE)
+data_admin_authorise(
+  path_data = NULL,
+  hash = NULL,
+  path_user = NULL,
+  yes = FALSE,
+  quiet = FALSE
+)
 
-data_admin_list_requests(path_data)
+data_admin_list_requests(path_data = NULL)
 
-data_admin_list_keys(path_data)
+data_admin_list_keys(path_data = NULL)
 }
 \arguments{
 \item{path_data}{Path to the data set.  We will store a bunch of
-things in a hidden directory within this path.}
+things in a hidden directory within this path.  By default in
+most functions we will search down the tree until we find the
+.cyphr directory}
 
 \item{path_user}{Path to the directory with your ssh key.
 Usually this can be omitted.}

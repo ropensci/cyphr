@@ -41,7 +41,9 @@
 ##' @title Encrypted data administration
 ##'
 ##' @param path_data Path to the data set.  We will store a bunch of
-##'   things in a hidden directory within this path.
+##'   things in a hidden directory within this path.  By default in
+##'   most functions we will search down the tree until we find the
+##'   .cyphr directory
 ##'
 ##' @param path_user Path to the directory with your ssh key.
 ##'   Usually this can be omitted.
@@ -86,14 +88,17 @@
 ##' unlink(path_ssh_key, recursive = TRUE)
 ##' unlink(path_data, recursive = TRUE)
 data_admin_init <- function(path_data, path_user = NULL, quiet = FALSE) {
-  pair <- data_load_keypair_user(path_user)
-
   if (!is_directory(path_data)) {
     stop("'path_data' must exist and be a directory")
   }
-  path_cyphr <- data_path_cyphr(path_data)
-  if (!data_check_path_data(path_data, fail = FALSE)) {
+
+  pair <- data_load_keypair_user(path_user)
+  found <- data_check_path_data(path_data, search = TRUE, fail = FALSE)
+
+  if (is.null(found)) {
     workflow_log(quiet, "Generating data key")
+    path_data <- I(path_data) # prevent recursion
+    path_cyphr <- data_path_cyphr(path_data)
     dir.create(path_cyphr, FALSE, TRUE)
 
     ## Now, the idea is to create a key for the data set:
@@ -127,7 +132,8 @@ data_admin_init <- function(path_data, path_user = NULL, quiet = FALSE) {
     dat <- data_pub_load(hash, data_path_request(path_data))
     data_authorise_write(path_data, sym, dat, TRUE, quiet)
   } else {
-    workflow_log(quiet, "Already set up")
+    path_data <- found
+    workflow_log(quiet, "Already set up at ", path_data)
   }
 
   workflow_log(quiet, "Verifying")
@@ -145,9 +151,10 @@ data_admin_init <- function(path_data, path_user = NULL, quiet = FALSE) {
 ##'
 ##' @param yes Skip the confirmation prompt?  If any request is
 ##'   declined then the function will throw an error on exit.
-data_admin_authorise <- function(path_data, hash = NULL, path_user = NULL,
-                                 yes = FALSE, quiet = FALSE) {
-  data_check_path_data(path_data)
+data_admin_authorise <- function(path_data = NULL, hash = NULL,
+                                 path_user = NULL, yes = FALSE,
+                                 quiet = FALSE) {
+  path_data <- data_check_path_data(path_data, search = TRUE)
   keys <- data_load_request(path_data, hash, quiet)
   if (length(keys) == 0L) {
     workflow_log(quiet, "No keys to add")
@@ -191,22 +198,24 @@ data_admin_authorise <- function(path_data, hash = NULL, path_user = NULL,
 
 ##' @export
 ##' @rdname data_admin
-data_admin_list_requests <- function(path_data) {
-  data_check_path_data(path_data)
+data_admin_list_requests <- function(path_data = NULL) {
+  path_data <- data_check_path_data(path_data, search = TRUE)
   data_pubs_load(data_path_request(path_data))
 }
 
 ##' @export
 ##' @rdname data_admin
-data_admin_list_keys <- function(path_data) {
-  data_check_path_data(path_data)
+data_admin_list_keys <- function(path_data = NULL) {
+  path_data <- data_check_path_data(path_data, search = TRUE)
   data_pubs_load(data_path_cyphr(path_data))
 }
 
 ##' User commands
 ##' @title User commands
 ##'
-##' @param path_data Path to the data
+##' @param path_data Path to the data.  If not given, then we look
+##'   recursively down below the working directory for a ".cyphr"
+##'   directory, and use that as the data directory.
 ##'
 ##' @param path_user Path to the directory with your user key.
 ##'   Usually this can be omitted.  Use the \code{cyphr.user.path}
@@ -249,9 +258,10 @@ data_admin_list_keys <- function(path_data) {
 ##' unlink(path_alice, recursive = TRUE)
 ##' unlink(path_bob, recursive = TRUE)
 ##' unlink(path_data, recursive = TRUE)
-data_request_access <- function(path_data, path_user = NULL, quiet = FALSE) {
+data_request_access <- function(path_data = NULL, path_user = NULL,
+                                quiet = FALSE) {
+  path_data <- data_check_path_data(path_data, search = TRUE)
   pair <- data_load_keypair_user(path_user)
-  data_check_path_data(path_data)
 
   info <- Sys.info()
   dat <- list(user = info[["user"]],
@@ -298,8 +308,9 @@ data_request_access <- function(path_data, path_user = NULL, quiet = FALSE) {
 ##' @export
 ##' @param test Test that the encryption is working?  (Recommended)
 ##' @rdname data_user
-data_key <- function(path_data, path_user = NULL, test = TRUE,
+data_key <- function(path_data = NULL, path_user = NULL, test = TRUE,
                      quiet = FALSE) {
+  path_data <- data_check_path_data(path_data, search = TRUE)
   x <- data_load_sym(path_data, path_user, quiet)
   if (test) {
     data_test(x, path_data)
@@ -395,7 +406,7 @@ print.data_keys <- function(x, ...) {
 }
 
 data_load_sym <- function(path_data, path_user, quiet) {
-  data_check_path_data(path_data)
+  path_data <- data_check_path_data(path_data)
   path_cyphr <- data_path_cyphr(path_data)
   pair <- data_load_keypair_user(path_user)
   hash_str <- bin2str(openssl_fingerprint(pair$pub), "")
@@ -470,18 +481,22 @@ data_path_request <- function(path_data) {
   file.path(data_path_cyphr(path_data), "requests")
 }
 
-data_check_path_data <- function(path_data, fail = TRUE) {
-  ok <- file.exists(data_path_test(path_data))
-  if (fail && !ok) {
+data_check_path_data <- function(path_data, fail = TRUE, search = FALSE) {
+  if (search && !inherits(path_data, "AsIs")) {
+    path_data <-
+      find_file_descend(".cyphr", path_data %||% getwd()) %||% path_data
+  }
+  success <- file.exists(data_path_test(path_data))
+  if (!success && fail) {
     stop("cyphr not set up for ", path_data)
   }
-  invisible(ok)
+  if (success) I(path_data) else NULL
 }
 
 data_load_request <- function(path_data, hash = NULL, quiet = FALSE) {
   path_req <- data_path_request(path_data)
   if (is.null(hash)) {
-    keys <- data_admin_list_requests(path_data)
+    keys <- data_admin_list_requests(I(path_data))
     nk <- length(keys)
     workflow_log(
       quiet,

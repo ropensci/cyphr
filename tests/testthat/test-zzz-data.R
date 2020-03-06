@@ -214,3 +214,36 @@ test_that("gracefully fail to initialise", {
   expect_equal(dir(data_path_cyphr(path), all.files = TRUE, no.. = TRUE),
                character(0))
 })
+
+
+## This set of tests verifies that if we call the data functions
+## (except for init) we can use a subdirectory of the cyphr
+## directories without a problem.
+test_that("Work from a subdirectory", {
+  path <- tempfile()
+  dir.create(path, FALSE, TRUE)
+  res <- data_admin_init(path, "pair1", TRUE)
+  sub <- file.path(path, "a/b/c")
+  dir.create(sub, FALSE, TRUE)
+  ## Need full paths to keys as they will be in a surprising location
+  ## otherwise.
+  pair1 <- normalizePath("pair1")
+  pair2 <- normalizePath("pair2")
+
+  h <- with_dir(sub,
+                data_request_access(path_user = pair2))
+
+  res <- with_dir(sub, data_admin_list_requests())
+  expect_equal(length(res), 1L)
+  expect_equal(names(res), unclass(as.character(h)))
+
+  with_dir(sub,
+           data_admin_authorise(path_user = pair1, yes = TRUE))
+
+  res <- with_dir(sub, data_admin_list_keys())
+  expect_equal(length(res), 2L)
+
+  k1 <- with_dir(sub, data_key(path_user = pair1))
+  k2 <- with_dir(sub, data_key(path_user = pair2))
+  expect_identical(k1$key(), k2$key())
+})

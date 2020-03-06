@@ -43,3 +43,9 @@ unzip_reference <- function(zip) {
   stopifnot(length(files) == 1)
   file.path(tmp, files)
 }
+
+with_dir <- function(path, code) {
+  owd <- setwd(path)
+  on.exit(setwd(owd))
+  force(code)
+}

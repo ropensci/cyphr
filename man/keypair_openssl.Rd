@@ -4,8 +4,13 @@
 \alias{keypair_openssl}
 \title{Asymmetric encryption with openssl}
 \usage{
-keypair_openssl(pub, key, envelope = TRUE, password = NULL,
-  authenticated = TRUE)
+keypair_openssl(
+  pub,
+  key,
+  envelope = TRUE,
+  password = NULL,
+  authenticated = TRUE
+)
 }
 \arguments{
 \item{pub}{An openssl public key.  Usually this will be the path

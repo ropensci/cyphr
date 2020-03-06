@@ -275,7 +275,7 @@ data_request_access <- function(path_data = NULL, path_user = NULL,
               host = info[["nodename"]],
               date = Sys.time(),
               pub = pair$pub)
-  hash <- openssl_fingerprint(pair$pub, version)
+  hash <- data_key_fingerprint(pair$pub, version)
 
   if (file.exists(data_path_user_key(path_data, hash, version))) {
     message("You appear to already have access")
@@ -344,7 +344,7 @@ data_authorise_write <- function(path_data, sym, dat, yes = FALSE,
   ## it will work poorly in the case where signed encryption is used).
   dat$key <- openssl::rsa_encrypt(sym$key(), dat$pub)
 
-  hash <- openssl_fingerprint(dat$pub, version)
+  hash <- data_key_fingerprint(dat$pub, version)
   dest <- data_path_user_key(path_data, hash, version)
   data_key_save(dat, dest)
   file.remove(dat$filename)
@@ -366,7 +366,7 @@ data_pub_load <- function(hash, path, version) {
          call. = FALSE)
   }
   dat <- readRDS(filename)
-  expected <- openssl_fingerprint(dat$pub, version)
+  expected <- data_key_fingerprint(dat$pub, version)
 
   if (!identical(as.raw(expected), as.raw(hash))) {
     stop("Public key hash disagrees for: ", hash_str)
@@ -394,7 +394,7 @@ data_pubs_load <- function(path_data, requests) {
 }
 
 data_key_str <- function(x, version, indent = "") {
-  hash <- bin2str(openssl_fingerprint(x$pub, version), ":")
+  hash <- bin2str(data_key_fingerprint(x$pub, version), ":")
   x$date <- as.character(x$date)
   x <- unlist(x[c("user", "host", "date")])
   sprintf("%s%s\n%s", indent, hash,
@@ -421,7 +421,7 @@ data_load_sym <- function(path_data, path_user, quiet) {
   pair <- data_load_keypair_user(path_user)
   version <- data_version_read(path_data)
 
-  hash <- openssl_fingerprint(pair$pub, version)
+  hash <- data_key_fingerprint(pair$pub, version)
   path_data_key <- data_path_user_key(path_data, hash, version)
   if (!file.exists(path_data_key)) {
     data_access_error(path_data, path_data_key)
@@ -557,11 +557,21 @@ data_load_request <- function(path_data, hash = NULL, quiet = FALSE) {
       stop("Invalid type for 'hash'")
     }
     names(keys) <- vapply(keys, function(x)
-      bin2str(openssl_fingerprint(x$pub, version), ""), character(1))
+      bin2str(data_key_fingerprint(x$pub, version), ""), character(1))
     class(keys) <- "data_keys"
     attr(keys, "version") <- version
   }
   keys
+}
+
+
+data_key_fingerprint <- function(k, version) {
+  if (version >= numeric_version("1.1.0")) {
+    hashfun <- openssl::sha256
+  } else {
+    hashfun <- openssl::md5
+  }
+  openssl::fingerprint(k, hashfun)
 }
 
 data_schema_version <- "1.0.0"

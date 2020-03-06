@@ -500,7 +500,7 @@ data_load_request <- function(path_data, hash = NULL, quiet = FALSE) {
     keys <- data_admin_list_requests(I(path_data))
     n <- length(keys)
     what <- ngettext(n, "request", "requests")
-    workflow_log(quiet, sprintf("There is %d %s request for access", n, what))
+    workflow_log(quiet, sprintf("There is %d %s for access", n, what))
   } else {
     if (is.character(hash)) {
       keys <- lapply(hash, data_pub_load, path_req)

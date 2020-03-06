@@ -525,6 +525,7 @@ data_version_write <- function(path_data) {
 }
 
 data_version_read <- function(path_data) {
+  path_data <- normalizePath(path_data, mustWork = TRUE)
   if (!exists(path_data, data_cache$versions)) {
     p <- data_path_version(path_data)
     if (file.exists(p)) {

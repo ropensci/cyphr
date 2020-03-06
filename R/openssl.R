@@ -172,7 +172,7 @@ openssl_find_key <- function(path) {
     ## NOTE: same logic as the openssl package
     path <- Sys.getenv("USER_KEY", "~/.ssh/id_rsa")
     if (!file.exists(path)) {
-      stop("Did not find default ssh private key at ", path)
+      openssl_key_error(path, "private")
     }
   }
   if (!file.exists(path)) {
@@ -195,7 +195,7 @@ openssl_find_pubkey <- function(path) {
     ## private key which would trigger a password request).
     path <- Sys.getenv("USER_PUBKEY", "~/.ssh/id_rsa.pub")
     if (!file.exists(path)) {
-      stop("Did not find default ssh public key at ", path)
+      openssl_key_error(path, "public")
     }
   }
   if (!file.exists(path)) {
@@ -208,6 +208,13 @@ openssl_find_pubkey <- function(path) {
     }
   }
   path
+}
+
+openssl_key_error <- function(path, type) {
+  msg <- c(sprintf("Did not find default ssh %s key at '%s'", type, path),
+           "You can create a key here by running",
+           sprintf('  cyphr::ssh_keygen("%s")', path))
+  stop(paste(msg, collapse = "\n"), call. = FALSE)
 }
 
 ## -- utilities --

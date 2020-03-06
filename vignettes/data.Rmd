@@ -266,13 +266,13 @@ The data directory has a hidden directory `.cyphr` in it.
 dir(data_dir, all.files = TRUE, no.. = TRUE)
 ```
 
-This does not actually need to be stored with the data but it
-makes sense to (there are workflows where data is stored remotely
-where storing this directory might make sense).  This directory
+This does not actually need to be stored with the data but it makes
+sense to (there are workflows where data is stored remotely where
+storing this directory might make sense).  The "keys" directory
 contains a number of files; one for each person who has access to
 the data.
 ``` {r }
-dir(file.path(data_dir, ".cyphr"))
+dir(file.path(data_dir, ".cyphr", "keys"))
 names(cyphr::data_admin_list_keys(data_dir))
 ```
 
@@ -285,16 +285,13 @@ Each file is stored in RDS format and is a list with elements:
 * host: the reported computer name
 * date: the time the request was generated
 * pub: the RSA public key of the user
-* signature: the signature of the contents of "user", "host",
-  "date", "pub".  This ensures that the data have not been changed
-  since they were created.
 * key: the data key, encrypted with the user key.  Without the
   private key, this cannot be used.  With the user's private key
   this can be used to generate the symmetric key to the data.
 
 ``` {r }
 h <- names(cyphr::data_admin_list_keys(data_dir))[[1]]
-readRDS(file.path(data_dir, ".cyphr", h))
+readRDS(file.path(data_dir, ".cyphr", "keys", h))
 ```
 
 You can see that the hash of the public key is the same as name of

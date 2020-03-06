@@ -281,6 +281,11 @@ openssl_unpack_symmetric <- function(iv_len) {
   }
 }
 
-openssl_fingerprint <- function(k) {
-  as.list(k)$fingerprint
+openssl_fingerprint <- function(k, version) {
+  if (version >= numeric_version("1.1.0")) {
+    hashfun <- openssl::sha256
+  } else {
+    hashfun <- openssl::md5
+  }
+  openssl::fingerprint(k, hashfun)
 }

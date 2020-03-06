@@ -1,6 +1,6 @@
 ## cyphr 1.0.6
 
-* Added wrappers for `readxl::read_excel` and `writexl::write_excel`
+* Added wrappers for `readxl::read_excel` and `writexl::write_xlsx`
 
 ## cyphr 1.0.1
 

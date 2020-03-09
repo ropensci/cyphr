@@ -227,9 +227,16 @@ data_admin_list_keys <- function(path_data = NULL) {
 ##'   directory, and use that as the data directory.
 ##'
 ##' @param path_user Path to the directory with your user key.
-##'   Usually this can be omitted.  Use the \code{cyphr.user.path}
-##'   global option (i.e., via \code{options()}) to set this more
-##'   conveniently.
+##'   Usually this can be omitted.  This argument is passed in as both
+##'   \code{pub} and \code{key} to \code{\link{keypair_openssl}}.
+##'   Briefly, if this argument is not given we look at the
+##'   environment variables \code{USER_PUBKEY} and \code{USER_KEY} -
+##'   if set then these must refer to path of your public and private
+##'   keys.  If these environment variables are not set then we fall
+##'   back on \\code{~/.ssh/id_rsa.pub} and \code{~/.ssh/id_rsa},
+##'   which should work in most environments.  Alternatively, provide
+##'   a path to a directory where the filew \code{oid_rsa.pub} and
+##'   \code{id_rsa} can be found.
 ##'
 ##' @param quiet Suppress printing of informative messages.
 ##'

@@ -155,7 +155,7 @@ Then to decrypt the a file to feed into a file consuming command, wrap it in `cy
 dat <- cyphr::decrypt(readRDS("myfile.rds"), key)
 ```
 
-The roundtrip preserves the data:
+The round-trip preserves the data:
 
 ```r
 identical(dat, iris) # yay

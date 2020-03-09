@@ -192,7 +192,7 @@ unlink(data_dir, recursive = TRUE)
 dir.create(data_dir)
 ```
 
-Setup, on alice's computer computer:
+Setup, on Alice's computer:
 ``` {r }
 cyphr::data_admin_init(data_dir, path_user = path_key_alice)
 ```
@@ -207,7 +207,7 @@ Encrypt a file:
 cyphr::encrypt(saveRDS(iris, filename), key)
 ```
 
-Request access, on Bob's computer computer:
+Request access, on Bob's computer:
 ``` {r }
 hash <- cyphr::data_request_access(data_dir, path_user = path_key_bob)
 ```

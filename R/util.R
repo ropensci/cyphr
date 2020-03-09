@@ -15,7 +15,7 @@ is_directory <- function(x) {
   file.exists(x) && file.info(x, extra_cols = FALSE)[["isdir"]]
 }
 
-Sys_which <- function(name) {
+sys_which <- function(name) {
   path <- Sys.which(name)
   if (path == "") {
     stop(sprintf("Can not find '%s'", name))
@@ -66,7 +66,6 @@ tempfile_keep_ext <- function(filename, local = FALSE) {
     tempfile()
   } else {
     dir <- if (local) dirname(filename) else tempdir()
-    re <- ".*(\\.[^.]+)$"
     r <- regexpr("\\.([[:alnum:]]+)$", filename)
     base <- basename(filename)
     if (r > 0) {
@@ -136,7 +135,7 @@ read_line <- function(prompt) {
   readline(prompt = prompt) # nocov
 }
 
-`%||%` <- function(a, b) {
+`%||%` <- function(a, b) { # nolint
   if (is.null(a)) b else a
 }
 

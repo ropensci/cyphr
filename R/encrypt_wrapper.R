@@ -83,12 +83,6 @@ decrypt_ <- function(expr, key, file_arg = NULL, envir = parent.frame()) {
   eval(dat$expr, envir)
 }
 
-## This is a *giant* hack, and significantly more tricky to get right
-## than I would have thought it should be.  The aim is to take an
-## expression like:
-##
-##   read.csv("myfile", stringsAsFactors = FALSE)
-##   saveRDS(data, file = "myfile")
 rewrite <- function(expr, file_arg = NULL, envir = parent.frame(),
                     filename = NULL) {
   if (!is.call(expr)) {
@@ -196,12 +190,12 @@ find_function <- function(name, envir) {
 ## What seems to be required is that we know *where* to find a
 ## function.  So we'll get a definition which is the function as
 ## passed in.  The expression might be:
-##   base::readRDS
+##   > base::readRDS
 ## in which case we'll know that the namespace is base, or it'd be
-##   readRDS
+##   > readRDS
 ## in which case 'get' will hopefully identify the correct namespace
 ## by being the enclosing namespace.  That's prone to abuse with
-##   environment(foo) <- as.environment("package:bar")
+##   > environment(foo) <- as.environment("package:bar")
 ## but should suffice for now.  The solution would be to replace 'get'
 ## with something that manually traverses the environments, which I
 ## implemented in rrqueue.
@@ -210,7 +204,7 @@ find_function <- function(name, envir) {
 ## that are added to this list when the db call is run; those could
 ## come from a registering process easily enough (e.g., during
 ## \code{.onLoad()});
-##   rewrite_register(package, name, arg)
+##   > rewrite_register(package, name, arg)
 
 ## NOTE: graphics devices will take work to get working because it's
 ## at device *close* that the encryption should happen.  This is easy

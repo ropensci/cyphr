@@ -109,7 +109,7 @@ sodium_unpack <- function(x) {
 sodium_load_key <- function(x) {
   if (is.character(x)) {
     x <- read_binary(x)
-  } else if (!is.raw(x)){
+  } else if (!is.raw(x)) {
     stop("Expected a raw vector or a file to read from")
   }
   if (length(x) != 32L) {

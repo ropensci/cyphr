@@ -369,3 +369,16 @@ test_that("new data sources do not need migrating", {
   res <- testthat::evaluate_promise(data_schema_migrate(path))
   expect_match(res$messages, "Everything up to date!")
 })
+
+
+test_that("cache data key", {
+  path <- tempfile()
+  dir.create(path, FALSE)
+  data_admin_init(path, "pair1")
+
+  key1 <- data_key(path, "pair1")
+  key2 <- data_key(path, "pair1")
+  key3 <- data_key(path, "pair1", cache = FALSE)
+  expect_identical(key1, key2)
+  expect_false(identical(key1, key3))
+})

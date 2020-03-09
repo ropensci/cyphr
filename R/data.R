@@ -150,7 +150,7 @@ data_admin_init <- function(path_data, path_user = NULL, quiet = FALSE) {
   }
 
   workflow_log(quiet, "Verifying")
-  x <- data_key(path_data, pair, TRUE)
+  x <- data_key(path_data, pair, test = TRUE, cache = FALSE)
   on.exit() # disable possible file removals.
   invisible(x)
 }
@@ -306,14 +306,28 @@ data_request_access <- function(path_data = NULL, path_user = NULL,
 }
 
 ##' @export
+##'
 ##' @param test Test that the encryption is working?  (Recommended)
+##'
+##' @param cache Cache the key within the session.  This will be
+##'   useful if you are using ssh keys that have passwords, as if the
+##'   key is found within the cache, then you will not have to
+##'   re-enter your password.  Using \code{cache = FALSE} neither
+##'   looks for the key in the cache, nor saves it.
+##'
 ##' @rdname data_user
 data_key <- function(path_data = NULL, path_user = NULL, test = TRUE,
-                     quiet = FALSE) {
+                     quiet = FALSE, cache = TRUE) {
   path_data <- data_check_path_data(path_data, search = TRUE)
+  if (cache && path_data %in% names(data_cache$keys)) {
+    return(data_cache$keys[[path_data]])
+  }
   x <- data_load_sym(path_data, path_user, quiet)
   if (test) {
     data_test(x, path_data)
+  }
+  if (cache) {
+    data_cache$keys[[path_data]] <- x
   }
   x
 }
@@ -609,6 +623,7 @@ data_pkg_init <- function() {
   rm(list = ls(data_cache, all.names = TRUE), envir = data_cache)
   data_cache$schema_version <- numeric_version("1.1.0")
   data_cache$versions <- list()
+  data_cache$keys <- list()
 }
 
 

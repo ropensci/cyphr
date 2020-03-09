@@ -163,7 +163,7 @@ head(cyphr::decrypt(readRDS(filename), key_bob))
 unlink(data_dir, recursive = TRUE)
 dir.create(data_dir)
 
-## Setup, on Alice's computer computer:
+## Setup, on Alice's computer:
 cyphr::data_admin_init(data_dir, path_user = path_key_alice)
 
 ## Get the data key key:
@@ -172,7 +172,7 @@ key <- cyphr::data_key(data_dir, path_user = path_key_alice)
 ## Encrypt a file:
 cyphr::encrypt(saveRDS(iris, filename), key)
 
-## Request access, on Bob's computer computer:
+## Request access, on Bob's computer:
 hash <- cyphr::data_request_access(data_dir, path_user = path_key_bob)
 
 ## Alice authorises this request::

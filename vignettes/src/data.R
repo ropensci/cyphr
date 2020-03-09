@@ -163,7 +163,7 @@ head(cyphr::decrypt(readRDS(filename), key_bob))
 unlink(data_dir, recursive = TRUE)
 dir.create(data_dir)
 
-## Setup, on alice's computer computer:
+## Setup, on Alice's computer computer:
 cyphr::data_admin_init(data_dir, path_user = path_key_alice)
 
 ## Get the data key key:

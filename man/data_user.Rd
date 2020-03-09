@@ -29,7 +29,7 @@ if set then these must refer to path of your public and private
 keys.  If these environment variables are not set then we fall
 back on \\code{~/.ssh/id_rsa.pub} and \code{~/.ssh/id_rsa},
 which should work in most environments.  Alternatively, provide
-a path to a directory where the filew \code{oid_rsa.pub} and
+a path to a directory where the file \code{id_rsa.pub} and
 \code{id_rsa} can be found.}
 
 \item{quiet}{Suppress printing of informative messages.}

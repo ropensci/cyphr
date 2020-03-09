@@ -280,7 +280,3 @@ openssl_unpack_symmetric <- function(iv_len) {
     ret
   }
 }
-
-openssl_fingerprint <- function(k) {
-  as.list(k)$fingerprint
-}

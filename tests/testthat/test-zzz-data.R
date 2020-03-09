@@ -67,7 +67,7 @@ test_that("grant access", {
   expect_identical(h2, h)
 
   pair2 <- data_load_keypair_user("pair2")
-  expect_identical(h, openssl_fingerprint(pair2$pub))
+  expect_identical(h, data_key_fingerprint(pair2$pub, data_schema_version()))
 
   ## This is the request:
   path_req <- file.path(data_path_request(path), bin2str(h, ""))
@@ -278,4 +278,94 @@ test_that("Custom messages", {
     res2$messages,
     "my custom .+ authorise message",
     all = FALSE)
+})
+
+
+test_that("fingerprint versioning", {
+  k <- data_load_keypair_user("pair1")$pub
+  expect_identical(
+    data_key_fingerprint(k, numeric_version("1.0.3")),
+    openssl::fingerprint(k, openssl::md5))
+  expect_identical(
+    data_key_fingerprint(k, numeric_version("1.1.0")),
+    openssl::fingerprint(k, openssl::sha256))
+})
+
+
+test_that("schema validation - old version produces warning the first time", {
+  path <- unzip_reference("reference/1.0.0.zip")
+  path_data <- file.path(path, "data")
+  path_openssl_alice <- file.path(path, "openssl", "alice")
+
+  expect_warning(
+    data_version_read(path_data),
+    "Your cyphr schema version is out of date (found 1.0.0, current is 1.1.0)",
+    fixed = TRUE)
+  expect_silent(
+    data_version_read(path_data))
+})
+
+
+test_that("migrate", {
+  path <- unzip_reference("reference/1.0.0.zip")
+  path_data <- file.path(path, "data")
+  path_openssl_alice <- file.path(path, "openssl", "alice")
+  path_openssl_bob <- file.path(path, "openssl", "bob")
+  suppressWarnings(data_version_read(path_data))
+
+  data_request_access(path_data, "pair3")
+
+  keys_old <- data_admin_list_keys(path_data)
+  reqs_old <- data_admin_list_requests(path_data)
+
+  res <- testthat::evaluate_promise(data_schema_migrate(path_data))
+  expect_match(res$messages, "Migrating key", all = FALSE)
+  expect_match(res$messages, "Migrating request", all = FALSE)
+
+  keys_new <- data_admin_list_keys(path_data)
+  reqs_new <- data_admin_list_requests(path_data)
+
+  map <- vapply(keys_old, function(k)
+    bin2str(data_key_fingerprint(k$pub, data_schema_version()), ""), "")
+
+  expect_setequal(names(keys_new), unname(map))
+  v <- c("user", "host", "date", "pub", "key")
+  for (i in seq_along(map)) {
+    expect_equal(keys_old[[i]][v], keys_new[[map[[i]]]][v])
+  }
+
+  key1 <- data_key(path_data, path_openssl_alice)
+  key2 <- data_key(path_data, path_openssl_bob)
+  expect_identical(key1$key(), key2$key())
+
+  data_admin_list_requests(path_data)
+  data_admin_authorise(path_data, path_user = path_openssl_alice, yes = TRUE)
+  key3 <- data_key(path_data, "pair3")
+
+  expect_identical(key1$key(), key3$key())
+
+  res <- testthat::evaluate_promise(data_schema_migrate(path_data))
+  expect_match(res$messages, "Everything up to date!")
+})
+
+
+test_that("schema validation - new version errors", {
+  path <- tempfile()
+  dir.create(path, FALSE)
+  res <- data_admin_init(path, "pair1")
+  writeLines("9.9.9", data_path_version(path))
+  data_pkg_init() # clear cache
+  expect_error(
+    data_version_read(path),
+    "Upgrade to cyphr version 9.9.9 (or newer)",
+    fixed = TRUE)
+})
+
+
+test_that("new data sources do not need migrating", {
+  path <- tempfile()
+  dir.create(path, FALSE)
+  data_admin_init(path, "pair1")
+  res <- testthat::evaluate_promise(data_schema_migrate(path))
+  expect_match(res$messages, "Everything up to date!")
 })

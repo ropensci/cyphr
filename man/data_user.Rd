@@ -7,7 +7,13 @@
 \usage{
 data_request_access(path_data = NULL, path_user = NULL, quiet = FALSE)
 
-data_key(path_data = NULL, path_user = NULL, test = TRUE, quiet = FALSE)
+data_key(
+  path_data = NULL,
+  path_user = NULL,
+  test = TRUE,
+  quiet = FALSE,
+  cache = TRUE
+)
 }
 \arguments{
 \item{path_data}{Path to the data.  If not given, then we look
@@ -22,6 +28,12 @@ conveniently.}
 \item{quiet}{Suppress printing of informative messages.}
 
 \item{test}{Test that the encryption is working?  (Recommended)}
+
+\item{cache}{Cache the key within the session.  This will be
+useful if you are using ssh keys that have passwords, as if the
+key is found within the cache, then you will not have to
+re-enter your password.  Using \code{cache = FALSE} neither
+looks for the key in the cache, nor saves it.}
 }
 \description{
 User commands

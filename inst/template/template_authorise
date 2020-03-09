@@ -1,0 +1,5 @@
+If you are using git, you will need to commit and push:
+
+    git add .cyphr
+    git commit -m "Authorised $USERS"
+    git push

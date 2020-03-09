@@ -131,9 +131,17 @@ data_admin_init <- function(path_data, path_user = NULL, quiet = FALSE) {
     ## load the symmetric key from the files we're trying to write!
     dat <- data_pub_load(hash, data_path_request(path_data))
     data_authorise_write(path_data, sym, dat, TRUE, quiet)
+
+    dir.create(data_path_template(path_data), FALSE, TRUE)
+    file_copy(cyphr_file("template/README.md"),
+              file.path(data_path_cyphr(path_data), "README.md"))
+    file_copy(cyphr_file("template/template_request"),
+              file.path(data_path_template(path_data), "request"))
+    file_copy(cyphr_file("template/template_authorise"),
+              file.path(data_path_template(path_data), "authorise"))
   } else {
     path_data <- found
-    workflow_log(quiet, "Already set up at ", path_data)
+    workflow_log(quiet, paste("Already set up at", path_data))
   }
 
   workflow_log(quiet, "Verifying")
@@ -174,15 +182,13 @@ data_admin_authorise <- function(path_data = NULL, hash = NULL,
   }
   nok <- length(keys) - nerr
   if (nok > 0) {
-    workflow_log(quiet, "Added %d key%s", nok, ngettext(nok, "", "s"))
-    if (using_git(path_data)) {
+    workflow_log(quiet, sprintf("Added %d key%s", nok, ngettext(nok, "", "s")))
+    p <- file.path(data_path_template(path_data), "authorise")
+    if (file.exists(p)) {
       users <- paste(vapply(keys, function(x) x$user, character(1)),
                      collapse = ", ")
-      msg <- c("If you are using git, you will need to commit and push:",
-               "    git add .cyphr",
-               sprintf('    git commit -m "Authorised %s"', users),
-               '    git push')
-      workflow_log(quiet, paste(msg, collapse = "\n"))
+      msg <- gsub("$USERS", users, readLines(p), fixed = TRUE)
+      workflow_log(quiet, msg)
     }
   }
   if (nerr > 0L) {
@@ -286,22 +292,13 @@ data_request_access <- function(path_data = NULL, path_user = NULL,
     data_key_save(dat, dest)
   }
 
-  ## The idea here is that they will email or whatever creating a
-  ## second line of communication.  Probably this should provide a
-  ## hash of the request to the validity of the request can be
-  ## checked.  But I'm not really anticipating attacks here.
-  ##
-  ## Consider taking same approach as whoami, but falling back on
-  ## asking instead?
-  workflow_log(quiet, "Email someone with access to add you.")
-  workflow_log(quiet, paste0("\thash: ", bin2str(hash, ":")))
-  if (using_git(path_data)) {
-    msg <- c("If you are using git, you will need to commit and push first:",
-             "    git add .cyphr",
-             '    git commit -m "Please add me to the dataset"',
-             '    git push')
-    workflow_log(quiet, paste(msg, collapse = "\n"))
+  hash_str <- bin2str(hash, ":")
+  p <- file.path(data_path_template(path_data), "request")
+  if (file.exists(p)) {
+    msg <- gsub("$HASH", hash_str, readLines(p), fixed = TRUE)
+    workflow_log(quiet, msg)
   }
+
   invisible(hash)
 }
 
@@ -325,7 +322,7 @@ data_key <- function(path_data = NULL, path_user = NULL, test = TRUE,
 ## overwrite without warning or notice.
 data_authorise_write <- function(path_data, sym, dat, yes = FALSE,
                                  quiet = FALSE) {
-  workflow_log(quiet, "Adding key %s", data_key_str(dat))
+  workflow_log(quiet, sprintf("Adding key %s", data_key_str(dat)))
   if (!(yes || prompt_confirm())) {
     msg <- paste("Cancelled adding key ", bin2str((dat$hash)))
     e <- structure(list(message = msg, call = NULL),
@@ -419,7 +416,7 @@ data_load_sym <- function(path_data, path_user, quiet) {
 }
 
 data_access_error <- function(path_data, path_data_key) {
-  cmd <- call("data_request_access", path_data)
+  cmd <- call("data_request_access", as.character(path_data))
   cmd <- paste(deparse(cmd, getOption("width", 60L)), collapse = "\n")
   msg <- paste(c("Key file not found; you may not have access",
                  sprintf("(looked in %s)", path_data_key),
@@ -435,9 +432,9 @@ data_test <- function(x, path_data) {
   }
 }
 
-workflow_log <- function(quiet, ...) {
+workflow_log <- function(quiet, msg) {
   if (!quiet) {
-    message(sprintf(...))
+    message(paste(msg, collapse = "\n"))
   }
 }
 
@@ -476,6 +473,10 @@ data_path_test <- function(path_data) {
   file.path(data_path_cyphr(path_data), "test")
 }
 
+data_path_template <- function(path_data) {
+  file.path(data_path_cyphr(path_data), "template")
+}
+
 ## A directory for data access requests
 data_path_request <- function(path_data) {
   file.path(data_path_cyphr(path_data), "requests")
@@ -484,7 +485,9 @@ data_path_request <- function(path_data) {
 data_check_path_data <- function(path_data, fail = TRUE, search = FALSE) {
   if (search && !inherits(path_data, "AsIs")) {
     path_data <-
-      find_file_descend(".cyphr", path_data %||% getwd()) %||% path_data
+      find_file_descend(".cyphr", path_data %||% getwd()) %||%
+      path_data %||%
+      getwd()
   }
   success <- file.exists(data_path_test(path_data))
   if (!success && fail) {
@@ -497,11 +500,9 @@ data_load_request <- function(path_data, hash = NULL, quiet = FALSE) {
   path_req <- data_path_request(path_data)
   if (is.null(hash)) {
     keys <- data_admin_list_requests(I(path_data))
-    nk <- length(keys)
-    workflow_log(
-      quiet,
-      ngettext(nk, "There is 1 request for access",
-               sprintf("There are %d requests for access", nk)))
+    n <- length(keys)
+    what <- ngettext(n, "request", "requests")
+    workflow_log(quiet, sprintf("There is %d %s for access", n, what))
   } else {
     if (is.character(hash)) {
       keys <- lapply(hash, data_pub_load, path_req)

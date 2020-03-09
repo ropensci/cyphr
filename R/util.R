@@ -111,11 +111,6 @@ find_file_descend <- function(target, start = ".", limit = "/") {
   ret
 }
 
-using_git <- function(path) {
-  tryCatch(!is.null(find_file_descend(".git", path)),
-           error = function(e) FALSE)
-}
-
 ## Replace with ask once it's on CRAN?
 prompt_confirm <- function(msg = "continue?", valid = c(n = FALSE, y = TRUE),
                            default = names(valid)[[1]]) {
@@ -143,4 +138,12 @@ read_line <- function(prompt) {
 
 `%||%` <- function(a, b) {
   if (is.null(a)) b else a
+}
+
+cyphr_file <- function(...) {
+  system.file(..., package = "cyphr", mustWork = TRUE)
+}
+
+file_copy <- function(...) {
+  stopifnot(file.copy(...))
 }

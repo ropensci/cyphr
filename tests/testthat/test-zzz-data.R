@@ -123,6 +123,12 @@ test_that("not set up", {
   path <- tempfile()
   dir.create(path, FALSE, TRUE)
   expect_error(data_key(path, "pair2"), "cyphr not set up for")
+  expect_error(
+    with_dir(path, data_key(NULL, "pair2")),
+    "cyphr not set up for")
+  expect_error(
+    with_dir(path, data_key(path_user = "pair2")),
+    "cyphr not set up for")
   res <- data_admin_init(path, "pair1")
   expect_error(data_key(path, "pair2"),
                "Key file not found; you may not have access")
@@ -246,4 +252,30 @@ test_that("Work from a subdirectory", {
   k1 <- with_dir(sub, data_key(path_user = pair1))
   k2 <- with_dir(sub, data_key(path_user = pair2))
   expect_identical(k1$key(), k2$key())
+})
+
+
+test_that("Custom messages", {
+  path <- tempfile()
+  dir.create(path, FALSE, TRUE)
+  res <- data_admin_init(path, "pair1", TRUE)
+
+  writeLines("my custom $HASH request message",
+             file.path(data_path_template(path), "request"))
+  writeLines("my custom $USERS authorise message",
+             file.path(data_path_template(path), "authorise"))
+
+  res1 <- testthat::evaluate_promise(
+    data_request_access(path, "pair2"))
+  res2 <- testthat::evaluate_promise(
+    data_admin_authorise(path, res1$result, "pair1", TRUE))
+
+  expect_match(
+    res1$messages,
+    "my custom [[:xdigit:]:]+ request message",
+    all = FALSE)
+  expect_match(
+    res2$messages,
+    "my custom .+ authorise message",
+    all = FALSE)
 })

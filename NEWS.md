@@ -1,6 +1,7 @@
 ## cyphr 1.0.6
 
-* Added wrappers for `readxl::read_excel` and `writexl::write_xlsx`
+* Added wrappers for `readxl::read_excel` and `writexl::write_xlsx` (reside-109)
+* Support for custom messages during requesting and authorising access to data (reside-108)
 
 ## cyphr 1.0.1
 

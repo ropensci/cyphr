@@ -21,3 +21,4 @@
 ^docs$
 ^pkgdown$
 ^_pkgdown\.yml$
+^\.lintr$

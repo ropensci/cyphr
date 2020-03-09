@@ -1,4 +1,4 @@
-.onLoad <- function(libname, pkgname) {
+.onLoad <- function(libname, pkgname) { # nolint
   ## covr misses this but it is run :)
   session_key_refresh() # nocov
   rewrite_reset() # nocov

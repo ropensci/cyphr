@@ -67,7 +67,7 @@ test_that("namespaced functions", {
 ## This is not ideal and there may be other cases where this fails
 ## badly.
 test_that("invalid input", {
-  expect_error(rewrite(quote(1(foo))), "Confused")
+  expect_error(rewrite(quote(1 (foo))), "Confused")
   expect_error(rewrite(quote(factory()(foo))), "Invalid function call for name")
 })
 

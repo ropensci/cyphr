@@ -1,7 +1,7 @@
 context("util")
 
-test_that("Sys_which", {
-  expect_error(Sys_which("nonexistantbinary"), "Can not find")
+test_that("sys_which", {
+  expect_error(sys_which("nonexistantbinary"), "Can not find")
 })
 
 test_that("get_password_str", {
@@ -20,7 +20,6 @@ test_that("get_password_str", {
 })
 
 test_that("prompt_confirm", {
-  ## testthat::skip_if_not_installed("mockr")
   testthat::with_mock(`cyphr:::read_line` = function(...) "n",
                       expect_equal(prompt_confirm(), FALSE))
   testthat::with_mock(`cyphr:::read_line` = function(...) "y",

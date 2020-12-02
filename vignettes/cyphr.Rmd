@@ -72,6 +72,8 @@ do some encryption.
 
 ## Symmetric encryption
 
+![Illustration of Symmetric Encryption](symmetric.png)
+
 This is the simplest form of encryption because everyone has the
 same key (like a key to your house or a single password).  This
 raises issues (like how do you *store* the key without other people
@@ -138,6 +140,8 @@ This key can then be used with the high-level cyphr encryption
 functions described below.
 
 ## Asymmetric encryption ("key pairs")
+
+![Illustration of Asymmetric Encryption](asymmetric.png)
 
 With asymmetric encryption everybody has two keys that differ from
 everyone else's key.  One key is public and can be shared freely

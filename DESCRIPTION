@@ -1,8 +1,9 @@
 Package: cyphr
 Title: High Level Encryption Wrappers
-Version: 1.1.0
-Authors@R: person("Rich", "FitzJohn", role = c("aut", "cre"),
-    email = "rich.fitzjohn@gmail.com")
+Version: 1.1.1
+Authors@R: c(person("Rich", "FitzJohn", role = c("aut", "cre"),
+    email = "rich.fitzjohn@gmail.com"),
+    person("Jai", "Ranganathan", role = "ctb"))
 Description: Encryption wrappers, using low-level support from
     'sodium' and 'openssl'.  'cyphr' tries to smooth over some pain
     points when using encryption within applications and data analysis

@@ -3,7 +3,7 @@
 This directory is used by `cyphr` and contains:
 
 * `test` - a small file used to test whether encryption/decrpytion is possible with your key
-* Files in `keys/` are encrypted copies of the (symmetric) data key, encrypted with different users' private keys.  The filename is based on the fingerprint of the private key (see `?openssl::fingerprint`)
+* Files in `keys/` are encrypted copies of the (symmetric) data key, encrypted with different users' public keys.  The filename is based on the fingerprint of the public key (see `?openssl::fingerprint`)
 * Files in `requests/` which are pending requests for access
 
 ### Templates

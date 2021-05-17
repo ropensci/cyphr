@@ -12,7 +12,6 @@ Description: Encryption wrappers, using low-level support from
     high-level wrappers for input/output functions for seamlessly
     adding encryption to existing analyses.
 License: MIT + file LICENSE
-LazyData: true
 URL: https://github.com/ropensci/cyphr, https://docs.ropensci.org/cyphr
 BugReports: https://github.com/ropensci/cyphr/issues
 Imports:

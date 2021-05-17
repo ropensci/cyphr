@@ -15,9 +15,9 @@ more details)}
 }
 \description{
 Wrap an openssl symmetric (aes) key.  This can be used with the
-functions \code{\link{encrypt_data}} and
-\code{\link{decrypt_data}}, along with the higher level wrappers
-\code{\link{encrypt}} and \code{\link{decrypt}}.  With a symmetric
+functions \code{\link[=encrypt_data]{encrypt_data()}} and
+\code{\link[=decrypt_data]{decrypt_data()}}, along with the higher level wrappers
+\code{\link[=encrypt]{encrypt()}} and \code{\link[=decrypt]{decrypt()}}.  With a symmetric
 key, everybody uses the same key for encryption and decryption.
 }
 \examples{

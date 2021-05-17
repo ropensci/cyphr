@@ -10,10 +10,10 @@
 session <- new.env(parent = emptyenv())
 
 ##' Refresh the session key, invalidating all keys created by
-##' \code{\link{key_openssl}}, \code{\link{keypair_openssl}},
-##' \code{\link{key_sodium}} and \code{\link{keypair_sodium}}.
+##' [cyphr::key_openssl()], [cyphr::keypair_openssl()],
+##' [cyphr::key_sodium()] and [cyphr::keypair_sodium()].
 ##'
-##' Running this function will invalidate \emph{all} keys loaded with
+##' Running this function will invalidate *all* keys loaded with
 ##' the above functions.  It should not be needed very often.
 ##'
 ##' @title Refresh the session key

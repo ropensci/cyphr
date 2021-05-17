@@ -21,18 +21,18 @@
 ##' Encrypted data administration; functions for setting up, adding
 ##' users, etc.
 ##'
-##' \code{data_admin_init} initialises the system; it will create a
+##' `data_admin_init` initialises the system; it will create a
 ##' data key if it does not exist and authorise you.  If it already
 ##' exists and you do not have access it will throw an error.
 ##'
-##' \code{data_admin_authorise} authorises a key by creating a key to
+##' `data_admin_authorise` authorises a key by creating a key to
 ##' the data that the user can use in conjunction with their personal
 ##' key.
 ##'
-##' \code{data_admin_list_requests} lists current requests.
+##' `data_admin_list_requests` lists current requests.
 ##'
-##' \code{data_admin_list_keys} lists known keys that can access the
-##' data.  Note that this is \emph{not secure}; keys not listed here
+##' `data_admin_list_keys` lists known keys that can access the
+##' data.  Note that this is *not secure*; keys not listed here
 ##' may still be able to access the data (if a key was authorised and
 ##' moved elsewhere for example).  Conversely, if the user has deleted
 ##' or changed their key they will not be able to access the data
@@ -51,10 +51,10 @@
 ##' @param quiet Suppress printing of informative messages.
 ##' @export
 ##' @rdname data_admin
-##' @seealso \code{\link{data_request_access}} for requesting access
-##'   to the data, and and \code{data_key} for using the data
+##' @seealso [cyphr::data_request_access()] for requesting access
+##'   to the data, and and `data_key` for using the data
 ##'   itself.  But for a much more thorough overview, see the vignette
-##'   (\code{vignette("data", package="cyphr")}).
+##'   (`vignette("data", package = "cyphr")`).
 ##' @examples
 ##'
 ##' # The workflow here does not really lend itself to an example,
@@ -228,15 +228,15 @@ data_admin_list_keys <- function(path_data = NULL) {
 ##'
 ##' @param path_user Path to the directory with your user key.
 ##'   Usually this can be omitted.  This argument is passed in as both
-##'   \code{pub} and \code{key} to \code{\link{keypair_openssl}}.
+##'   `pub` and `key` to [cyphr::keypair_openssl()].
 ##'   Briefly, if this argument is not given we look at the
-##'   environment variables \code{USER_PUBKEY} and \code{USER_KEY} -
+##'   environment variables `USER_PUBKEY` and `USER_KEY` -
 ##'   if set then these must refer to path of your public and private
 ##'   keys.  If these environment variables are not set then we fall
-##'   back on \code{~/.ssh/id_rsa.pub} and \code{~/.ssh/id_rsa},
+##'   back on `~/.ssh/id_rsa.pub` and `~/.ssh/id_rsa`,
 ##'   which should work in most environments.  Alternatively, provide
-##'   a path to a directory where the file \code{id_rsa.pub} and
-##'   \code{id_rsa} can be found.
+##'   a path to a directory where the file `id_rsa.pub` and
+##'   `id_rsa` can be found.
 ##'
 ##' @param quiet Suppress printing of informative messages.
 ##'
@@ -319,7 +319,7 @@ data_request_access <- function(path_data = NULL, path_user = NULL,
 ##' @param cache Cache the key within the session.  This will be
 ##'   useful if you are using ssh keys that have passwords, as if the
 ##'   key is found within the cache, then you will not have to
-##'   re-enter your password.  Using \code{cache = FALSE} neither
+##'   re-enter your password.  Using `cache = FALSE` neither
 ##'   looks for the key in the cache, nor saves it.
 ##'
 ##' @rdname data_user

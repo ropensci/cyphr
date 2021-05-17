@@ -2,7 +2,7 @@
 ##' pass your private key and the public key of the person that you
 ##' are communicating with.
 ##'
-##' \emph{NOTE}: the order here (pub, key) is very important; if the
+##' *NOTE*: the order here (pub, key) is very important; if the
 ##' wrong order is used you cannot decrypt things.  Unfortunately
 ##' because sodium keys are just byte sequences there is nothing to
 ##' distinguish the public and private keys so this is a pretty easy
@@ -11,23 +11,23 @@
 ##'
 ##' @param pub A sodium public key.  This is either a raw vector of
 ##'   length 32 or a path to file containing the contents of the key
-##'   (written by \code{writeBin}.
+##'   (written by [writeBin()]).
 ##'
 ##' @param key A sodium private key.  This is either a raw vector of
 ##'   length 32 or a path to file containing the contents of the key
-##'   (written by \code{writeBin}.
+##'   (written by [writeBin()]).
 ##'
 ##' @param authenticated Logical, indicating if authenticated
-##'   encryption (via \code{sodium::auth_encrypt} /
-##'   \code{sodium::auth_decrypt}) should be used.  If \code{FALSE}
-##'   then \code{sodium::simple_encrypt} /
-##'   \code{sodium::simple_decrypt} will be used.  The difference is
-##'   that with \code{authenticated = TRUE} the message is signed with
+##'   encryption (via [sodium::auth_encrypt()] /
+##'   [sodium::auth_decrypt()]) should be used.  If `FALSE`
+##'   then [sodium::simple_encrypt()] /
+##'   [sodium::simple_decrypt()] will be used.  The difference is
+##'   that with `authenticated = TRUE` the message is signed with
 ##'   your private key so that tampering with the message will be
 ##'   detected.
 ##' @export
 ##'
-##' @seealso \code{\link{keypair_openssl}} for a similar function using
+##' @seealso [cyphr::keypair_openssl()] for a similar function using
 ##'   openssl keypairs
 ##'
 ##' @examples
@@ -69,13 +69,13 @@ keypair_sodium <- function(pub, key, authenticated = TRUE) {
 }
 
 ##' Wrap a sodium symmetric key.  This can be used with the functions
-##' \code{\link{encrypt_data}} and \code{\link{decrypt_data}}, along
-##' with the higher level wrappers \code{\link{encrypt}} and
-##' \code{\link{decrypt}}.  With a symmetric key, everybody uses the
+##' [cyphr::encrypt_data()] and [cyphr::decrypt_data()], along
+##' with the higher level wrappers [cyphr::encrypt()] and
+##' [cyphr::decrypt()].  With a symmetric key, everybody uses the
 ##' same key for encryption and decryption.
 ##'
 ##' @title Symmetric encryption with sodium
-##' @param key A sodium key (i.e., generated with \code{link{sodium::keygen}}
+##' @param key A sodium key (i.e., generated with [sodium::keygen()]
 ##' @export
 ##' @examples
 ##' # Create a new key

@@ -1,39 +1,40 @@
 ##' Encrypt and decrypt raw data, objects, strings and files.  The
-##' core functions here are \code{encrypt_data} and
-##' \code{decrypt_data} which take raw data and decrypt it, writing
+##' core functions here are `encrypt_data` and
+##' `decrypt_data` which take raw data and decrypt it, writing
 ##' either to file or returning a raw vector.  The other functions
-##' encrypt and decrypt arbitrary R objects (\code{encrypt_object},
-##' \code{decrypt_object}), strings (\code{encrypt_string},
-##' \code{decrypt_string}) and files (\code{encrypt_file},
-##' \code{decrypt_file}).
+##' encrypt and decrypt arbitrary R objects (`encrypt_object`,
+##' `decrypt_object`), strings (`encrypt_string`,
+##' `decrypt_string`) and files (`encrypt_file`,
+##' `decrypt_file`).
 ##'
 ##' @title Encrypt and decrypt data and other things
 ##'
-##' @param data (for \code{encrypt_data}, \code{decrypt_data},
-##'   \code{decrypt_object}, \code{decrypt_string}) a raw vector with
+##' @param data (for `encrypt_data`, `decrypt_data`,
+##'   `decrypt_object`, `decrypt_string`) a raw vector with
 ##'   the data to be encrypted or decrypted.  For the decryption
 ##'   functions this must be data derived by encrypting something or
 ##'   you will get an error.
 ##'
-##' @param object (for \code{encrypt_object}) an arbitrary R object to
+##' @param object (for `encrypt_object`) an arbitrary R object to
 ##'   encrypt.  It will be serialised to raw first (see
-##'   \code{\link{serialize}}).
+##'   [serialize]).
 ##'
-##' @param string (for \code{encrypt_string}) a scalar character
+##' @param string (for `encrypt_string`) a scalar character
 ##'   vector to encrypt.  It will be converted to raw first with
-##'   \code{\link{charToRaw}}.
+##'   [charToRaw].
 ##'
-##' @param path (for \code{encrypt_file}) the name of a file to
+##' @param path (for `encrypt_file`) the name of a file to
 ##'   encrypt.  It will first be read into R as binary (see
-##'   \code{\link{readBin}}).
+##'   [readBin]).
 ##'
 ##' @param dest The destination filename for the encrypted or
-##'   decrypted data, or \code{NULL} to return a raw vector.  This is
-##'   not used by \code{decrypt_object} or \code{decrypt_string} which
+##'   decrypted data, or `NULL` to return a raw vector.  This is
+##'   not used by `decrypt_object` or `decrypt_string` which
 ##'   always return an object or string.
 ##'
-##' @param key A \code{cyphr_key} or \code{cyphr_key} object
-##'   describing the encryption approach to use.
+##' @param key A `cyphr_key` object describing the encryption approach
+##'   to use.
+##'
 ##' @export
 ##' @examples
 ##' key <- key_sodium(sodium::keygen())
@@ -74,14 +75,15 @@ encrypt_data <- function(data, key, dest = NULL) {
 
 ##' @export
 ##' @rdname encrypt_data
+##'
 ##' @param rds_version RDS serialisation version to use (see
-##'   \code{\link{serialize}}.  The default in R version 3.3 and below
-##'   is version 2 - in the R 3.4 series version 3 was introduced and
-##'   is becoming the default.  Version 3 format serialisation is not
-##'   understood by older versions so if you need to exchange data
-##'   with older R versions, you will need to use \code{rds_version =
-##'   2}.  The default argument here (\code{NULL}) will ensure the
-##'   same serialisation is used as R would use by default.
+##'   [serialize].  The default in R version 3.3 and below is version
+##'   2 - in the R 3.4 series version 3 was introduced and is becoming
+##'   the default.  Version 3 format serialisation is not understood
+##'   by older versions so if you need to exchange data with older R
+##'   versions, you will need to use `rds_version = 2`.  The default
+##'   argument here (`NULL`) will ensure the same serialisation is
+##'   used as R would use by default.
 encrypt_object <- function(object, key, dest = NULL, rds_version = NULL) {
   encrypt_data(serialize(object, NULL, version = rds_version), key, dest)
 }

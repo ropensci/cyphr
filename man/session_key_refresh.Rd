@@ -8,8 +8,8 @@ session_key_refresh()
 }
 \description{
 Refresh the session key, invalidating all keys created by
-\code{\link{key_openssl}}, \code{\link{keypair_openssl}},
-\code{\link{key_sodium}} and \code{\link{keypair_sodium}}.
+\code{\link[=key_openssl]{key_openssl()}}, \code{\link[=keypair_openssl]{keypair_openssl()}},
+\code{\link[=key_sodium]{key_sodium()}} and \code{\link[=keypair_sodium]{keypair_sodium()}}.
 }
 \details{
 Running this function will invalidate \emph{all} keys loaded with

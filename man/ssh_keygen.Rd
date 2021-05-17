@@ -23,7 +23,7 @@ package cannot be read by the system ssh commands (e.g.,
 }
 \value{
 The \code{path}, invisibly.  This is useful in the case
-  where \code{path} is \code{\link{tempfile}()}.
+where \code{path} is \code{\link[=tempfile]{tempfile()}}.
 }
 \description{
 Create openssl key pairs in the manner of \code{ssh-keygen}(1).
@@ -31,7 +31,7 @@ In general this should not be used (generate keys yourself with
 \code{ssh-keygen} at the command line.  However this is useful for
 testing and demonstration so I have included it to make that
 easier.  Once a keypair has been generated it can be used with
-\code{\link{keypair_openssl}}.
+\code{\link[=keypair_openssl]{keypair_openssl()}}.
 }
 \examples{
 # Generate a new key in a temporary directory:

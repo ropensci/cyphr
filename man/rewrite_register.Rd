@@ -17,7 +17,7 @@ package, use "" as the name).}
 \item{arg}{The name of the argument in the target function that
 refers to the file that should be encrypted or decrypted.  This
 is the value you would pass through to \code{file_arg} in
-\code{\link{encrypt}}.}
+\link{encrypt}.}
 
 \item{fn}{Optional (and should be rare) argument used to work
 around functions that pass all their arguments through to a
@@ -28,7 +28,7 @@ this should be very rare!}
 }
 \description{
 Add information about argument rewriting so that they can be used
-with \code{\link{encrypt}} and \code{\link{decrypt}}.
+with \link{encrypt} and \link{decrypt}.
 }
 \details{
 If your package uses cyphr, it might be useful to add this as

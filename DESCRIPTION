@@ -23,6 +23,7 @@ Suggests:
     rmarkdown,
     testthat
 RoxygenNote: 7.1.1
+Roxygen: list(markdown = TRUE)
 VignetteBuilder: rmarkdown,
     knitr
 Encoding: UTF-8

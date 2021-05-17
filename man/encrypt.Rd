@@ -52,11 +52,9 @@ key <- cyphr::key_sodium(sodium::keygen())
 path <- tempfile(fileext = ".csv")
 cyphr::encrypt(write.csv(iris, path, row.names = FALSE), key)
 
-# The new file now exists
+# The new file now exists, but you would not be able to read it
+# with read.csv because it is now binary data.
 file.exists(path)
-
-# ...but it cannot be read with read.csv!
-try(read.csv(path, stringsAsFactors = FALSE))
 
 # Wrap the read.csv call with cyphr::decrypt()
 dat <- cyphr::decrypt(read.csv(path, stringsAsFactors = FALSE), key)

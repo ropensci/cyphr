@@ -27,7 +27,7 @@ Briefly, if this argument is not given we look at the
 environment variables \code{USER_PUBKEY} and \code{USER_KEY} -
 if set then these must refer to path of your public and private
 keys.  If these environment variables are not set then we fall
-back on \\code{~/.ssh/id_rsa.pub} and \code{~/.ssh/id_rsa},
+back on \code{~/.ssh/id_rsa.pub} and \code{~/.ssh/id_rsa},
 which should work in most environments.  Alternatively, provide
 a path to a directory where the file \code{id_rsa.pub} and
 \code{id_rsa} can be found.}

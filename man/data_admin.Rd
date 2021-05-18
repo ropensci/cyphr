@@ -95,8 +95,8 @@ unlink(path_ssh_key, recursive = TRUE)
 unlink(path_data, recursive = TRUE)
 }
 \seealso{
-\code{\link{data_request_access}} for requesting access
-  to the data, and and \code{data_key} for using the data
-  itself.  But for a much more thorough overview, see the vignette
-  (\code{vignette("data", package="cyphr")}).
+\code{\link[=data_request_access]{data_request_access()}} for requesting access
+to the data, and and \code{data_key} for using the data
+itself.  But for a much more thorough overview, see the vignette
+(\code{vignette("data", package = "cyphr")}).
 }

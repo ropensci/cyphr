@@ -18,7 +18,7 @@ to the key, in which case it may either the path to a public key
 or be the path to a directory containing a file
 \code{id_rsa.pub}.  If \code{NULL}, then your public key will be
 used (found via the environment variable \code{USER_PUBKEY},
-then \code{~/.ssh/id_rsa.pub}).  However, it is not that common
+then \verb{~/.ssh/id_rsa.pub}).  However, it is not that common
 to use your own public key - typically you want either the
 sender of a message you are going to decrypt, or the recipient
 of a message you want to send.}
@@ -28,13 +28,13 @@ to the key, in which case it may either the path to a private
 key or be the path to a directory containing a file.  You may
 specify \code{NULL} here, in which case the environment variable
 \code{USER_KEY} is checked and if that is not defined then
-\code{~/.ssh/id_rsa} will be used.}
+\verb{~/.ssh/id_rsa} will be used.}
 
 \item{envelope}{A logical indicating if "envelope" encryption
 functions should be used.  If so, then we use
-\code{openssl::encrypt_envelope} and
-\code{openssl::decrypt_envelope}.  If \code{FALSE} then we use
-\code{openssl::rsa_encrypt} and \code{openssl::rsa_decrypt}.
+\code{\link[openssl:encrypt_envelope]{openssl::encrypt_envelope()}} and
+\code{\link[openssl:encrypt_envelope]{openssl::decrypt_envelope()}}.  If \code{FALSE} then we use
+\code{\link[openssl:rsa_encrypt]{openssl::rsa_encrypt()}} and \code{\link[openssl:rsa_encrypt]{openssl::rsa_decrypt()}}.
 See the openssl docs for further details.  The main effect of
 this is that using \code{envelope = TRUE} will allow you to
 encrypt much larger data than \code{envelope = FALSE}; this is
@@ -89,6 +89,6 @@ unlink(path_alice, recursive = TRUE)
 unlink(path_bob, recursive = TRUE)
 }
 \seealso{
-\code{\link{keypair_sodium}} for a similar function using
-  sodium keypairs
+\code{\link[=keypair_sodium]{keypair_sodium()}} for a similar function using
+sodium keypairs
 }

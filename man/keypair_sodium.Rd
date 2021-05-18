@@ -9,17 +9,17 @@ keypair_sodium(pub, key, authenticated = TRUE)
 \arguments{
 \item{pub}{A sodium public key.  This is either a raw vector of
 length 32 or a path to file containing the contents of the key
-(written by \code{writeBin}.}
+(written by \code{\link[=writeBin]{writeBin()}}).}
 
 \item{key}{A sodium private key.  This is either a raw vector of
 length 32 or a path to file containing the contents of the key
-(written by \code{writeBin}.}
+(written by \code{\link[=writeBin]{writeBin()}}).}
 
 \item{authenticated}{Logical, indicating if authenticated
-encryption (via \code{sodium::auth_encrypt} /
-\code{sodium::auth_decrypt}) should be used.  If \code{FALSE}
-then \code{sodium::simple_encrypt} /
-\code{sodium::simple_decrypt} will be used.  The difference is
+encryption (via \code{\link[sodium:messaging]{sodium::auth_encrypt()}} /
+\code{\link[sodium:messaging]{sodium::auth_decrypt()}}) should be used.  If \code{FALSE}
+then \code{\link[sodium:simple]{sodium::simple_encrypt()}} /
+\code{\link[sodium:simple]{sodium::simple_decrypt()}} will be used.  The difference is
 that with \code{authenticated = TRUE} the message is signed with
 your private key so that tampering with the message will be
 detected.}
@@ -60,6 +60,6 @@ pair_bob <- cyphr::keypair_sodium(pub = pub_alice, key = key_bob)
 cyphr::decrypt_string(secret, pair_bob)
 }
 \seealso{
-\code{\link{keypair_openssl}} for a similar function using
-  openssl keypairs
+\code{\link[=keypair_openssl]{keypair_openssl()}} for a similar function using
+openssl keypairs
 }

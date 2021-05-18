@@ -1,13 +1,13 @@
 ##' Wrapper functions for encryption.  These functions wrap
 ##' expressions that produce or consume a file and arrange to encrypt
 ##' (for producing functions) or decrypt (for consuming functions).
-##' The forms with a trailing underscore (\code{encrypt_},
-##' \code{decrypt_}) do not use any non-standard evaluation and may be
+##' The forms with a trailing underscore (`encrypt_`,
+##' `decrypt_`) do not use any non-standard evaluation and may be
 ##' more useful for programming.
 ##'
 ##' These functions will not work for all functions.  For example
-##' \code{pdf}/\code{dev.off} will create a file but we can't wrap
-##' those up (yet!).  Functions that \emph{modify} a file (e.g.,
+##' `pdf`/`dev.off` will create a file but we can't wrap
+##' those up (yet!).  Functions that *modify* a file (e.g.,
 ##' appending) also will not work and may cause data loss.
 ##'
 ##' @title Easy encryption and decryption
@@ -16,14 +16,14 @@
 ##'   would be called for the side effect of creating or reading a
 ##'   file.
 ##'
-##' @param key A \code{cyphr_key} object describing the
+##' @param key A `cyphr_key` object describing the
 ##'   encryption approach to use.
 ##'
 ##' @param file_arg Optional hint indicating which argument to
-##'   \code{expr} is the filename.  This is done automatically for
+##'   `expr` is the filename.  This is done automatically for
 ##'   some built-in functions.
 ##'
-##' @param envir Environment in which \code{expr} is to be evaluated.
+##' @param envir Environment in which `expr` is to be evaluated.
 ##' @export
 ##' @examples
 ##' # To do anything we first need a key:
@@ -34,11 +34,9 @@
 ##' path <- tempfile(fileext = ".csv")
 ##' cyphr::encrypt(write.csv(iris, path, row.names = FALSE), key)
 ##'
-##' # The new file now exists
+##' # The new file now exists, but you would not be able to read it
+##' # with read.csv because it is now binary data.
 ##' file.exists(path)
-##'
-##' # ...but it cannot be read with read.csv!
-##' try(read.csv(path, stringsAsFactors = FALSE))
 ##'
 ##' # Wrap the read.csv call with cyphr::decrypt()
 ##' dat <- cyphr::decrypt(read.csv(path, stringsAsFactors = FALSE), key)
@@ -203,7 +201,7 @@ find_function <- function(name, envir) {
 ## making this extensible probably requires having additional elements
 ## that are added to this list when the db call is run; those could
 ## come from a registering process easily enough (e.g., during
-## \code{.onLoad()});
+## .onLoad());
 ##   > rewrite_register(package, name, arg)
 
 ## NOTE: graphics devices will take work to get working because it's
@@ -240,10 +238,10 @@ db_lookup <- function(package, name, arg) {
 }
 
 ##' Add information about argument rewriting so that they can be used
-##' with \code{\link{encrypt}} and \code{\link{decrypt}}.
+##' with [cyphr::encrypt] and [cyphr::decrypt].
 ##'
 ##' If your package uses cyphr, it might be useful to add this as
-##' an \code{.onLoad()} hook.
+##' an `.onLoad()` hook.
 ##' @title Register functions to work with encrypt/decrypt
 ##' @param package The name of the package with the function to
 ##'   support (as a scalar character).  If your function has no
@@ -252,11 +250,11 @@ db_lookup <- function(package, name, arg) {
 ##' @param name The name of the function to support.
 ##' @param arg The name of the argument in the target function that
 ##'   refers to the file that should be encrypted or decrypted.  This
-##'   is the value you would pass through to \code{file_arg} in
-##'   \code{\link{encrypt}}.
+##'   is the value you would pass through to `file_arg` in
+##'   [cyphr::encrypt].
 ##' @param fn Optional (and should be rare) argument used to work
 ##'   around functions that pass all their arguments through to a
-##'   second function as dots.  This is how \code{read.csv} works.  If
+##'   second function as dots.  This is how `read.csv` works.  If
 ##'   needed this function is a length-2 character vector in the form
 ##'   "package", "name" with the actual function that is used.  But
 ##'   this should be very rare!

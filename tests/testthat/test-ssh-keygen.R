@@ -49,6 +49,7 @@ test_that("no password", {
 test_that("no password - shell", {
   skip_if_no_ssh_keygen()
   skip_on_cran() # too system specific
+  skip_on_os("windows") # not working on windows gha
   path <- tempfile()
   res <- ssh_keygen(path, FALSE, TRUE)
   expect_is(openssl_load_key(path, ""), "key")

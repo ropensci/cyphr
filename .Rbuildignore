@@ -22,3 +22,4 @@
 ^pkgdown$
 ^_pkgdown\.yml$
 ^\.lintr$
+^\.github$

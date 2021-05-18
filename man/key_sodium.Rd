@@ -7,13 +7,13 @@
 key_sodium(key)
 }
 \arguments{
-\item{key}{A sodium key (i.e., generated with \code{link{sodium::keygen}}}
+\item{key}{A sodium key (i.e., generated with \code{\link[sodium:keygen]{sodium::keygen()}}}
 }
 \description{
 Wrap a sodium symmetric key.  This can be used with the functions
-\code{\link{encrypt_data}} and \code{\link{decrypt_data}}, along
-with the higher level wrappers \code{\link{encrypt}} and
-\code{\link{decrypt}}.  With a symmetric key, everybody uses the
+\code{\link[=encrypt_data]{encrypt_data()}} and \code{\link[=decrypt_data]{decrypt_data()}}, along
+with the higher level wrappers \code{\link[=encrypt]{encrypt()}} and
+\code{\link[=decrypt]{decrypt()}}.  With a symmetric key, everybody uses the
 same key for encryption and decryption.
 }
 \examples{

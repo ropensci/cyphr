@@ -34,8 +34,8 @@ the data to be encrypted or decrypted.  For the decryption
 functions this must be data derived by encrypting something or
 you will get an error.}
 
-\item{key}{A \code{cyphr_key} or \code{cyphr_key} object
-describing the encryption approach to use.}
+\item{key}{A \code{cyphr_key} object describing the encryption approach
+to use.}
 
 \item{dest}{The destination filename for the encrypted or
 decrypted data, or \code{NULL} to return a raw vector.  This is
@@ -44,24 +44,24 @@ always return an object or string.}
 
 \item{object}{(for \code{encrypt_object}) an arbitrary R object to
 encrypt.  It will be serialised to raw first (see
-\code{\link{serialize}}).}
+\link{serialize}).}
 
 \item{rds_version}{RDS serialisation version to use (see
-\code{\link{serialize}}.  The default in R version 3.3 and below
-is version 2 - in the R 3.4 series version 3 was introduced and
-is becoming the default.  Version 3 format serialisation is not
-understood by older versions so if you need to exchange data
-with older R versions, you will need to use \code{rds_version =
-2}.  The default argument here (\code{NULL}) will ensure the
-same serialisation is used as R would use by default.}
+\link{serialize}.  The default in R version 3.3 and below is version
+2 - in the R 3.4 series version 3 was introduced and is becoming
+the default.  Version 3 format serialisation is not understood
+by older versions so if you need to exchange data with older R
+versions, you will need to use \code{rds_version = 2}.  The default
+argument here (\code{NULL}) will ensure the same serialisation is
+used as R would use by default.}
 
 \item{string}{(for \code{encrypt_string}) a scalar character
 vector to encrypt.  It will be converted to raw first with
-\code{\link{charToRaw}}.}
+\link{charToRaw}.}
 
 \item{path}{(for \code{encrypt_file}) the name of a file to
 encrypt.  It will first be read into R as binary (see
-\code{\link{readBin}}).}
+\link{readBin}).}
 }
 \description{
 Encrypt and decrypt raw data, objects, strings and files.  The

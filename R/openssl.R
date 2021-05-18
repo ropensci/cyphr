@@ -5,9 +5,9 @@
 ##' @param pub An openssl public key.  Usually this will be the path
 ##'   to the key, in which case it may either the path to a public key
 ##'   or be the path to a directory containing a file
-##'   \code{id_rsa.pub}.  If \code{NULL}, then your public key will be
-##'   used (found via the environment variable \code{USER_PUBKEY},
-##'   then \code{~/.ssh/id_rsa.pub}).  However, it is not that common
+##'   `id_rsa.pub`.  If `NULL`, then your public key will be
+##'   used (found via the environment variable `USER_PUBKEY`,
+##'   then `~/.ssh/id_rsa.pub`).  However, it is not that common
 ##'   to use your own public key - typically you want either the
 ##'   sender of a message you are going to decrypt, or the recipient
 ##'   of a message you want to send.
@@ -15,32 +15,32 @@
 ##' @param key An openssl private key.  Usually this will be the path
 ##'   to the key, in which case it may either the path to a private
 ##'   key or be the path to a directory containing a file.  You may
-##'   specify \code{NULL} here, in which case the environment variable
-##'   \code{USER_KEY} is checked and if that is not defined then
-##'   \code{~/.ssh/id_rsa} will be used.
+##'   specify `NULL` here, in which case the environment variable
+##'   `USER_KEY` is checked and if that is not defined then
+##'   `~/.ssh/id_rsa` will be used.
 ##'
 ##' @param envelope A logical indicating if "envelope" encryption
 ##'   functions should be used.  If so, then we use
-##'   \code{openssl::encrypt_envelope} and
-##'   \code{openssl::decrypt_envelope}.  If \code{FALSE} then we use
-##'   \code{openssl::rsa_encrypt} and \code{openssl::rsa_decrypt}.
+##'   [openssl::encrypt_envelope()] and
+##'   [openssl::decrypt_envelope()].  If `FALSE` then we use
+##'   [openssl::rsa_encrypt()] and [openssl::rsa_decrypt()].
 ##'   See the openssl docs for further details.  The main effect of
-##'   this is that using \code{envelope = TRUE} will allow you to
-##'   encrypt much larger data than \code{envelope = FALSE}; this is
+##'   this is that using `envelope = TRUE` will allow you to
+##'   encrypt much larger data than `envelope = FALSE`; this is
 ##'   because openssl asymmetric encryption can only encrypt data up
 ##'   to the size of the key itself.
 ##'
-##' @param password A password for the private key.  If \code{NULL}
+##' @param password A password for the private key.  If `NULL`
 ##'   then you will be prompted interactively for your password, and
 ##'   if a string then that string will be used as the password (but
 ##'   be careful in scripts!)
 ##'
 ##' @param authenticated Logical, indicating if the result should be
-##'   signed with your public key.  If \code{TRUE} then your key will
+##'   signed with your public key.  If `TRUE` then your key will
 ##'   be verified on decryption.  This provides tampering detection.
 ##' @export
 ##'
-##' @seealso \code{\link{keypair_sodium}} for a similar function using
+##' @seealso [cyphr::keypair_sodium()] for a similar function using
 ##'   sodium keypairs
 ##'
 ##' @examples
@@ -108,15 +108,15 @@ keypair_openssl <- function(pub, key, envelope = TRUE, password = NULL,
 }
 
 ##' Wrap an openssl symmetric (aes) key.  This can be used with the
-##' functions \code{\link{encrypt_data}} and
-##' \code{\link{decrypt_data}}, along with the higher level wrappers
-##' \code{\link{encrypt}} and \code{\link{decrypt}}.  With a symmetric
+##' functions [cyphr::encrypt_data()] and
+##' [cyphr::decrypt_data()], along with the higher level wrappers
+##' [cyphr::encrypt()] and [cyphr::decrypt()].  With a symmetric
 ##' key, everybody uses the same key for encryption and decryption.
 ##'
 ##' @title Symmetric encryption with openssl
-##' @param key An openssl aes key (i.e., an object of class \code{aes}).
-##' @param mode The encryption mode to use.  Options are \code{cbc},
-##'   \code{ctr} and \code{gcm} (see the \code{openssl} package for
+##' @param key An openssl aes key (i.e., an object of class `aes`).
+##' @param mode The encryption mode to use.  Options are `cbc`,
+##'   `ctr` and `gcm` (see the `openssl` package for
 ##'   more details)
 ##' @export
 ##' @examples

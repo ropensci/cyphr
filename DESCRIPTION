@@ -1,6 +1,6 @@
 Package: cyphr
 Title: High Level Encryption Wrappers
-Version: 1.1.3
+Version: 1.1.4
 Authors@R: c(person("Rich", "FitzJohn", role = c("aut", "cre"),
     email = "rich.fitzjohn@gmail.com"),
     person("Jai", "Ranganathan", role = "ctb"))
@@ -12,12 +12,12 @@ Description: Encryption wrappers, using low-level support from
     high-level wrappers for input/output functions for seamlessly
     adding encryption to existing analyses.
 License: MIT + file LICENSE
-URL: https://github.com/ropensci/cyphr, https://docs.ropensci.org/cyphr
+URL: https://github.com/ropensci/cyphr, https://docs.ropensci.org/cyphr/
 BugReports: https://github.com/ropensci/cyphr/issues
 Imports:
     getPass,
     openssl (>= 0.9.9),
-    sodium
+    sodium (>= 1.2.1)
 Suggests:
     knitr,
     rmarkdown,

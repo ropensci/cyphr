@@ -185,6 +185,8 @@ head(cyphr::decrypt(readRDS(filename), key_bob))
 
 ## Minimal example
 
+![Illustration of Shared Encrypted Storage](team_encryption.png)
+
 As above, but with less discussion:
 
 ``` {r echo = FALSE, results = "hide"}

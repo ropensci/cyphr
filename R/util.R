@@ -150,7 +150,10 @@ file_copy <- function(...) {
 guess_key_options <- function(pub, error = FALSE) {
   ext <- if (pub) ".pub" else ""
   if (error) {
-    sprintf("id_rsa%s or id_ed25519%s", ext)
+    paste0(
+      sprintf("id_rsa%s or ", ext),
+      sprintf("id_ed25519%s", ext)
+    )
   } else {
     c(sprintf("id_rsa%s", ext),
       sprintf("id_ed25519%s", ext))

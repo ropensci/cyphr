@@ -146,3 +146,23 @@ cyphr_file <- function(...) {
 file_copy <- function(...) {
   stopifnot(file.copy(...))
 }
+
+guess_key_options <- function(error = FALSE) {
+  if (error) {
+    "id_rsa or id_ed25519"
+  } else {
+    c("id_rsa", "id_ed25519")
+  }
+}
+ 
+guess_key_filename <- function(path = "~/.ssh/") {
+  for (guess in guess_key_options()) {
+    keyfile <- sprintf("%s/%s", path, guess)
+    pubkeyfile <- sprintf("%s/%s.pub", path, guess)
+    if (file.exists(keyfile) && file.exists(pubkeyfile)) {
+      return(keyfile)
+    }
+  }
+  
+  NULL
+}

@@ -3,8 +3,8 @@
 ##' @title Asymmetric encryption with openssl
 ##'
 ##' @param pub An openssl public key.  Usually this will be the path
-##'   to the key, in which case it may either the path to a public key
-##'   or be the path to a directory containing a file
+##'   to the key, in which case it may be either the path to a public key
+##'   or the path to a directory containing a file such as
 ##'   `id_rsa.pub`.  If `NULL`, then your public key will be
 ##'   used (found via the environment variable `USER_PUBKEY`,
 ##'   then `~/.ssh/id_rsa.pub`).  However, it is not that common
@@ -193,7 +193,7 @@ openssl_find_pubkey <- function(path) {
     ## NOTE: almost same logic as the openssl package (but without the
     ## automatic derivation bit because that would require loading the
     ## private key which would trigger a password request).
-    path <- Sys.getenv("USER_PUBKEY", "~/.ssh/id_rsa.pub")
+    path <- Sys.getenv("USER_PUBKEY", guess_key_filename())
     if (!file.exists(path)) {
       openssl_key_error(path, "public")
     }
@@ -202,9 +202,10 @@ openssl_find_pubkey <- function(path) {
     stop("Public key does not exist at ", path)
   }
   if (is_directory(path)) {
-    path <- file.path(path, "id_rsa.pub")
+    path <- guess_key_filename(path)
     if (!file.exists(path)) {
-      stop("did not find id_rsa.pub within path")
+      stop(sprintf("did not find %s within path",
+                   guess_key_options(error = TRUE)))
     }
   }
   path

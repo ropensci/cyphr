@@ -170,7 +170,7 @@ openssl_load_pubkey <- function(path) {
 openssl_find_key <- function(path) {
   if (is.null(path)) {
     ## NOTE: same logic as the openssl package
-    path <- Sys.getenv("USER_KEY", "~/.ssh/id_rsa")
+    path <- Sys.getenv("USER_KEY", guess_key_filename(pub = FALSE))
     if (!file.exists(path)) {
       openssl_key_error(path, "private")
     }
@@ -179,9 +179,11 @@ openssl_find_key <- function(path) {
     stop("Private key does not exist at ", path)
   }
   if (is_directory(path)) {
-    path <- file.path(path, "id_rsa")
+    path <- guess_key_filename(path = path, pub = FALSE)
     if (!file.exists(path)) {
-      stop("did not find id_rsa within path")
+      stop(sprintf("did not find %s within path",
+                   guess_key_options(pub = FALSE, error = TRUE)))
+                   
     }
   }
   path
@@ -193,7 +195,7 @@ openssl_find_pubkey <- function(path) {
     ## NOTE: almost same logic as the openssl package (but without the
     ## automatic derivation bit because that would require loading the
     ## private key which would trigger a password request).
-    path <- Sys.getenv("USER_PUBKEY", guess_key_filename())
+    path <- Sys.getenv("USER_PUBKEY", guess_key_filename(pub = TRUE))
     if (!file.exists(path)) {
       openssl_key_error(path, "public")
     }
@@ -202,10 +204,10 @@ openssl_find_pubkey <- function(path) {
     stop("Public key does not exist at ", path)
   }
   if (is_directory(path)) {
-    path <- guess_key_filename(path)
+    path <- guess_key_filename(path, pub = TRUE)
     if (!file.exists(path)) {
       stop(sprintf("did not find %s within path",
-                   guess_key_options(error = TRUE)))
+                   guess_key_options(pub = TRUE, error = TRUE)))
     }
   }
   path

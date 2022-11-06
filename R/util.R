@@ -151,8 +151,8 @@ guess_key_options <- function(pub, error = FALSE) {
   ext <- if (pub) ".pub" else ""
   if (error) {
     paste0(
-      sprintf("id_rsa%s or ", ext),
-      sprintf("id_ed25519%s", ext)
+      sprintf("id_rsa[.pub] pair or "),
+      sprintf("id_ed25519[.pub] pair")
     )
   } else {
     c(sprintf("id_rsa%s", ext),
@@ -161,10 +161,19 @@ guess_key_options <- function(pub, error = FALSE) {
 }
  
 guess_key_filename <- function(pub, path = "~/.ssh/") {
-  for (guess in guess_key_options(pub)) {
+  for (guess in guess_key_options(pub = FALSE)) {
     keyfile <- sprintf("%s/%s", path, guess)
-    if (file.exists(keyfile)) {
-      return(keyfile)
+    pubkeyfile <- sprintf("%s/%s.pub", path, guess)
+    
+    # Ensure both private and public key exist,
+    # in order to return either.
+    
+    if (file.exists(keyfile) && file.exists(pubkeyfile)) {
+      if (pub) {
+        return(pubkeyfile)
+      } else {
+        return(keyfile)
+      }
     }
   }
   

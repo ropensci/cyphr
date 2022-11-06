@@ -149,10 +149,8 @@ file_copy <- function(...) {
 
 guess_key_options <- function(error = FALSE) {
   if (error) {
-    paste0(
-      sprintf("id_rsa[.pub] pair or "),
-      sprintf("id_ed25519[.pub] pair")
-    )
+    paste0("id_rsa[.pub] pair or ",
+           "id_ed25519[.pub] pair")
   } else {
     c("id_rsa",
       "id_ed25519")

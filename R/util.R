@@ -155,7 +155,7 @@ guess_key_options <- function(error = FALSE) {
     )
   } else {
     c("id_rsa",
-      "id_ed25519%s")
+      "id_ed25519")
   }
 }
  

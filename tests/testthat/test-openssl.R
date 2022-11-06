@@ -142,7 +142,7 @@ test_that("find key", {
   expect_error(openssl_find_pubkey(path), "Public key does not exist")
   dir.create(path)
   expect_error(openssl_find_key(path), "did not find (.*) within")
-  expect_error(openssl_find_pubkey(path), "did not find (.*).pub within")
+  expect_error(openssl_find_pubkey(path), "did not find (.*) within")
 })
 
 test_that("default key", {

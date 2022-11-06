@@ -177,5 +177,5 @@ guess_key_filename <- function(pub, path = "~/.ssh/") {
     }
   }
   
-  NULL
+  ""
 }

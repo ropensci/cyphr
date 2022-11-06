@@ -147,21 +147,20 @@ file_copy <- function(...) {
   stopifnot(file.copy(...))
 }
 
-guess_key_options <- function(pub, error = FALSE) {
-  ext <- if (pub) ".pub" else ""
+guess_key_options <- function(error = FALSE) {
   if (error) {
     paste0(
       sprintf("id_rsa[.pub] pair or "),
       sprintf("id_ed25519[.pub] pair")
     )
   } else {
-    c(sprintf("id_rsa%s", ext),
-      sprintf("id_ed25519%s", ext))
+    c("id_rsa",
+      "id_ed25519%s")
   }
 }
  
 guess_key_filename <- function(pub, path = "~/.ssh/") {
-  for (guess in guess_key_options(pub = FALSE)) {
+  for (guess in guess_key_options()) {
     keyfile <- sprintf("%s/%s", path, guess)
     pubkeyfile <- sprintf("%s/%s.pub", path, guess)
     

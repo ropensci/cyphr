@@ -182,7 +182,7 @@ openssl_find_key <- function(path) {
     path <- guess_key_filename(pub = FALSE, path = path)
     if ((is.null(path)) || (!file.exists(path))) {
       stop(sprintf("did not find %s within path",
-                   guess_key_options(pub = FALSE, error = TRUE)))
+                   guess_key_options(error = TRUE)))
                    
     }
   }
@@ -207,7 +207,7 @@ openssl_find_pubkey <- function(path) {
     path <- guess_key_filename(pub = TRUE, path = path)
     if ((is.null(path)) || (!file.exists(path))) {
       stop(sprintf("did not find %s within path",
-                   guess_key_options(pub = TRUE, error = TRUE)))
+                   guess_key_options(error = TRUE)))
     }
   }
   path

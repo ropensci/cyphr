@@ -147,18 +147,20 @@ file_copy <- function(...) {
   stopifnot(file.copy(...))
 }
 
-guess_key_options <- function(error = FALSE) {
-  if (error) {
-    paste0("id_rsa[.pub] pair or ",
-           "id_ed25519[.pub] pair")
-  } else {
-    c("id_rsa",
-      "id_ed25519")
-  }
+acceptable_key_filenames <- function() {
+  c("id_rsa",
+    "id_ed25519")
+}
+
+guess_key_error <- function() {
+  paste0("Could not find a pair of ",
+    paste0(acceptable_key_filenames(),
+          collapse = "[.pub], "),
+    "[.pub]. (Consider setting USER_KEY and USER_PUBKEY)")
 }
  
 guess_key_filename <- function(pub, path = "~/.ssh/") {
-  for (guess in guess_key_options()) {
+  for (guess in acceptable_key_filenames()) {
     keyfile <- sprintf("%s/%s", path, guess)
     pubkeyfile <- sprintf("%s/%s.pub", path, guess)
     

@@ -156,7 +156,7 @@ guess_key_error <- function() {
   paste0("Could not find a pair of ",
     paste0(acceptable_key_filenames(),
           collapse = "[.pub], "),
-    "[.pub]. (Consider setting USER_KEY and USER_PUBKEY)")
+    "[.pub]. (See ssl_keygen, or set USER_KEY and USER_PUBKEY)")
 }
  
 guess_key_filename <- function(pub, path = "~/.ssh/") {

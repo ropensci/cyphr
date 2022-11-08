@@ -148,8 +148,9 @@ file_copy <- function(...) {
 }
 
 acceptable_key_filenames <- function() {
-  c("id_rsa",
-    "id_ed25519")
+  c("id_ed25519",
+    "id_rsa"
+  )
 }
 
 guess_key_error <- function() {

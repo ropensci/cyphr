@@ -146,3 +146,36 @@ cyphr_file <- function(...) {
 file_copy <- function(...) {
   stopifnot(file.copy(...))
 }
+
+acceptable_key_filenames <- function() {
+  c("id_ed25519",
+    "id_rsa"
+  )
+}
+
+guess_key_error <- function() {
+  paste0("Could not find a pair of ",
+    paste0(acceptable_key_filenames(),
+          collapse = "[.pub], "),
+    "[.pub]. (See ssl_keygen, or set USER_KEY and USER_PUBKEY)")
+}
+ 
+guess_key_filename <- function(pub, path = "~/.ssh/") {
+  for (guess in acceptable_key_filenames()) {
+    keyfile <- sprintf("%s/%s", path, guess)
+    pubkeyfile <- sprintf("%s/%s.pub", path, guess)
+    
+    # Ensure both private and public key exist,
+    # in order to return either.
+    
+    if (file.exists(keyfile) && file.exists(pubkeyfile)) {
+      if (pub) {
+        return(pubkeyfile)
+      } else {
+        return(keyfile)
+      }
+    }
+  }
+  
+  ""
+}

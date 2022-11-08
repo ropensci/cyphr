@@ -3,8 +3,8 @@
 ##' @title Asymmetric encryption with openssl
 ##'
 ##' @param pub An openssl public key.  Usually this will be the path
-##'   to the key, in which case it may either the path to a public key
-##'   or be the path to a directory containing a file
+##'   to the key, in which case it may be either the path to a public key
+##'   or the path to a directory containing a file such as
 ##'   `id_rsa.pub`.  If `NULL`, then your public key will be
 ##'   used (found via the environment variable `USER_PUBKEY`,
 ##'   then `~/.ssh/id_rsa.pub`).  However, it is not that common
@@ -170,7 +170,7 @@ openssl_load_pubkey <- function(path) {
 openssl_find_key <- function(path) {
   if (is.null(path)) {
     ## NOTE: same logic as the openssl package
-    path <- Sys.getenv("USER_KEY", "~/.ssh/id_rsa")
+    path <- Sys.getenv("USER_KEY", guess_key_filename(pub = FALSE))
     if (!file.exists(path)) {
       openssl_key_error(path, "private")
     }
@@ -179,9 +179,9 @@ openssl_find_key <- function(path) {
     stop("Private key does not exist at ", path)
   }
   if (is_directory(path)) {
-    path <- file.path(path, "id_rsa")
-    if (!file.exists(path)) {
-      stop("did not find id_rsa within path")
+    path <- guess_key_filename(pub = FALSE, path = path)
+    if ((is.null(path)) || (!file.exists(path))) {
+      stop(guess_key_error())
     }
   }
   path
@@ -193,7 +193,7 @@ openssl_find_pubkey <- function(path) {
     ## NOTE: almost same logic as the openssl package (but without the
     ## automatic derivation bit because that would require loading the
     ## private key which would trigger a password request).
-    path <- Sys.getenv("USER_PUBKEY", "~/.ssh/id_rsa.pub")
+    path <- Sys.getenv("USER_PUBKEY", guess_key_filename(pub = TRUE))
     if (!file.exists(path)) {
       openssl_key_error(path, "public")
     }
@@ -202,9 +202,9 @@ openssl_find_pubkey <- function(path) {
     stop("Public key does not exist at ", path)
   }
   if (is_directory(path)) {
-    path <- file.path(path, "id_rsa.pub")
-    if (!file.exists(path)) {
-      stop("did not find id_rsa.pub within path")
+    path <- guess_key_filename(pub = TRUE, path = path)
+    if ((is.null(path)) || (!file.exists(path))) {
+      stop(guess_key_error())
     }
   }
   path

@@ -1,3 +1,7 @@
+# cyphr 1.1.5
+
+* Recognise default keypairs named either `id_rsa`, or `id_ed25519` (Issue #53)
+
 # cyphr 1.0.6
 
 * Added wrappers for `readxl::read_excel` and `writexl::write_xlsx` (reside-109)
@@ -14,3 +18,4 @@
 # cyphr 0.1.0
 
 * Initial prototype, as sent to rOpenSci onboarding for review
+15

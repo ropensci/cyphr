@@ -14,8 +14,8 @@ keypair_openssl(
 }
 \arguments{
 \item{pub}{An openssl public key.  Usually this will be the path
-to the key, in which case it may either the path to a public key
-or be the path to a directory containing a file
+to the key, in which case it may be either the path to a public key
+or the path to a directory containing a file such as
 \code{id_rsa.pub}.  If \code{NULL}, then your public key will be
 used (found via the environment variable \code{USER_PUBKEY},
 then \verb{~/.ssh/id_rsa.pub}).  However, it is not that common

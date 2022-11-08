@@ -172,8 +172,8 @@ path_key_alice <- cyphr::ssh_keygen(password = FALSE)
 path_key_bob <- cyphr::ssh_keygen(password = FALSE)
 ```
 
-Note that each directory contains a public key (`id_rsa.pub`) and a
-private key (`id_rsa`).
+Note that ssh_keygen writes a public key (`id_rsa.pub`) and a
+private key (`id_rsa`) in each directory.
 ``` {r }
 dir(path_key_alice)
 dir(path_key_bob)
@@ -307,8 +307,8 @@ this is appropriate and consider generating a new keypair with the
 private key encrypted.  If you don't then anyone who can read your
 private key can decrypt any message intended for you.
 
-3. you get an error like `Did not find default ssh public key at
-~/.ssh/id_rsa.pub`.  You need to create a keypair.
+3. you get an error like `Could not find a pair of id_rsa[.pub] ...`
+You need to create a keypair, or specify an existing one.
 
 To create a keypair, you can use the `cyphr::ssh_keygen()` function as
 
@@ -321,6 +321,11 @@ This will create the keypair as `~/.ssh/id_rsa` and
 by default.  See `?ssh_keygen` for more information.  (On Linux and
 macOS you might use the `ssh-keygen` command line utility.  On
 windows, PuTTY` has a utility for creating keys.)
+
+To use an existing keypair, set the `USER_KEY` and `USER_PUBKEY`
+environment variables. You can either directly specify the path 
+of each, or you can specify a directory, and cyphr will search
+for a key-pair starting with `id_rsa` or `id_ed25519`.
 
 ### `sodium`
 

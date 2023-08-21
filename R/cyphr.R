@@ -10,8 +10,5 @@
 ##' - [data vignette](https://docs.ropensci.org/cyphr/articles/data.html);
 ##'   in R: `vignette("data", package = "cyphr")`
 ##'
-##' @md
-##' @name cyphr
-##' @docType package
 ##' @author Rich FitzJohn (rich.fitzjohn@@gmail.com)
-NULL
+"_PACKAGE"

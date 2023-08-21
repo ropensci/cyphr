@@ -5,7 +5,7 @@
 <!-- badges: start -->
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![R build status](https://github.com/ropensci/cyphr/workflows/R-CMD-check/badge.svg)](https://github.com/ropensci/cyphr/actions)
-[![codecov.io](https://codecov.io/github/ropensci/cyphr/coverage.svg?branch=master)](https://codecov.io/github/ropensci/cyphr?branch=master)
+[![codecov.io](https://codecov.io/github/ropensci/cyphr/coverage.svg?branch=master)](https://app.codecov.io/github/ropensci/cyphr?branch=master)
 [![](https://www.r-pkg.org/badges/version/cyphr)](https://cran.r-project.org/package=cyphr)
 [![](https://badges.ropensci.org/114_status.svg)](https://github.com/ropensci/software-review/issues/114)
 <!-- badges: end -->

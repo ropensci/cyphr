@@ -1,5 +1,3 @@
-context("assertions")
-
 test_that("assert_is", {
   expect_error(assert_is(NULL, "function"),
                "must be a function")

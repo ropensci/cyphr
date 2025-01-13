@@ -1,5 +1,3 @@
-context("rewrite")
-
 ## This is just a random set of what would want to be a significantly
 ## more beefed up set given how evil rewrite is.
 test_that("command rewriting", {

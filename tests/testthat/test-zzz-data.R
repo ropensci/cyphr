@@ -1,5 +1,3 @@
-context("data workflow")
-
 test_that("missing user key throws error", {
   expect_error(data_load_keypair_user(tempfile()),
                "key does not exist")
@@ -7,7 +5,7 @@ test_that("missing user key throws error", {
 
 test_that("load and reload openssl keypair", {
   pair <- data_load_keypair_user("pair1")
-  expect_is(pair, "cyphr_keypair")
+  expect_s3_class(pair, "cyphr_keypair")
   expect_identical(data_load_keypair_user(pair), pair)
 })
 
@@ -36,14 +34,14 @@ test_that("initialisation", {
   dir.create(path, FALSE, TRUE)
   quiet <- FALSE
   res <- data_admin_init(path, "pair1", quiet)
-  expect_is(res, "cyphr_key")
+  expect_s3_class(res, "cyphr_key")
   expect_true(file.exists(data_path_cyphr(path)))
   expect_true(file.exists(data_path_test(path)))
   expect_identical(decrypt_string(data_path_test(path), res), "cyphr")
 
   keys <- data_admin_list_keys(path)
   expect_equal(length(keys), 1L)
-  expect_is(keys, "data_keys")
+  expect_s3_class(keys, "data_keys")
   expect_identical(keys[[1]]$pub, data_load_keypair_user("pair1")$pub)
 
   expect_message(data_request_access(path, "pair1"),
@@ -76,7 +74,7 @@ test_that("grant access", {
   expect_identical(dat_req$pub, pair2$pub)
   expect_identical(dat_req$host, Sys.info()[["nodename"]])
   expect_identical(dat_req$user, Sys.info()[["user"]])
-  expect_is(dat_req$date, "POSIXt")
+  expect_s3_class(dat_req$date, "POSIXt")
 
   ## Try loading requests:
   keys <- data_load_request(path, NULL, quiet)
@@ -98,7 +96,7 @@ test_that("grant access", {
 
   ## Then the new user can connect:
   k <- data_key(path, "pair2")
-  expect_is(k, "cyphr_key")
+  expect_s3_class(k, "cyphr_key")
   expect_identical(k$key(), res$key())
 
   expect_identical(decrypt_object(file.path(path, "data.rds"), k), r)

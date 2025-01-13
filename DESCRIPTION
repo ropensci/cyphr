@@ -21,10 +21,11 @@ Imports:
 Suggests:
     knitr,
     rmarkdown,
-    testthat
+    testthat (>= 3.0.0)
 RoxygenNote: 7.2.3
 Roxygen: list(markdown = TRUE)
 VignetteBuilder: rmarkdown,
     knitr
 Encoding: UTF-8
 Language: en-GB
+Config/testthat/edition: 3

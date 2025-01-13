@@ -5,31 +5,33 @@ test_that("sys_which", {
 })
 
 test_that("get_password_str", {
-  testthat::with_mock(
-    `cyphr:::get_pass` = function(prompt)
-      if (grepl("Verify", prompt)) "a" else "b",
-    expect_error(get_password_str(TRUE, "password"),
-                 "Passwords do not match"),
-    expect_equal(get_password_str(FALSE, "password"),
-                 "b"))
+  testthat::with_mocked_bindings(
+    get_pass = function(prompt)
+      if (grepl("Verify", prompt)) "a" else "b", {
+        expect_error(get_password_str(TRUE, "password"),
+                     "Passwords do not match")
+        expect_equal(get_password_str(FALSE, "password"),
+                     "b")
+      })
 
-  testthat::with_mock(
-    `cyphr:::get_pass` = function(prompt) "a",
-    expect_equal(get_password_str(TRUE, "password"), "a"),
-    expect_equal(get_password_str(FALSE, "password"), "a"))
+  testthat::with_mocked_bindings(
+    get_pass = function(prompt) "a", {
+      expect_equal(get_password_str(TRUE, "password"), "a")
+      expect_equal(get_password_str(FALSE, "password"), "a")
+    })
 })
 
 test_that("prompt_confirm", {
-  testthat::with_mock(`cyphr:::read_line` = function(...) "n",
+  testthat::with_mocked_bindings(read_line = function(...) "n",
                       expect_equal(prompt_confirm(), FALSE))
-  testthat::with_mock(`cyphr:::read_line` = function(...) "y",
+  testthat::with_mocked_bindings(read_line = function(...) "y",
                       expect_equal(prompt_confirm(), TRUE))
-  testthat::with_mock(`cyphr:::read_line` = function(...) "",
+  testthat::with_mocked_bindings(read_line = function(...) "",
                       expect_equal(prompt_confirm(), FALSE))
 
   first <- TRUE
-  res <- testthat::with_mock(
-    `cyphr:::read_line` = function(...) {
+  res <- testthat::with_mocked_bindings(
+    read_line = function(...) {
       if (first) {
         first <<- FALSE
         "x"

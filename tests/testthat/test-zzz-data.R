@@ -148,13 +148,14 @@ test_that("cancel auth", {
   res <- data_admin_init(path, "pair1")
   h <- data_request_access(path, "pair2")
 
-  testthat::with_mock(
-    `cyphr:::prompt_confirm` = function() FALSE,
-    expect_message(try(data_admin_authorise(path, h, "pair1", FALSE),
-                       silent = TRUE),
-                   "Cancelled adding key"),
-    expect_error(data_admin_authorise(path, h, "pair1", FALSE),
-                 "Errors adding 1 key"))
+  testthat::with_mocked_bindings(
+    prompt_confirm = function() FALSE, {
+      expect_message(try(data_admin_authorise(path, h, "pair1", FALSE),
+                         silent = TRUE),
+                     "Cancelled adding key")
+      expect_error(data_admin_authorise(path, h, "pair1", FALSE),
+                   "Errors adding 1 key")
+    })
 })
 
 test_that("print keys", {
@@ -213,8 +214,8 @@ test_that("decryption failed gives reasonable error", {
 test_that("gracefully fail to initialise", {
   path <- tempfile()
   dir.create(path, FALSE, TRUE)
-  testthat::with_mock(
-    `cyphr:::data_authorise_write` = function(...) stop("Unexplained error"),
+  testthat::with_mocked_bindings(
+    data_authorise_write = function(...) stop("Unexplained error"),
     expect_message(try(data_admin_init(path, "pair1"), silent = TRUE),
                    "Removing data key"))
   expect_equal(dir(data_path_cyphr(path), all.files = TRUE, no.. = TRUE),

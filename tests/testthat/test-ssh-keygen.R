@@ -61,8 +61,8 @@ test_that("invalid password", {
 
 test_that("get password", {
   path <- tempfile()
-  testthat::with_mock(
-    `cyphr::get_password_str` = function(...) "secret",
+  testthat::with_mocked_bindings(
+    get_password_str = function(...) "secret",
     ssh_keygen(path, TRUE))
   expect_error(openssl_load_key(path, "wrong password"))
   expect_is(openssl_load_key(path, "secret"), "key")

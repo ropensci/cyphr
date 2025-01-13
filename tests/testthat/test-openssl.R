@@ -13,11 +13,11 @@ test_that("load; with password", {
 
   expect_error(openssl_load_key(path, "wrong password"))
 
-  testthat::with_mock(
-    `cyphr:::get_password_str` = function(...) pw,
+  testthat::with_mocked_bindings(
+    get_password_str = function(...) pw,
     expect_is(openssl_load_key(path), "key"))
-  testthat::with_mock(
-    `cyphr:::get_password_str` = function(...) "wrong",
+  testthat::with_mocked_bindings(
+    get_password_str = function(...) "wrong",
     expect_error(openssl_load_key(path)))
 })
 

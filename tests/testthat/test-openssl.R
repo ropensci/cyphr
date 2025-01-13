@@ -169,7 +169,7 @@ test_that("detect incorrect sender", {
 
   pair_b <- keypair_openssl("pair1", "pair2")
   pair_c_auth <- keypair_openssl("pair1", "pair3")
-  pair_c_noauth <- keypair_openssl("pair1", "pair3", authenticate = FALSE)
+  pair_c_noauth <- keypair_openssl("pair1", "pair3", authenticated = FALSE)
 
   r1 <- openssl::rand_bytes(20)
   r2 <- openssl::rand_bytes(20)

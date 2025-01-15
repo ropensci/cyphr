@@ -1,5 +1,3 @@
-context("util")
-
 test_that("sys_which", {
   expect_error(sys_which("nonexistantbinary"), "Can not find")
 })

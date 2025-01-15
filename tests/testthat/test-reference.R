@@ -1,5 +1,3 @@
-context("reference")
-
 ## In order to ensure backward compatibility we need to be able to
 ## read reference examples from previous versions of cyphr.
 ## Periodically we will create a new reference and ensure that it can

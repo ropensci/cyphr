@@ -1,6 +1,6 @@
 Package: cyphr
 Title: High Level Encryption Wrappers
-Version: 1.1.6
+Version: 1.1.7
 Authors@R: c(person("Rich", "FitzJohn", role = c("aut", "cre"),
     email = "rich.fitzjohn@gmail.com"),
     person("Jai", "Ranganathan", role = "ctb"))
@@ -21,10 +21,11 @@ Imports:
 Suggests:
     knitr,
     rmarkdown,
-    testthat
+    testthat (>= 3.0.0)
 RoxygenNote: 7.2.3
 Roxygen: list(markdown = TRUE)
 VignetteBuilder: rmarkdown,
     knitr
 Encoding: UTF-8
 Language: en-GB
+Config/testthat/edition: 3

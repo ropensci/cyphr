@@ -1,5 +1,3 @@
-context("encrypt() wrappers")
-
 test_that("Roundtrip rds using standard evaluation", {
   path <- tempfile()
   on.exit(file_remove_if_exists(path))

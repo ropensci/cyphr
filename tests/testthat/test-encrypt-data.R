@@ -1,11 +1,9 @@
-context("encrypt_data")
-
 test_that("encrypt_data", {
   pair <- keypair_openssl("pair1", "pair1")
   r <- openssl::rand_bytes(20)
 
   v <- encrypt_data(r, pair, NULL)
-  expect_is(v, "raw")
+  expect_type(v, "raw")
   expect_identical(decrypt_data(v, pair, NULL), r)
 })
 
@@ -14,7 +12,7 @@ test_that("encrypt_object", {
   r <- list(runif(10), sample(20))
 
   v <- encrypt_object(r, pair, NULL)
-  expect_is(v, "raw")
+  expect_type(v, "raw")
   expect_identical(decrypt_object(v, pair), r)
 })
 
@@ -23,7 +21,7 @@ test_that("encrypt_string", {
   r <- paste(sample(letters), collapse = "")
 
   v <- encrypt_string(r, pair)
-  expect_is(v, "raw")
+  expect_type(v, "raw")
   expect_identical(decrypt_string(v, pair), r)
 })
 

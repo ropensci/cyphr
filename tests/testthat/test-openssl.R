@@ -1,21 +1,19 @@
-context("openssl")
-
 test_that("load; no password", {
   d <- openssl_load_key("pair1")
-  expect_is(d, "key")
+  expect_s3_class(d, "key")
 })
 
 test_that("load; with password", {
   pw <- "secret"
   path <- ssh_keygen(password = pw)
   d <- openssl_load_key(path, pw)
-  expect_is(d, "key")
+  expect_s3_class(d, "key")
 
   expect_error(openssl_load_key(path, "wrong password"))
 
   testthat::with_mocked_bindings(
     get_password_str = function(...) pw,
-    expect_is(openssl_load_key(path), "key"))
+    expect_s3_class(openssl_load_key(path), "key"))
   testthat::with_mocked_bindings(
     get_password_str = function(...) "wrong",
     expect_error(openssl_load_key(path)))
@@ -23,18 +21,18 @@ test_that("load; with password", {
 
 test_that("pair", {
   pair <- keypair_openssl("pair1", "pair1", authenticated = FALSE)
-  expect_is(pair, "cyphr_keypair")
-  expect_is(pair, "cyphr_key")
+  expect_s3_class(pair, "cyphr_keypair")
+  expect_s3_class(pair, "cyphr_key")
   expect_equal(pair$type, "openssl")
-  expect_is(pair$pub, "pubkey")
-  expect_is(pair$key, "function")
-  expect_is(pair$key(), "key")
-  expect_is(pair$encrypt, "function")
-  expect_is(pair$decrypt, "function")
+  expect_s3_class(pair$pub, "pubkey")
+  expect_type(pair$key, "closure")
+  expect_s3_class(pair$key(), "key")
+  expect_type(pair$encrypt, "closure")
+  expect_type(pair$decrypt, "closure")
 
   r <- openssl::rand_bytes(20)
   v <- pair$encrypt(r)
-  expect_is(v, "raw")
+  expect_type(v, "raw")
   expect_gt(length(v), length(r))
   expect_identical(pair$decrypt(v), r)
 })
@@ -42,14 +40,14 @@ test_that("pair", {
 test_that("pair - non envelope", {
   pair <- keypair_openssl("pair1", "pair1", envelope = FALSE,
                           authenticated = FALSE)
-  expect_is(pair, "cyphr_keypair")
-  expect_is(pair, "cyphr_key")
+  expect_s3_class(pair, "cyphr_keypair")
+  expect_s3_class(pair, "cyphr_key")
   expect_equal(pair$type, "openssl")
-  expect_is(pair$pub, "pubkey")
-  expect_is(pair$key, "function")
-  expect_is(pair$key(), "key")
-  expect_is(pair$encrypt, "function")
-  expect_is(pair$decrypt, "function")
+  expect_s3_class(pair$pub, "pubkey")
+  expect_type(pair$key, "closure")
+  expect_s3_class(pair$key(), "key")
+  expect_type(pair$encrypt, "closure")
+  expect_type(pair$decrypt, "closure")
 
   r <- openssl::rand_bytes(20)
   v <- pair$encrypt(r)
@@ -59,14 +57,14 @@ test_that("pair - non envelope", {
 
 test_that("pair - auth", {
   pair <- keypair_openssl("pair1", "pair1", authenticated = TRUE)
-  expect_is(pair, "cyphr_keypair")
-  expect_is(pair, "cyphr_key")
+  expect_s3_class(pair, "cyphr_keypair")
+  expect_s3_class(pair, "cyphr_key")
   expect_equal(pair$type, "openssl")
-  expect_is(pair$pub, "pubkey")
-  expect_is(pair$key, "function")
-  expect_is(pair$key(), "key")
-  expect_is(pair$encrypt, "function")
-  expect_is(pair$decrypt, "function")
+  expect_s3_class(pair$pub, "pubkey")
+  expect_type(pair$key, "closure")
+  expect_s3_class(pair$key(), "key")
+  expect_type(pair$encrypt, "closure")
+  expect_type(pair$decrypt, "closure")
 
   r <- openssl::rand_bytes(20)
   v <- pair$encrypt(r)
@@ -77,14 +75,14 @@ test_that("pair - auth", {
 test_that("pair - auth, non envelope", {
   pair <- keypair_openssl("pair1", "pair1", envelope = FALSE,
                           authenticated = TRUE)
-  expect_is(pair, "cyphr_keypair")
-  expect_is(pair, "cyphr_key")
+  expect_s3_class(pair, "cyphr_keypair")
+  expect_s3_class(pair, "cyphr_key")
   expect_equal(pair$type, "openssl")
-  expect_is(pair$pub, "pubkey")
-  expect_is(pair$key, "function")
-  expect_is(pair$key(), "key")
-  expect_is(pair$encrypt, "function")
-  expect_is(pair$decrypt, "function")
+  expect_s3_class(pair$pub, "pubkey")
+  expect_type(pair$key, "closure")
+  expect_s3_class(pair$key(), "key")
+  expect_type(pair$encrypt, "closure")
+  expect_type(pair$decrypt, "closure")
 
   r <- openssl::rand_bytes(20)
   v <- pair$encrypt(r)
@@ -108,12 +106,12 @@ test_that("pair - communicate", {
 test_that("symmetric", {
   k <- openssl::aes_keygen()
   key <- key_openssl(k)
-  expect_is(key, "cyphr_key")
+  expect_s3_class(key, "cyphr_key")
   expect_equal(key$type, "openssl")
-  expect_is(key$key, "function")
+  expect_type(key$key, "closure")
   expect_identical(key$key(), k)
-  expect_is(key$encrypt, "function")
-  expect_is(key$decrypt, "function")
+  expect_type(key$encrypt, "closure")
+  expect_type(key$decrypt, "closure")
 
   r <- openssl::rand_bytes(20)
   v <- key$encrypt(r)
@@ -171,7 +169,7 @@ test_that("detect incorrect sender", {
 
   pair_b <- keypair_openssl("pair1", "pair2")
   pair_c_auth <- keypair_openssl("pair1", "pair3")
-  pair_c_noauth <- keypair_openssl("pair1", "pair3", authenticate = FALSE)
+  pair_c_noauth <- keypair_openssl("pair1", "pair3", authenticated = FALSE)
 
   r1 <- openssl::rand_bytes(20)
   r2 <- openssl::rand_bytes(20)

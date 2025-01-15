@@ -595,8 +595,9 @@ data_load_request <- function(path_data, hash = NULL, quiet = FALSE) {
     } else {
       stop("Invalid type for 'hash'")
     }
-    names(keys) <- vapply(keys, function(x)
-      bin2str(data_key_fingerprint(x$pub, version), ""), character(1))
+    names(keys) <- vapply(keys, function(x) {
+      bin2str(data_key_fingerprint(x$pub, version), "")
+    }, character(1))
     class(keys) <- "data_keys"
     attr(keys, "version") <- version
   }

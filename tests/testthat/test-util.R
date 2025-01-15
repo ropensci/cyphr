@@ -4,13 +4,16 @@ test_that("sys_which", {
 
 test_that("get_password_str", {
   testthat::with_mocked_bindings(
-    get_pass = function(prompt)
-      if (grepl("Verify", prompt)) "a" else "b", {
-        expect_error(get_password_str(TRUE, "password"),
-                     "Passwords do not match")
-        expect_equal(get_password_str(FALSE, "password"),
-                     "b")
-      })
+    get_pass = function(prompt) {
+      if (grepl("Verify", prompt)) "a" else "b"
+    },
+    {
+      expect_error(get_password_str(TRUE, "password"),
+                   "Passwords do not match")
+      expect_equal(get_password_str(FALSE, "password"),
+                   "b")
+    }
+  )
 
   testthat::with_mocked_bindings(
     get_pass = function(prompt) "a", {

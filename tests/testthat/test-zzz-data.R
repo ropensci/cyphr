@@ -330,8 +330,9 @@ test_that("migrate", {
   keys_new <- data_admin_list_keys(path_data)
   reqs_new <- data_admin_list_requests(path_data)
 
-  map <- vapply(keys_old, function(k)
-    bin2str(data_key_fingerprint(k$pub, data_schema_version()), ""), "")
+  map <- vapply(keys_old, function(k) {
+    bin2str(data_key_fingerprint(k$pub, data_schema_version()), "")
+  }, "")
 
   expect_setequal(names(keys_new), unname(map))
   v <- c("user", "host", "date", "pub", "key")

@@ -19,6 +19,21 @@ test_that("load; with password", {
     expect_error(openssl_load_key(path)))
 })
 
+
+test_that("load; use envvar for password", {
+  pw <- "secret"
+
+  path <- ssh_keygen(password = pw)
+  d <- withr::with_envvar(c(CYPHR_USER_KEY_PASSWORD = pw),
+                          openssl_load_key(path))
+  expect_s3_class(d, "key")
+
+
+  withr::with_envvar(
+    c(CYPHR_USER_KEY_PASSWORD = "wrong password"),
+    expect_error(openssl_load_key(path)))
+})
+
 test_that("pair", {
   pair <- keypair_openssl("pair1", "pair1", authenticated = FALSE)
   expect_s3_class(pair, "cyphr_keypair")

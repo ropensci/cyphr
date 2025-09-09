@@ -30,10 +30,12 @@
 ##'   because openssl asymmetric encryption can only encrypt data up
 ##'   to the size of the key itself.
 ##'
-##' @param password A password for the private key.  If `NULL`
-##'   then you will be prompted interactively for your password, and
-##'   if a string then that string will be used as the password (but
-##'   be careful in scripts!)
+##' @param password A password for the private key.  If `NULL` then
+##'   you will be prompted interactively for your password, and if a
+##'   string then that string will be used as the password (but be
+##'   careful in scripts!). Alternatively, we look in the environment
+##'   variable CYPHR_USER_KEY_PASSWORD, which might be marginally more
+##'   secure.
 ##'
 ##' @param authenticated Logical, indicating if the result should be
 ##'   signed with your public key.  If `TRUE` then your key will
@@ -153,9 +155,12 @@ key_openssl <- function(key, mode = "cbc") {
 openssl_load_key <- function(path, password = NULL) {
   key_path <- openssl_find_key(path)
   if (is.null(password)) {
-    password <- function(...) {
-      msg <- sprintf("Please enter password for private key %s: ", key_path)
-      get_password_str(FALSE, msg)
+    password <- Sys.getenv("CYPHR_USER_KEY_PASSWORD", NA_character_)
+    if (is.na(password)) {
+      password <- function(...) {
+        msg <- sprintf("Please enter password for private key %s: ", key_path)
+        get_password_str(FALSE, msg)
+      }
     }
   }
   openssl::read_key(key_path, password)

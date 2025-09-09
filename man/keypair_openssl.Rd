@@ -41,10 +41,12 @@ encrypt much larger data than \code{envelope = FALSE}; this is
 because openssl asymmetric encryption can only encrypt data up
 to the size of the key itself.}
 
-\item{password}{A password for the private key.  If \code{NULL}
-then you will be prompted interactively for your password, and
-if a string then that string will be used as the password (but
-be careful in scripts!)}
+\item{password}{A password for the private key.  If \code{NULL} then
+you will be prompted interactively for your password, and if a
+string then that string will be used as the password (but be
+careful in scripts!). Alternatively, we look in the environment
+variable CYPHR_USER_KEY_PASSWORD, which might be marginally more
+secure.}
 
 \item{authenticated}{Logical, indicating if the result should be
 signed with your public key.  If \code{TRUE} then your key will
